@@ -1,0 +1,1 @@
+export { sendChatMessageToBackend } from './genAiService';
