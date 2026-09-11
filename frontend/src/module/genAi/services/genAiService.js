@@ -4,14 +4,14 @@
 
 const API_BASE_URL = 'http://localhost:5000/api/genai';
 
-export const sendChatMessageToBackend = async (message, history = []) => {
+export const sendChatMessageToBackend = async (message, history = [], language = 'en') => {
   try {
     const response = await fetch(`${API_BASE_URL}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message, history }),
+      body: JSON.stringify({ message, history, language }),
     });
 
     if (!response.ok) {
