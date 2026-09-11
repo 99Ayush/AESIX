@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../userPages.css';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -115,80 +116,83 @@ export default function Consent() {
   const countRejected = consents.filter(c => c.status === 'rejected').length;
 
   return (
-    <div className="min-h-screen bg-[#F5FAF8] text-[#183B56] font-sans antialiased w-full overflow-x-hidden">
+    <div className="sih-page-wrapper">
       
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-[#2F8F83] text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
-          <svg className="w-5 h-5 fill-current flex-shrink-0" viewBox="0 0 20 20">
+        <div className="sih-toast">
+          <svg className="sih-toast-icon" viewBox="0 0 20 20">
             <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
           </svg>
-          <span className="font-bold text-sm">{toastMessage}</span>
+          <span className="sih-toast-text">{toastMessage}</span>
         </div>
       )}
 
       {/* TOP NAVIGATION BAR */}
-      <header className="bg-[#12304A] text-white shadow-lg sticky top-0 z-40 w-full border-b border-slate-700">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4 flex-wrap">
+      <header className="sih-header">
+        <div className="sih-header-inner">
           
           {/* Logo & Title */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-[#2F8F83] text-white font-black text-xl flex items-center justify-center shadow-md">
+          <div className="sih-brand">
+            <div className="sih-logo-badge">
               SIH
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold tracking-wide leading-tight">SIH 2026 | Patient Case-Taking</h1>
-              <p className="text-xs text-[#E4F5EF] opacity-80 leading-none">Doctor View • Clinical Documentation</p>
+              <h1 className="sih-brand-title">SIH 2026 | Patient Case-Taking</h1>
+              <p className="sih-brand-subtitle">Doctor View • Clinical Documentation</p>
             </div>
           </div>
 
           {/* Section Navigation Links */}
-          <nav className="flex items-center bg-[#1a4163] p-1 rounded-xl border border-slate-600 font-bold text-xs gap-1">
+          <nav className="sih-nav-menu">
             <button
-              onClick={() => navigate('/basicInfo')}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition cursor-pointer"
+              onClick={() => navigate('/abha')}
+              className="sih-nav-btn"
             >
               ABHA ID
             </button>
 
             <button
               onClick={() => navigate('/uploadDoc')}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition cursor-pointer"
+              className="sih-nav-btn"
             >
               Docs
             </button>
 
             <button
               onClick={() => navigate('/basicInfo')}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition cursor-pointer"
+              className="sih-nav-btn"
             >
               Basic Info
             </button>
 
             <button
               onClick={() => navigate('/consent')}
-              className="px-4 py-2 rounded-lg bg-[#2F8F83] text-white shadow-sm font-extrabold cursor-pointer"
+              className="sih-nav-btn active"
             >
               Consent
+            </button>
+
+            <button
+              onClick={() => navigate('/profile')}
+              className="sih-nav-btn"
+            >
+              Profile
             </button>
           </nav>
 
           {/* Search, Language & Doctor Info */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="sih-header-controls">
             
             {/* Search Bar */}
-            <div className="relative hidden md:block">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="w-4 h-4 text-slate-400 fill-current" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </div>
+            <div style={{ position: 'relative' }}>
               <input
                 type="text"
-                placeholder="Search consent record..."
+                placeholder="Search consent..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-[#1a4163] text-xs text-white placeholder-slate-400 pl-9 pr-4 py-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-[#2F8F83] w-48 lg:w-60 transition"
+                className="sih-input"
+                style={{ width: '180px', padding: '0.45rem 0.75rem', fontSize: '0.75rem', backgroundColor: 'var(--navy-hover)', color: 'white', borderColor: '#475569' }}
               />
             </div>
 
@@ -196,7 +200,7 @@ export default function Consent() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="bg-[#1a4163] text-xs text-white px-3 py-2.5 rounded-lg border border-slate-600 focus:outline-none cursor-pointer font-medium"
+              className="sih-lang-select"
             >
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी (Hindi)</option>
@@ -205,13 +209,13 @@ export default function Consent() {
             </select>
 
             {/* Doctor Profile */}
-            <div className="flex items-center gap-2.5 border-l border-slate-700 pl-3">
-              <div className="w-9 h-9 rounded-full bg-[#2F8F83] text-white flex items-center justify-center font-bold text-xs border-2 border-white/30 shadow-sm flex-shrink-0">
+            <div className="sih-doctor-profile">
+              <div className="sih-doctor-avatar">
                 DR
               </div>
-              <div className="hidden sm:block text-left leading-tight">
-                <p className="text-xs font-bold">Dr. A. Verma</p>
-                <p className="text-[10px] text-[#E4F5EF]/80">General Medicine</p>
+              <div className="sih-doctor-info">
+                <p className="sih-doctor-name">Dr. A. Verma</p>
+                <p className="sih-doctor-role">General Medicine</p>
               </div>
             </div>
 
@@ -221,59 +225,54 @@ export default function Consent() {
       </header>
 
       {/* MAIN CONTAINER */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-6 space-y-6">
+      <main className="sih-main-layout">
 
-        {/* CONSENTS MAIN HEADING CONTAINER (MATCHING WIREFRAME) */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 flex flex-wrap items-center justify-between gap-4">
+        {/* CONSENTS MAIN HEADING CONTAINER */}
+        <div className="sih-card" style={{ padding: '1.5rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
           <div>
-            <h2 className="text-2xl sm:text-3xl font-black text-[#12304A] tracking-tight">Consents</h2>
-            <p className="text-xs text-slate-500 font-semibold mt-1">
+            <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary-navy)', letterSpacing: '-0.02em', margin: 0 }}>Consents</h2>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.25rem' }}>
               Manage patient data access permissions, consent requests, and authorization records.
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold bg-[#E4F5EF] text-[#2F8F83] px-3.5 py-1.5 rounded-xl border border-[#2F8F83]/30">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span className="sih-badge sih-badge-teal">
               Active: {countAccepted}
             </span>
-            <span className="text-xs font-bold bg-amber-50 text-amber-800 px-3.5 py-1.5 rounded-xl border border-amber-200">
+            <span className="sih-badge sih-badge-amber">
               Pending: {countPending}
             </span>
-            <span className="text-xs font-bold bg-[#FDECEF] text-red-700 px-3.5 py-1.5 rounded-xl border border-red-200">
+            <span className="sih-badge sih-badge-red">
               Rejected: {countRejected}
             </span>
           </div>
         </div>
 
-        {/* TWO-COLUMN LAYOUT (LEFT FILTERS, RIGHT CONSENT RECORDS) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* TWO-COLUMN LAYOUT */}
+        <div className="abha-grid">
 
-          {/* ==================== LEFT PANEL: STATUS FILTERS (3 Cols) ==================== */}
-          <div className="lg:col-span-3 min-w-0 space-y-4">
+          {/* LEFT PANEL: STATUS FILTERS */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-3">
-              <h3 className="text-xs font-extrabold text-[#12304A] uppercase tracking-wider mb-2">
+            <div className="sih-card" style={{ padding: '1.25rem' }}>
+              <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
                 Consent Status
               </h3>
 
-              <div className="space-y-2 text-xs font-bold">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                 
                 {/* Accepted Filter */}
                 <button
                   onClick={() => setActiveStatus('accepted')}
-                  className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between cursor-pointer border ${
-                    activeStatus === 'accepted'
-                      ? 'bg-[#2F8F83] text-white border-[#2F8F83] shadow-md'
-                      : 'bg-[#F5FAF8] text-slate-700 border-slate-200 hover:bg-[#E4F5EF]/50'
-                  }`}
+                  className={`sih-btn ${activeStatus === 'accepted' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
+                  style={{ justifyContent: 'space-between', width: '100%', padding: '0.65rem 0.85rem' }}
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981' }}></span>
                     Accepted
                   </span>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
-                    activeStatus === 'accepted' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
-                  }`}>
+                  <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.3)', fontWeight: 900 }}>
                     {countAccepted}
                   </span>
                 </button>
@@ -281,19 +280,14 @@ export default function Consent() {
                 {/* Rejected Filter */}
                 <button
                   onClick={() => setActiveStatus('rejected')}
-                  className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between cursor-pointer border ${
-                    activeStatus === 'rejected'
-                      ? 'bg-[#12304A] text-white border-[#12304A] shadow-md'
-                      : 'bg-[#F5FAF8] text-slate-700 border-slate-200 hover:bg-[#FDECEF]/50'
-                  }`}
+                  className={`sih-btn ${activeStatus === 'rejected' ? 'sih-btn-navy' : 'sih-btn-outline'}`}
+                  style={{ justifyContent: 'space-between', width: '100%', padding: '0.65rem 0.85rem' }}
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444' }}></span>
                     Rejected
                   </span>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
-                    activeStatus === 'rejected' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
-                  }`}>
+                  <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.3)', fontWeight: 900 }}>
                     {countRejected}
                   </span>
                 </button>
@@ -301,19 +295,14 @@ export default function Consent() {
                 {/* Pending Filter */}
                 <button
                   onClick={() => setActiveStatus('pending')}
-                  className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between cursor-pointer border ${
-                    activeStatus === 'pending'
-                      ? 'bg-[#2F8F83] text-white border-[#2F8F83] shadow-md'
-                      : 'bg-[#F5FAF8] text-slate-700 border-slate-200 hover:bg-amber-50'
-                  }`}
+                  className={`sih-btn ${activeStatus === 'pending' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
+                  style={{ justifyContent: 'space-between', width: '100%', padding: '0.65rem 0.85rem' }}
                 >
-                  <span className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#F59E0B' }}></span>
                     Pending
                   </span>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
-                    activeStatus === 'pending' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
-                  }`}>
+                  <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.3)', fontWeight: 900 }}>
                     {countPending}
                   </span>
                 </button>
@@ -321,16 +310,11 @@ export default function Consent() {
                 {/* All Consents Filter */}
                 <button
                   onClick={() => setActiveStatus('all')}
-                  className={`w-full text-left p-3.5 rounded-xl transition flex items-center justify-between cursor-pointer border ${
-                    activeStatus === 'all'
-                      ? 'bg-[#12304A] text-white border-[#12304A] shadow-md'
-                      : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-                  }`}
+                  className={`sih-btn ${activeStatus === 'all' ? 'sih-btn-navy' : 'sih-btn-outline'}`}
+                  style={{ justifyContent: 'space-between', width: '100%', padding: '0.65rem 0.85rem' }}
                 >
                   <span>All Records</span>
-                  <span className={`text-[11px] px-2 py-0.5 rounded-full font-black ${
-                    activeStatus === 'all' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
-                  }`}>
+                  <span style={{ fontSize: '0.7rem', padding: '0.15rem 0.5rem', borderRadius: '999px', backgroundColor: 'rgba(255,255,255,0.3)', fontWeight: 900 }}>
                     {consents.length}
                   </span>
                 </button>
@@ -339,145 +323,143 @@ export default function Consent() {
             </div>
 
             {/* Quick Info Box */}
-            <div className="bg-[#EAF3FF] p-4 rounded-2xl border border-blue-200/60 text-xs text-[#12304A] space-y-1.5">
-              <p className="font-extrabold flex items-center gap-1.5">
+            <div style={{ backgroundColor: '#EAF3FF', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(18, 48, 74, 0.1)', fontSize: '0.75rem', color: 'var(--primary-navy)' }}>
+              <p style={{ fontWeight: 900, margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <span>🔒</span> ABDM Consent Architecture
               </p>
-              <p className="text-[11px] text-slate-600 leading-relaxed font-medium">
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.3rem', lineHeight: '1.4' }}>
                 Patient consent records are signed and verified according to Ayushman Bharat Digital Mission (ABDM) data privacy guidelines.
               </p>
             </div>
 
           </div>
 
-          {/* ==================== RIGHT PANEL: CONSENT RECORDS (9 Cols) ==================== */}
-          <div className="lg:col-span-9 min-w-0">
+          {/* RIGHT PANEL: CONSENT RECORDS */}
+          <div className="sih-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-6 min-h-[480px]">
-              
-              {/* Panel Sub-header */}
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <h3 className="text-sm font-black text-[#12304A] uppercase tracking-wider flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#2F8F83]"></span>
-                  Consent Records ({filteredConsents.length})
-                </h3>
-                <span className="text-xs text-slate-400 font-semibold">
-                  Showing: <strong className="text-[#12304A] uppercase">{activeStatus}</strong>
-                </span>
-              </div>
+            {/* Panel Sub-header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+              <h3 style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--teal-primary)' }}></span>
+                Consent Records ({filteredConsents.length})
+              </h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+                Showing: <strong style={{ color: 'var(--primary-navy)', textTransform: 'uppercase' }}>{activeStatus}</strong>
+              </span>
+            </div>
 
-              {/* CONSENT RECORDS LIST / ROWS */}
-              {filteredConsents.length > 0 ? (
-                <div className="divide-y divide-slate-100 space-y-4">
-                  {filteredConsents.map((consent) => (
-                    <div
-                      key={consent.id}
-                      className="pt-4 first:pt-0 space-y-3 group hover:bg-[#F5FAF8] p-4 rounded-xl transition border border-transparent hover:border-slate-200"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-base font-bold text-[#12304A] group-hover:text-[#2F8F83] transition">
-                              {consent.title}
-                            </h4>
+            {/* CONSENT RECORDS LIST */}
+            {filteredConsents.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {filteredConsents.map((consent) => (
+                  <div
+                    key={consent.id}
+                    style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <h4 style={{ fontSize: '0.95rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+                            {consent.title}
+                          </h4>
 
-                            {/* Status Badge */}
-                            <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-md border ${
-                              consent.status === 'accepted'
-                                ? 'bg-[#E4F5EF] text-[#2F8F83] border-[#2F8F83]/30'
-                                : consent.status === 'pending'
-                                ? 'bg-amber-50 text-amber-800 border-amber-200'
-                                : 'bg-[#FDECEF] text-red-700 border-red-200'
-                            }`}>
-                              ● {consent.status}
-                            </span>
-                          </div>
-
-                          <p className="text-xs text-slate-500 font-semibold mt-1">
-                            Requested by: <strong className="text-slate-800">{consent.requester}</strong>
-                          </p>
+                          <span className={`sih-badge ${
+                            consent.status === 'accepted'
+                              ? 'sih-badge-teal'
+                              : consent.status === 'pending'
+                              ? 'sih-badge-amber'
+                              : 'sih-badge-red'
+                          }`}>
+                            ● {consent.status}
+                          </span>
                         </div>
 
-                        {/* Dates */}
-                        <div className="text-right text-xs">
-                          <p className="text-slate-400 font-semibold text-[11px]">Requested: {formatDate(consent.date)}</p>
-                          <p className="text-slate-600 font-bold text-[11px]">Expiry: {formatDate(consent.expiry)}</p>
-                        </div>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.2rem', margin: 0 }}>
+                          Requested by: <strong style={{ color: 'var(--primary-navy)' }}>{consent.requester}</strong>
+                        </p>
                       </div>
 
-                      {/* Purpose */}
-                      <p className="text-xs text-slate-600 font-medium leading-relaxed bg-[#F5FAF8] p-3 rounded-lg border border-slate-100">
-                        {consent.purpose}
-                      </p>
+                      <div style={{ textAlign: 'right', fontSize: '0.7rem' }}>
+                        <p style={{ color: 'var(--text-muted)', margin: 0 }}>Requested: {formatDate(consent.date)}</p>
+                        <p style={{ color: 'var(--primary-navy)', fontWeight: 700, margin: 0 }}>Expiry: {formatDate(consent.expiry)}</p>
+                      </div>
+                    </div>
 
-                      {/* Scope & Actions */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <span className="text-[10px] text-slate-400 font-bold uppercase mr-1">Scope:</span>
-                          {consent.scope.map((scp, idx) => (
-                            <span key={idx} className="bg-[#EAF3FF] text-[#12304A] text-[10px] font-bold px-2.5 py-0.5 rounded-md">
-                              {scp}
-                            </span>
-                          ))}
-                        </div>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', backgroundColor: 'white', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)', margin: 0 }}>
+                      {consent.purpose}
+                    </p>
 
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setSelectedConsent(consent)}
-                            className="bg-[#12304A] hover:bg-[#1a4163] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition cursor-pointer"
-                          >
-                            Details
-                          </button>
+                    {/* Scope & Actions */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem', paddingTop: '0.25rem' }}>
+                      <div className="scope-pills-wrap">
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', alignSelf: 'center' }}>Scope:</span>
+                        {consent.scope.map((scp, idx) => (
+                          <span key={idx} className="scope-pill-tag">
+                            {scp}
+                          </span>
+                        ))}
+                      </div>
 
-                          {consent.status === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => handleUpdateStatus(consent.id, 'accepted')}
-                                className="bg-[#2F8F83] hover:bg-[#25756b] text-white text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer"
-                              >
-                                Accept
-                              </button>
-                              <button
-                                onClick={() => handleUpdateStatus(consent.id, 'rejected')}
-                                className="bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition cursor-pointer"
-                              >
-                                Reject
-                              </button>
-                            </>
-                          )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button
+                          onClick={() => setSelectedConsent(consent)}
+                          className="sih-btn sih-btn-navy"
+                          style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                        >
+                          Details
+                        </button>
 
-                          {consent.status === 'accepted' && (
+                        {consent.status === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleUpdateStatus(consent.id, 'accepted')}
+                              className="sih-btn sih-btn-primary"
+                              style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
+                            >
+                              Accept
+                            </button>
                             <button
                               onClick={() => handleUpdateStatus(consent.id, 'rejected')}
-                              className="bg-slate-100 hover:bg-red-50 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 transition cursor-pointer"
+                              className="sih-btn sih-btn-danger"
+                              style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}
                             >
-                              Revoke Access
+                              Reject
                             </button>
-                          )}
-                        </div>
+                          </>
+                        )}
+
+                        {consent.status === 'accepted' && (
+                          <button
+                            onClick={() => handleUpdateStatus(consent.id, 'rejected')}
+                            className="sih-btn sih-btn-outline"
+                            style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem', color: '#EF4444' }}
+                          >
+                            Revoke Access
+                          </button>
+                        )}
                       </div>
-
                     </div>
-                  ))}
-                </div>
-              ) : (
-                /* EMPTY STATE */
-                <div className="text-center py-16 px-4 bg-[#F5FAF8] rounded-2xl border border-slate-200 space-y-3">
-                  <div className="text-4xl">🔐</div>
-                  <h4 className="text-base font-bold text-[#12304A]">No Consent Records Found</h4>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    No patient consent entries match the selected status <strong className="uppercase">"{activeStatus}"</strong>.
-                  </p>
-                  <button
-                    onClick={() => { setActiveStatus('all'); setSearchQuery(''); }}
-                    className="mt-2 text-xs font-bold text-[#2F8F83] bg-[#E4F5EF] px-4 py-2 rounded-xl border border-[#2F8F83]/30"
-                  >
-                    View All Consents
-                  </button>
-                </div>
-              )}
 
-            </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* EMPTY STATE */
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: 'var(--mint-bg)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)' }}>
+                <div style={{ fontSize: '2.5rem' }}>🔐</div>
+                <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary-navy)', marginTop: '0.5rem' }}>No Consent Records Found</h4>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  No patient consent entries match the selected status <strong style={{ textTransform: 'uppercase' }}>"{activeStatus}"</strong>.
+                </p>
+                <button
+                  onClick={() => { setActiveStatus('all'); setSearchQuery(''); }}
+                  className="sih-btn sih-btn-primary"
+                  style={{ marginTop: '1rem', padding: '0.4rem 1rem', fontSize: '0.75rem' }}
+                >
+                  View All Consents
+                </button>
+              </div>
+            )}
 
           </div>
 
@@ -487,84 +469,80 @@ export default function Consent() {
 
       {/* CONSENT DETAILS MODAL */}
       {selectedConsent && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full border border-slate-200 overflow-hidden space-y-4 p-6 animate-fade-in">
+        <div className="sih-modal-backdrop">
+          <div className="sih-modal-card">
             
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="sih-modal-header">
               <div>
-                <span className={`text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded border ${
-                  selectedConsent.status === 'accepted'
-                    ? 'bg-[#E4F5EF] text-[#2F8F83] border-[#2F8F83]/30'
-                    : selectedConsent.status === 'pending'
-                    ? 'bg-amber-50 text-amber-800 border-amber-200'
-                    : 'bg-[#FDECEF] text-red-700 border-red-200'
-                }`}>
+                <span className="sih-badge sih-badge-teal">
                   {selectedConsent.status}
                 </span>
-                <h3 className="text-lg font-bold text-[#12304A] mt-1">{selectedConsent.title}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.25rem 0 0 0' }}>{selectedConsent.title}</h3>
               </div>
               <button
                 onClick={() => setSelectedConsent(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center"
+                style={{ color: 'white', fontWeight: 900, fontSize: '1.2rem', cursor: 'pointer' }}
               >
                 ✕
               </button>
             </div>
 
-            <div className="space-y-3 text-xs bg-[#F5FAF8] p-4 rounded-xl border border-slate-100">
-              <div>
-                <p className="text-slate-400 font-bold uppercase text-[10px]">Requester / Organization</p>
-                <p className="font-bold text-[#12304A] text-sm mt-0.5">{selectedConsent.requester}</p>
-              </div>
-
-              <div>
-                <p className="text-slate-400 font-bold uppercase text-[10px]">Detailed Purpose</p>
-                <p className="font-medium text-slate-700 mt-0.5 leading-relaxed">{selectedConsent.purpose}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+            <div className="sih-modal-body">
+              <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8rem' }}>
                 <div>
-                  <p className="text-slate-400 font-bold uppercase text-[10px]">Granted Date</p>
-                  <p className="font-bold text-slate-800">{formatDate(selectedConsent.date)}</p>
+                  <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Requester / Organization</p>
+                  <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.1rem 0 0 0' }}>{selectedConsent.requester}</p>
                 </div>
+
                 <div>
-                  <p className="text-slate-400 font-bold uppercase text-[10px]">Expiration Date</p>
-                  <p className="font-bold text-slate-800">{formatDate(selectedConsent.expiry)}</p>
+                  <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Detailed Purpose</p>
+                  <p style={{ color: 'var(--text-main)', marginTop: '0.1rem', margin: 0 }}>{selectedConsent.purpose}</p>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid var(--border-light)' }}>
+                  <div>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Granted Date</p>
+                    <p style={{ fontWeight: 700, color: 'var(--primary-navy)', margin: 0 }}>{formatDate(selectedConsent.date)}</p>
+                  </div>
+                  <div>
+                    <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Expiration Date</p>
+                    <p style={{ fontWeight: 700, color: 'var(--primary-navy)', margin: 0 }}>{formatDate(selectedConsent.expiry)}</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-end gap-2 pt-2">
-              {selectedConsent.status === 'pending' && (
-                <>
-                  <button
-                    onClick={() => handleUpdateStatus(selectedConsent.id, 'accepted')}
-                    className="bg-[#2F8F83] text-white text-xs font-bold px-4 py-2 rounded-xl"
-                  >
-                    Grant Consent
-                  </button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', paddingTop: '0.5rem' }}>
+                {selectedConsent.status === 'pending' && (
+                  <>
+                    <button
+                      onClick={() => handleUpdateStatus(selectedConsent.id, 'accepted')}
+                      className="sih-btn sih-btn-primary"
+                    >
+                      Grant Consent
+                    </button>
+                    <button
+                      onClick={() => handleUpdateStatus(selectedConsent.id, 'rejected')}
+                      className="sih-btn sih-btn-danger"
+                    >
+                      Reject Consent
+                    </button>
+                  </>
+                )}
+                {selectedConsent.status === 'accepted' && (
                   <button
                     onClick={() => handleUpdateStatus(selectedConsent.id, 'rejected')}
-                    className="bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-xl"
+                    className="sih-btn sih-btn-danger"
                   >
-                    Reject Consent
+                    Revoke Consent
                   </button>
-                </>
-              )}
-              {selectedConsent.status === 'accepted' && (
+                )}
                 <button
-                  onClick={() => handleUpdateStatus(selectedConsent.id, 'rejected')}
-                  className="bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-xl"
+                  onClick={() => setSelectedConsent(null)}
+                  className="sih-btn sih-btn-outline"
                 >
-                  Revoke Consent
+                  Close
                 </button>
-              )}
-              <button
-                onClick={() => setSelectedConsent(null)}
-                className="bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl"
-              >
-                Close
-              </button>
+              </div>
             </div>
 
           </div>

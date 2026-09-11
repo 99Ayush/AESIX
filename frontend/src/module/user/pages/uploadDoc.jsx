@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '../userPages.css';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -171,73 +172,83 @@ export default function UploadDoc() {
     });
 
   return (
-    <div className="min-h-screen bg-[#F5FAF8] text-[#183B56] font-sans antialiased w-full overflow-x-hidden">
+    <div className="sih-page-wrapper">
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-[#2F8F83] text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 animate-bounce">
-          <svg className="w-5 h-5 fill-current flex-shrink-0" viewBox="0 0 20 20">
+        <div className="sih-toast">
+          <svg className="sih-toast-icon" viewBox="0 0 20 20">
             <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
           </svg>
-          <span className="font-bold text-sm">{toastMessage}</span>
+          <span className="sih-toast-text">{toastMessage}</span>
         </div>
       )}
 
       {/* TOP NAVIGATION BAR */}
-      <header className="bg-[#12304A] text-white shadow-lg sticky top-0 z-40 w-full border-b border-slate-700">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between gap-4 flex-wrap">
+      <header className="sih-header">
+        <div className="sih-header-inner">
           
           {/* Brand Logo & App Title */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-[#2F8F83] text-white font-black text-xl flex items-center justify-center shadow-md">
+          <div className="sih-brand">
+            <div className="sih-logo-badge">
               SIH
             </div>
             <div>
-              <h1 className="text-base sm:text-lg font-bold tracking-wide leading-tight">SIH 2026 | Patient Case-Taking</h1>
-              <p className="text-xs text-[#E4F5EF] opacity-80 leading-none">Doctor View • Clinical Documentation</p>
+              <h1 className="sih-brand-title">SIH 2026 | Patient Case-Taking</h1>
+              <p className="sih-brand-subtitle">Doctor View • Clinical Documentation</p>
             </div>
           </div>
 
-          {/* Section Tabs (ABHA, Docs [Active], Basic Info) */}
-          <nav className="flex items-center bg-[#1a4163] p-1 rounded-xl border border-slate-600 font-bold text-xs gap-1">
+          {/* Section Tabs */}
+          <nav className="sih-nav-menu">
             <button
-              onClick={() => navigate('/basicInfo')}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition cursor-pointer"
+              onClick={() => navigate('/abha')}
+              className="sih-nav-btn"
             >
               ABHA ID
             </button>
 
             <button
               onClick={() => navigate('/uploadDoc')}
-              className="px-4 py-2 rounded-lg bg-[#2F8F83] text-white shadow-sm font-extrabold cursor-pointer"
+              className="sih-nav-btn active"
             >
               Docs (Medical Records)
             </button>
 
             <button
               onClick={() => navigate('/basicInfo')}
-              className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-700/50 transition cursor-pointer"
+              className="sih-nav-btn"
             >
               Basic Info
+            </button>
+
+            <button
+              onClick={() => navigate('/consent')}
+              className="sih-nav-btn"
+            >
+              Consent
+            </button>
+
+            <button
+              onClick={() => navigate('/profile')}
+              className="sih-nav-btn"
+            >
+              Profile
             </button>
           </nav>
 
           {/* Right Controls: Search, Language, Doctor Profile */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="sih-header-controls">
             
             {/* Search Input */}
-            <div className="relative hidden md:block">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg className="w-4 h-4 text-slate-400 fill-current" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                </svg>
-              </div>
+            <div style={{ position: 'relative' }}>
               <input
                 type="text"
-                placeholder="Search patient record..."
+                placeholder="Search records..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-[#1a4163] text-xs text-white placeholder-slate-400 pl-9 pr-4 py-2.5 rounded-lg border border-slate-600 focus:outline-none focus:border-[#2F8F83] w-48 lg:w-60 transition"
+                className="sih-input"
+                style={{ width: '180px', padding: '0.45rem 0.75rem', fontSize: '0.75rem', backgroundColor: 'var(--navy-hover)', color: 'white', borderColor: '#475569' }}
               />
             </div>
 
@@ -245,7 +256,7 @@ export default function UploadDoc() {
             <select
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              className="bg-[#1a4163] text-xs text-white px-3 py-2.5 rounded-lg border border-slate-600 focus:outline-none cursor-pointer font-medium"
+              className="sih-lang-select"
             >
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी (Hindi)</option>
@@ -254,13 +265,13 @@ export default function UploadDoc() {
             </select>
 
             {/* Doctor Profile */}
-            <div className="flex items-center gap-2.5 border-l border-slate-700 pl-3">
-              <div className="w-9 h-9 rounded-full bg-[#2F8F83] text-white flex items-center justify-center font-bold text-xs border-2 border-white/30 shadow-sm flex-shrink-0">
+            <div className="sih-doctor-profile">
+              <div className="sih-doctor-avatar">
                 DR
               </div>
-              <div className="hidden sm:block text-left leading-tight">
-                <p className="text-xs font-bold">Dr. A. Verma</p>
-                <p className="text-[10px] text-[#E4F5EF]/80">General Medicine</p>
+              <div className="sih-doctor-info">
+                <p className="sih-doctor-name">Dr. A. Verma</p>
+                <p className="sih-doctor-role">General Medicine</p>
               </div>
             </div>
 
@@ -270,20 +281,21 @@ export default function UploadDoc() {
       </header>
 
       {/* MAIN CONTAINER */}
-      <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-6 space-y-6">
+      <main className="sih-main-layout">
 
         {/* DOCUMENT FILTER & ACTION BAR */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4">
+        <div className="sih-card" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
           
           {/* SORT BY DROPDOWN */}
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-black uppercase tracking-wider text-[#12304A]">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 900, textTransform: 'uppercase', color: 'var(--primary-navy)' }}>
               Sort By:
             </span>
             <select
               value={sortOrder}
               onChange={(e) => setSortOrder(e.target.value)}
-              className="bg-[#F5FAF8] text-xs font-bold text-[#12304A] px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#2F8F83] cursor-pointer shadow-2xs"
+              className="sih-select"
+              style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.75rem', fontWeight: 700 }}
             >
               <option value="newest">📅 NEWEST 1ST</option>
               <option value="oldest">📅 OLDEST 1ST</option>
@@ -291,47 +303,35 @@ export default function UploadDoc() {
           </div>
 
           {/* CATEGORY FILTER BUTTONS */}
-          <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
+          <div className="consent-filter-nav">
             <button
               onClick={() => setActiveFilter('all')}
-              className={`px-4 py-2.5 rounded-xl transition cursor-pointer uppercase tracking-wide border ${
-                activeFilter === 'all'
-                  ? 'bg-[#12304A] text-white border-[#12304A] shadow-md'
-                  : 'bg-[#F5FAF8] text-slate-600 border-slate-200 hover:bg-slate-100'
-              }`}
+              className={`sih-btn ${activeFilter === 'all' ? 'sih-btn-navy' : 'sih-btn-outline'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem' }}
             >
               All Records ({documents.length})
             </button>
 
             <button
               onClick={() => setActiveFilter('disease')}
-              className={`px-4 py-2.5 rounded-xl transition cursor-pointer uppercase tracking-wide border ${
-                activeFilter === 'disease'
-                  ? 'bg-[#2F8F83] text-white border-[#2F8F83] shadow-md'
-                  : 'bg-[#E4F5EF] text-[#2F8F83] border-[#2F8F83]/20 hover:bg-[#2F8F83]/15'
-              }`}
+              className={`sih-btn ${activeFilter === 'disease' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem' }}
             >
               Disease ({documents.filter(d => d.type === 'disease').length})
             </button>
 
             <button
               onClick={() => setActiveFilter('prescription')}
-              className={`px-4 py-2.5 rounded-xl transition cursor-pointer uppercase tracking-wide border ${
-                activeFilter === 'prescription'
-                  ? 'bg-[#2F8F83] text-white border-[#2F8F83] shadow-md'
-                  : 'bg-[#EAF3FF] text-[#12304A] border-blue-200 hover:bg-blue-100'
-              }`}
+              className={`sih-btn ${activeFilter === 'prescription' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem' }}
             >
               Prescription ({documents.filter(d => d.type === 'prescription').length})
             </button>
 
             <button
               onClick={() => setActiveFilter('discharge summary')}
-              className={`px-4 py-2.5 rounded-xl transition cursor-pointer uppercase tracking-wide border ${
-                activeFilter === 'discharge summary'
-                  ? 'bg-[#2F8F83] text-white border-[#2F8F83] shadow-md'
-                  : 'bg-[#F0EBFF] text-[#12304A] border-purple-200 hover:bg-purple-100'
-              }`}
+              className={`sih-btn ${activeFilter === 'discharge summary' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem' }}
             >
               Discharge Summary ({documents.filter(d => d.type === 'discharge summary').length})
             </button>
@@ -340,39 +340,34 @@ export default function UploadDoc() {
         </div>
 
         {/* MAIN UPLOAD & DOCUMENTS AREA */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8 space-y-8 min-h-[500px]">
+        <div className="sih-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
-          {/* CENTRAL UPLOAD AREA (MATCHING WIREFRAME) */}
+          {/* CENTRAL UPLOAD AREA */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 text-center transition cursor-pointer flex flex-col items-center justify-center gap-4 ${
-              isDragOver
-                ? 'border-[#2F8F83] bg-[#E4F5EF]/50 shadow-inner'
-                : 'border-slate-300 bg-[#F5FAF8] hover:border-[#2F8F83] hover:bg-[#E4F5EF]/20'
-            }`}
+            className={`doc-upload-box ${isDragOver ? 'drag-over' : ''}`}
           >
             <input
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
               accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-              className="hidden"
+              style={{ display: 'none' }}
             />
 
-            {/* Center Upload Icon & Text matching wireframe */}
-            <div className="w-16 h-16 rounded-full bg-[#EAF3FF] text-[#2F8F83] flex items-center justify-center font-bold text-3xl shadow-sm">
+            <div className="doc-icon-container" style={{ margin: '0 auto', width: '56px', height: '56px', borderRadius: '50%', fontSize: '1.8rem' }}>
               🔍
             </div>
 
-            <div>
-              <h3 className="text-lg font-black text-[#12304A]">Upload Medical Document</h3>
-              <p className="text-xs text-slate-500 font-medium mt-1">
-                Drag & drop your files here, or <span className="text-[#2F8F83] font-bold underline">browse files</span>
+            <div style={{ marginTop: '0.5rem' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--primary-navy)', margin: 0 }}>Upload Medical Document</h3>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.25rem' }}>
+                Drag & drop your files here, or <span style={{ color: 'var(--teal-primary)', textDecoration: 'underline' }}>browse files</span>
               </p>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <p style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '0.2rem' }}>
                 Supported formats: PDF, JPG, PNG, DOC (Max file size: 15MB)
               </p>
             </div>
@@ -381,42 +376,44 @@ export default function UploadDoc() {
             {selectedFile && (
               <div
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg bg-white p-4 rounded-xl border border-[#2F8F83]/40 shadow-sm text-left mt-2 space-y-3"
+                style={{ width: '100%', maxWidth: '500px', margin: '1rem auto 0', backgroundColor: 'white', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(47, 143, 131, 0.4)', textAlign: 'left' }}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">📄</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{ fontSize: '1.5rem' }}>📄</span>
                     <div>
-                      <p className="text-xs font-bold text-[#12304A] truncate max-w-xs">{selectedFile.name}</p>
-                      <p className="text-[10px] text-slate-400">{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+                      <p style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>{selectedFile.name}</p>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', margin: 0 }}>{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setSelectedFile(null)}
-                    className="text-red-500 hover:text-red-700 font-bold text-sm"
+                    style={{ color: '#EF4444', fontWeight: 800, fontSize: '0.75rem' }}
                   >
                     Remove
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', paddingTop: '0.75rem', marginTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">Document Title</label>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Document Title</label>
                     <input
                       type="text"
                       value={uploadTitle}
                       onChange={(e) => setUploadTitle(e.target.value)}
                       placeholder="e.g. Lab Report Sep 2026"
-                      className="w-full text-xs p-2 border rounded-lg border-slate-300 mt-1 focus:outline-none focus:border-[#2F8F83]"
+                      className="sih-input"
+                      style={{ marginTop: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.75rem' }}
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] font-bold text-slate-500 uppercase">Document Category</label>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Category</label>
                     <select
                       value={uploadCategory}
                       onChange={(e) => setUploadCategory(e.target.value)}
-                      className="w-full text-xs p-2 border rounded-lg border-slate-300 mt-1 focus:outline-none focus:border-[#2F8F83]"
+                      className="sih-select"
+                      style={{ marginTop: '0.25rem', padding: '0.4rem 0.6rem', fontSize: '0.75rem' }}
                     >
                       <option value="disease">Disease / Scan Report</option>
                       <option value="prescription">Prescription</option>
@@ -427,7 +424,8 @@ export default function UploadDoc() {
 
                 <button
                   onClick={handleConfirmUpload}
-                  className="w-full bg-[#2F8F83] hover:bg-[#25756b] text-white font-bold text-xs py-2.5 rounded-lg shadow-sm transition"
+                  className="sih-btn sih-btn-primary"
+                  style={{ width: '100%', marginTop: '0.85rem', padding: '0.6rem' }}
                 >
                   Confirm Upload & Save Record
                 </button>
@@ -436,72 +434,71 @@ export default function UploadDoc() {
           </div>
 
           {/* SECTION TITLE & RECORD COUNT */}
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-black text-[#12304A] uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#2F8F83]"></span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
+            <h3 style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--teal-primary)' }}></span>
               Patient Medical Records ({filteredDocs.length})
             </h3>
-            <span className="text-xs text-slate-400 font-semibold">
-              Filter: <strong className="text-[#12304A] uppercase">{activeFilter}</strong> | Sort: <strong className="text-[#12304A] uppercase">{sortOrder}</strong>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>
+              Filter: <strong style={{ color: 'var(--primary-navy)', textTransform: 'uppercase' }}>{activeFilter}</strong> | Sort: <strong style={{ color: 'var(--primary-navy)', textTransform: 'uppercase' }}>{sortOrder}</strong>
             </span>
           </div>
 
           {/* DOCUMENT CARDS GRID */}
           {filteredDocs.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="doc-grid-layout">
               {filteredDocs.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs hover:shadow-md transition flex flex-col justify-between space-y-4 group"
-                >
-                  <div className="space-y-2">
+                <div key={doc.id} className="doc-card-item">
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                     {/* Category Badge & Status */}
-                    <div className="flex items-center justify-between">
-                      <span className={`text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md border ${
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span className={`sih-badge ${
                         doc.type === 'disease'
-                          ? 'bg-[#E4F5EF] text-[#2F8F83] border-[#2F8F83]/30'
+                          ? 'sih-badge-teal'
                           : doc.type === 'prescription'
-                          ? 'bg-[#EAF3FF] text-[#12304A] border-blue-200'
-                          : 'bg-[#F0EBFF] text-[#12304A] border-purple-200'
+                          ? 'sih-badge-amber'
+                          : 'sih-badge-green'
                       }`}>
                         {doc.type}
                       </span>
 
-                      <span className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                      <span style={{ fontSize: '0.65rem', fontWeight: 700, backgroundColor: '#F1F5F9', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
                         ✓ {doc.status}
                       </span>
                     </div>
 
                     {/* Title & Date */}
-                    <h4 className="text-base font-bold text-[#12304A] group-hover:text-[#2F8F83] transition line-clamp-1">
+                    <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
                       {doc.title}
                     </h4>
-                    <p className="text-xs text-slate-500 font-medium">
-                      Uploaded on: <strong className="text-slate-700">{formatDate(doc.date)}</strong>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, margin: 0 }}>
+                      Uploaded on: <strong>{formatDate(doc.date)}</strong>
                     </p>
 
                     {/* File Name & Details */}
-                    <div className="bg-[#F5FAF8] p-2.5 rounded-xl border border-slate-100 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2 truncate">
-                        <span className="text-base">📄</span>
-                        <span className="font-mono text-slate-700 text-[11px] truncate">{doc.fileName}</span>
+                    <div style={{ backgroundColor: 'var(--mint-bg)', padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
+                        <span>📄</span>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.fileName}</span>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-bold flex-shrink-0">{doc.fileSize}</span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>{doc.fileSize}</span>
                     </div>
                   </div>
 
-                  {/* Actions (View Button matching wireframe) */}
-                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                  {/* Actions */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-light)' }}>
                     <button
                       onClick={() => setViewingDoc(doc)}
-                      className="flex-1 bg-[#12304A] hover:bg-[#1a4163] text-white text-xs font-bold py-2 px-3 rounded-xl transition text-center cursor-pointer flex items-center justify-center gap-1.5"
+                      className="sih-btn sih-btn-navy"
+                      style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem' }}
                     >
                       <span>👁️</span> View Document
                     </button>
 
                     <button
                       onClick={() => handleDeleteDoc(doc.id)}
-                      className="p-2 text-slate-400 hover:text-red-600 transition rounded-xl border border-slate-200 hover:bg-red-50"
+                      className="sih-btn sih-btn-outline"
+                      style={{ padding: '0.5rem', color: '#EF4444' }}
                       title="Delete Record"
                     >
                       🗑️
@@ -512,15 +509,16 @@ export default function UploadDoc() {
             </div>
           ) : (
             /* EMPTY STATE */
-            <div className="text-center py-16 px-4 bg-[#F5FAF8] rounded-2xl border border-slate-200 space-y-3">
-              <div className="text-4xl">📂</div>
-              <h4 className="text-base font-bold text-[#12304A]">No Documents Found</h4>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
-                No medical records match the selected category <strong className="uppercase">"{activeFilter}"</strong> or search query.
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: 'var(--mint-bg)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)' }}>
+              <div style={{ fontSize: '2.5rem' }}>📂</div>
+              <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary-navy)', marginTop: '0.5rem' }}>No Documents Found</h4>
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                No medical records match the selected category <strong style={{ textTransform: 'uppercase' }}>"{activeFilter}"</strong> or search query.
               </p>
               <button
                 onClick={() => { setActiveFilter('all'); setSearchQuery(''); }}
-                className="mt-2 text-xs font-bold text-[#2F8F83] bg-[#E4F5EF] px-4 py-2 rounded-xl border border-[#2F8F83]/30"
+                className="sih-btn sih-btn-primary"
+                style={{ marginTop: '1rem', padding: '0.4rem 1rem', fontSize: '0.75rem' }}
               >
                 Clear Filters
               </button>
@@ -532,49 +530,50 @@ export default function UploadDoc() {
 
       {/* DOCUMENT PREVIEW MODAL */}
       {viewingDoc && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-200 overflow-hidden space-y-4 p-6 animate-fade-in">
+        <div className="sih-modal-backdrop">
+          <div className="sih-modal-card">
             
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="sih-modal-header">
               <div>
-                <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-[#E4F5EF] text-[#2F8F83]">
+                <span className="sih-badge sih-badge-teal">
                   {viewingDoc.type}
                 </span>
-                <h3 className="text-lg font-bold text-[#12304A] mt-1">{viewingDoc.title}</h3>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, margin: '0.25rem 0 0 0' }}>{viewingDoc.title}</h3>
               </div>
               <button
                 onClick={() => setViewingDoc(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center"
+                style={{ color: 'white', fontWeight: 900, fontSize: '1.2rem', cursor: 'pointer' }}
               >
                 ✕
               </button>
             </div>
 
-            {/* Document Viewer Box */}
-            <div className="bg-[#12304A] rounded-xl p-8 text-center text-white space-y-3 min-h-[200px] flex flex-col items-center justify-center">
-              <span className="text-5xl">📄</span>
-              <p className="font-mono text-xs text-[#E4F5EF]">{viewingDoc.fileName}</p>
-              <p className="text-xs text-slate-300">
-                Uploaded by {viewingDoc.doctor} on {formatDate(viewingDoc.date)}
-              </p>
-            </div>
+            <div className="sih-modal-body">
+              <div style={{ backgroundColor: 'var(--primary-navy)', borderRadius: 'var(--radius-lg)', padding: '2rem', textAlign: 'center', color: 'white', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '3rem' }}>📄</span>
+                <p style={{ fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--mint-light)', margin: 0 }}>{viewingDoc.fileName}</p>
+                <p style={{ fontSize: '0.75rem', color: '#CBD5E1', margin: 0 }}>
+                  Uploaded by {viewingDoc.doctor} on {formatDate(viewingDoc.date)}
+                </p>
+              </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button
-                onClick={() => {
-                  showNotification(`Downloading ${viewingDoc.fileName}...`);
-                  setViewingDoc(null);
-                }}
-                className="bg-[#2F8F83] text-white text-xs font-bold px-4 py-2 rounded-xl"
-              >
-                Download Document
-              </button>
-              <button
-                onClick={() => setViewingDoc(null)}
-                className="bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2 rounded-xl"
-              >
-                Close
-              </button>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '0.5rem' }}>
+                <button
+                  onClick={() => {
+                    showNotification(`Downloading ${viewingDoc.fileName}...`);
+                    setViewingDoc(null);
+                  }}
+                  className="sih-btn sih-btn-primary"
+                >
+                  Download Document
+                </button>
+                <button
+                  onClick={() => setViewingDoc(null)}
+                  className="sih-btn sih-btn-outline"
+                >
+                  Close
+                </button>
+              </div>
             </div>
 
           </div>
