@@ -13,8 +13,8 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
           </h2>
           <p className="header-subtitle">
             {isHindi
-              ? 'ओलामा एआई संचालित | आपातकालीन • परामर्श • स्वास्थ्य देखभाल'
-              : 'Powered by Ollama | Emergency • Consultation • Daily Med Talk'}
+              ? 'ग्रोक एआई संचालित | आपातकालीन • परामर्श • स्वास्थ्य देखभाल'
+              : 'Powered by Groq | Emergency • Consultation • Daily Med Talk'}
           </p>
         </div>
       </div>
@@ -44,7 +44,7 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
         )}
         <div className="header-status">
           <span className="status-indicator"></span>
-          <span>{isHindi ? 'ओलामा सक्रिय' : 'Ollama Active'}</span>
+          <span>{isHindi ? 'ग्रोक सक्रिय' : 'Groq Active'}</span>
         </div>
       </div>
     </header>

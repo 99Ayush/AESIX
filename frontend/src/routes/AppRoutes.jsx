@@ -11,6 +11,7 @@ export const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* User routes */}
         <Route path="/basicInfo" element={<BasicInfo />} />
         <Route path="/uploadDoc" element={<UploadDoc />} />
         <Route path="/docs" element={<UploadDoc />} />
