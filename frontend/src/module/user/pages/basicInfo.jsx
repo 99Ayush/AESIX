@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -73,7 +75,7 @@ export default function BasicInfo() {
   // UI State
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'medications' | 'checkups'
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
 
@@ -82,6 +84,13 @@ export default function BasicInfo() {
   const [newMed, setNewMed] = useState({ name: '', dosage: '', frequency: '', timing: '' });
   const [newAllergy, setNewAllergy] = useState('');
   const [newCondition, setNewCondition] = useState('');
+
+  useEffect(() => {
+    userApi.profile().then((data) => {
+      setPatient((current) => ({ ...current, ...data }));
+      setFormData((current) => ({ ...current, ...data }));
+    }).catch(() => {});
+  }, []);
 
   const showNotification = (msg) => {
     setToastMessage(msg);
@@ -147,10 +156,14 @@ export default function BasicInfo() {
     }));
   };
 
-  const handleSave = () => {
-    setPatient({ ...formData });
-    setIsEditing(false);
-    showNotification('Patient basic information updated successfully!');
+  const handleSave = async () => {
+    try {
+      const saved = await userApi.saveProfile(formData);
+      setPatient((current) => ({ ...current, ...saved }));
+      setFormData((current) => ({ ...current, ...saved }));
+      setIsEditing(false);
+      showNotification('Patient basic information updated successfully!');
+    } catch (error) { showNotification(error.message); }
   };
 
   const handleCancel = () => {

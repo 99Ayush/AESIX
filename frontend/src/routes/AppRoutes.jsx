@@ -20,7 +20,7 @@ export const AppRoutes = () => {
         <Route path="/abhaId" element={<AbhaID />} />
         <Route path="/profile" element={<ProfilePage />} />
 
-        <Route path="/" element={<GenAiBot />} />
+        <Route path="/" element={<Navigate to="/profile" replace />} />
         <Route path="/genai" element={<GenAiBot />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

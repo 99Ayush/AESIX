@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { fileToBase64, userApi } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -75,7 +77,7 @@ export default function UploadDoc() {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'disease' | 'prescription' | 'discharge summary'
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
   const [searchQuery, setSearchQuery] = useState('');
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
 
   // Upload Modal / Selected File State
@@ -86,6 +88,12 @@ export default function UploadDoc() {
 
   // Preview Modal State
   const [viewingDoc, setViewingDoc] = useState(null);
+
+  useEffect(() => {
+    userApi.documents().then((items) => setDocuments(items.map((item) => ({
+      ...item, date: item.createdAt, fileSize: `${(item.size / (1024 * 1024)).toFixed(2)} MB`, status: 'Saved', doctor: 'Patient'
+    })))).catch(() => {});
+  }, []);
 
   // Toast Notification Helper
   const showNotification = (msg) => {
@@ -127,7 +135,7 @@ export default function UploadDoc() {
   };
 
   // Submit Upload
-  const handleConfirmUpload = () => {
+  const handleConfirmUpload = async () => {
     if (!selectedFile) {
       showNotification('Please select a file first!');
       return;
@@ -145,16 +153,29 @@ export default function UploadDoc() {
       doctor: 'Dr. A. Verma'
     };
 
-    setDocuments(prev => [newDoc, ...prev]);
+    try {
+      const saved = await userApi.uploadDocument({
+        title: newDoc.title, type: newDoc.type, fileName: selectedFile.name,
+        mimeType: selectedFile.type, size: selectedFile.size, content: await fileToBase64(selectedFile)
+      });
+      newDoc.id = saved.id;
+      newDoc.date = saved.createdAt;
+      setDocuments(prev => [newDoc, ...prev]);
+    } catch (error) { showNotification(error.message); return; }
     setSelectedFile(null);
     setUploadTitle('');
     showNotification(`Document "${newDoc.title}" uploaded successfully!`);
   };
 
   // Delete Document Handler
-  const handleDeleteDoc = (id) => {
-    setDocuments(prev => prev.filter(d => d.id !== id));
-    showNotification('Document removed.');
+  const handleDeleteDoc = async (id) => {
+    try { await userApi.deleteDocument(id); setDocuments(prev => prev.filter(d => d.id !== id)); showNotification('Document removed.'); }
+    catch (error) { showNotification(error.message); }
+  };
+
+  const handleDownload = (id, fileName) => {
+    window.open(userApi.downloadUrl(id), '_blank', 'noopener,noreferrer');
+    showNotification(`Downloading ${fileName}...`);
   };
 
   // Filter & Sort Logic
@@ -559,10 +580,7 @@ export default function UploadDoc() {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '0.5rem' }}>
                 <button
-                  onClick={() => {
-                    showNotification(`Downloading ${viewingDoc.fileName}...`);
-                    setViewingDoc(null);
-                  }}
+                  onClick={() => { handleDownload(viewingDoc.id, viewingDoc.fileName); setViewingDoc(null); }}
                   className="sih-btn sih-btn-primary"
                 >
                   Download Document

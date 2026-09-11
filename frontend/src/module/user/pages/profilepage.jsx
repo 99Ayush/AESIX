@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  const [patientProfile] = useState({
+  const [patientProfile, setPatientProfile] = useState({
     name: 'Rajesh Kumar',
     abhaNumber: '91-8472-1029-4821',
     phrAddress: 'rajesh.kumar@abdm',
@@ -22,8 +24,14 @@ export default function ProfilePage() {
     insuranceProvider: 'Star Health Insurance (Pol #SH-829104)'
   });
 
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    Promise.all([userApi.profile(), userApi.abha()]).then(([profile, abha]) => {
+      setPatientProfile((current) => ({ ...current, ...profile, abhaNumber: abha.number, phrAddress: abha.phrAddress, abhaStatus: abha.verificationStatus, mobile: profile.contact?.phone || current.mobile, email: profile.contact?.email || current.email, address: profile.contact?.address || current.address, emergencyContact: profile.contact ? `${profile.contact.emergencyContactName} (${profile.contact.emergencyContactPhone})` : current.emergencyContact }));
+    }).catch(() => {});
+  }, []);
 
   const showNotification = (msg) => {
     setToastMessage(msg);
