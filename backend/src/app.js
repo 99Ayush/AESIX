@@ -3,15 +3,17 @@ import cors from "cors";
 import "dotenv/config";
 import { handleGenAiChat } from "./module/genAi/controller/controller.js";
 import { errorLogger } from "./shared/logger.js";
+import userRoutes from './module/user/routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '22mb' }));
 
 // Medical GenAI Chatbot Endpoint
 app.post("/api/genai/chat", handleGenAiChat);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get("/api/genai/health", (req, res) => {

@@ -203,8 +203,8 @@ export const GenAiBot = () => {
         sender: 'assistant',
         text:
           language === 'hi'
-            ? `⚠️ ओलामा एआई उत्तर प्राप्त नहीं हो सका: ${err.message}\n\nकृपया सुनिश्चित करें कि लोकल ओलामा और बैकएंड सर्वर (पोर्ट 5000) चालू हैं।`
-            : `⚠️ Could not get AI response from Ollama API: ${err.message}\n\nPlease make sure Ollama is running locally and backend server is started on port 5000.`,
+            ? `⚠️ ओलामा एआई उत्तर प्राप्त नहीं हो सका: ${err.message}\n\nकृपया सुनिश्चित करें कि लोकल ओलामा और बैकएंड सर्वर (पोर्ट 5001) चालू हैं।`
+            : `⚠️ Could not get AI response from Ollama API: ${err.message}\n\nPlease make sure Ollama is running locally and backend server is started on port 5001.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);

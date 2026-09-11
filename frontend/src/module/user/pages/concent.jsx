@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -83,9 +85,13 @@ export default function Consent() {
   // State Management
   const [activeStatus, setActiveStatus] = useState('accepted'); // 'all' | 'accepted' | 'rejected' | 'pending'
   const [searchQuery, setSearchQuery] = useState('');
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
   const [selectedConsent, setSelectedConsent] = useState(null);
+
+  useEffect(() => {
+    userApi.consents().then((items) => setConsents(items.map((item) => ({ ...item, title: item.title || item.purpose, date: item.requestedAt, expiry: item.expiry || 'N/A', scope: item.scope || [] })))).catch(() => {});
+  }, []);
 
   // Toast Notification Helper
   const showNotification = (msg) => {
@@ -94,12 +100,14 @@ export default function Consent() {
   };
 
   // Status Action Handlers
-  const handleUpdateStatus = (id, newStatus) => {
-    setConsents(prev =>
-      prev.map(c => (c.id === id ? { ...c, status: newStatus } : c))
-    );
-    setSelectedConsent(null);
-    showNotification(`Consent status updated to ${newStatus.toUpperCase()}!`);
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const saved = await userApi.setConsentStatus(id, newStatus);
+      const item = { ...saved, title: saved.title || saved.purpose, date: saved.requestedAt, expiry: saved.expiry || 'N/A', scope: saved.scope || [] };
+      setConsents((current) => current.map((consent) => consent.id === id ? item : consent));
+      setSelectedConsent(null);
+      showNotification(`Consent status updated to ${newStatus.toUpperCase()}!`);
+    } catch (error) { showNotification(error.message); }
   };
 
   // Filtering Logic

@@ -825,3 +825,38 @@
   color: var(--primary-navy);
   font-weight: 800;
 }
+
+/* Mobile polish for every user page */
+@media (max-width: 767px) {
+  .sih-header-inner {
+    padding: 0.75rem 1rem;
+    align-items: flex-start;
+  }
+
+  .sih-brand-title { font-size: 0.88rem; }
+  .sih-brand-subtitle { display: none; }
+  .sih-header-controls { margin-left: auto; }
+  .sih-doctor-info { display: none; }
+  .sih-doctor-profile { border-left: 0; padding-left: 0; }
+  .sih-lang-select { max-width: 126px; }
+
+  .sih-nav-menu {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    padding: 0.3rem;
+    scrollbar-width: none;
+  }
+  .sih-nav-menu::-webkit-scrollbar { display: none; }
+  .sih-nav-btn { white-space: nowrap; padding: 0.55rem 0.75rem; }
+  .sih-main-layout { padding: 1rem; }
+  .sih-toast { top: auto; bottom: 1rem; left: 1rem; right: 1rem; }
+  .profile-hero-banner { padding: 1.5rem; gap: 1rem; }
+  .profile-avatar-large { width: 76px; height: 76px; font-size: 1.9rem; }
+  .profile-field-row { gap: 1rem; align-items: flex-start; }
+  .profile-field-val { text-align: right; overflow-wrap: anywhere; }
+  .abha-card-body { padding: 1rem; }
+  .abha-card-main-row { gap: 1rem; }
+  .doc-upload-box { padding: 1.5rem 1rem; }
+  .sih-modal-card { max-height: calc(100vh - 2rem); }
+}

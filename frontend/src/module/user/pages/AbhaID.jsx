@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -17,7 +19,7 @@ export default function AbhaID() {
   const navigate = useNavigate();
 
   // Local Mock Data inside AbhaID.jsx
-  const [abhaDetails] = useState({
+  const [abhaDetails, setAbhaDetails] = useState({
     name: 'Rajesh Kumar',
     abhaNumber: '91-8472-1029-4821',
     phrAddress: 'rajesh.kumar@abdm',
@@ -31,7 +33,7 @@ export default function AbhaID() {
     issuedDate: '2023-01-12'
   });
 
-  const [pendingConsents] = useState([
+  const [pendingConsents, setPendingConsents] = useState([
     {
       id: 1,
       requester: "Apex Diagnostics Lab",
@@ -52,8 +54,15 @@ export default function AbhaID() {
     }
   ]);
 
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    Promise.all([userApi.abha(), userApi.consents()]).then(([abha, consents]) => {
+      setAbhaDetails((current) => ({ ...current, ...abha, abhaNumber: abha.number, mobile: abha.contact?.phone || current.mobile, address: abha.contact?.address || current.address, emergencyContact: abha.contact ? `${abha.contact.emergencyContactName} (${abha.contact.emergencyContactPhone})` : current.emergencyContact }));
+      setPendingConsents(consents.filter((item) => item.status === 'pending').map((item) => ({ ...item, date: item.requestedAt })));
+    }).catch(() => {});
+  }, []);
 
   const showNotification = (msg) => {
     setToastMessage(msg);
