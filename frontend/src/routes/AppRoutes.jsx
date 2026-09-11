@@ -11,6 +11,10 @@ export const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* Login Routes  */}
+        <Route path="/" element={<LoginPage />} />
+
+
         {/* <Route path="/" element={<GenAiBot />} /> */}
         <Route path="/basicInfo" element={<BasicInfo />} />
         <Route path="/uploadDoc" element={<UploadDoc />} />
@@ -19,9 +23,9 @@ export const AppRoutes = () => {
         <Route path="/abha" element={<AbhaID />} />
         <Route path="/abhaId" element={<AbhaID />} />
 
-        <Route path="/" element={<GenAiBot />} />
+
         <Route path="/genai" element={<GenAiBot />} />
-         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
