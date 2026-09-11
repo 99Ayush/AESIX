@@ -355,6 +355,7 @@ POST /api/auth/register/enroll
 {
   "txnId": "txn-reg-444",
   "aadhaar": "234567890123",
+  "otp": "123456",
   "name": "Rahul Sharma",
   "mobile": "9876543210",
   "gender": "MALE",
@@ -460,5 +461,4 @@ await UserSession.create({
 | `ABDM-1114` (ABHA OTP not allowed) | `abdmClient`               | Catch in `loginService`, retry with `otpSystem: "aadhaar"`    |
 | Duplicate ABHA on enroll           | `abdmClient`               | `400` + "ABHA already exists" → frontend offers login instead |
 | Multiple ABHAs on mobile           | `loginService.verify()`    | Returns `needsSelection: true` → frontend shows picker        |
-
 

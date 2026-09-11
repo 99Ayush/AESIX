@@ -70,22 +70,29 @@ const MOCK = {
     },
   }),
 
-  enrollByAadhaar: () => ({
-    ABHAProfile: {
-      ABHANumber: '91-9999-8888-7777',
-      firstName: 'New',
-      lastName: 'User',
-      dob: '01-01-1995',
-      gender: 'M',
-      abhaStatus: 'ACTIVE',
-      phrAddress: ['newuser@sbx'],
-    },
-    tokens: {
-      token: 'mock-x-token',
-      refreshToken: 'mock-refresh',
-      expiresIn: 1800,
-    },
-  }),
+  enrollByAadhaar: ({ name, mobile, gender, dob }) => {
+    const [firstName, ...lastNameParts] = name.trim().split(/\s+/);
+    const genderCode = { MALE: 'M', FEMALE: 'F', OTHER: 'O' }[gender] || gender;
+    const abhaSuffix = String(Date.now()).slice(-8);
+
+    return {
+      ABHAProfile: {
+        ABHANumber: `91-${abhaSuffix.slice(0, 4)}-${abhaSuffix.slice(4)}-0001`,
+        firstName,
+        lastName: lastNameParts.join(' '),
+        dob,
+        gender: genderCode,
+        mobile,
+        abhaStatus: 'ACTIVE',
+        phrAddress: [`${firstName.toLowerCase()}@sbx`],
+      },
+      tokens: {
+        token: 'mock-x-token',
+        refreshToken: 'mock-refresh',
+        expiresIn: 1800,
+      },
+    };
+  },
 };
 
 // ─── REAL CALL ────────────────────────────────────────────────────────────────
@@ -137,7 +144,7 @@ export default {
     return post(path, { scope, loginHint, loginId: encryptedId, otpSystem });
   },
 
-  async verifyOTP({ scope, txnId, otpValue }) {
+  async verifyOTP({ scope, txnId, otpValue, otpSystem }) {
     if (config.abdm.mockMode) return MOCK.verifyOTP({ scope });
 
     const path = scope === 'abha-enrol'
@@ -148,20 +155,23 @@ export default {
       ? { txnId, otp: otpValue }
       : {
           scope,
-          authData: { authMethods: ['otp'], otp: { txnId, otpValue } },
+          authData: {
+            authMethods: ['otp'],
+            otp: { txnId, otpValue, ...(otpSystem && { otpSystem }) },
+          },
         };
 
     return post(path, body);
   },
 
-  async enrollByAadhaar({ txnId, aadhaar, name, mobile, gender, dob }) {
-    if (config.abdm.mockMode) return MOCK.enrollByAadhaar();
+  async enrollByAadhaar({ txnId, otp, aadhaar, name, mobile, gender, dob }) {
+    if (config.abdm.mockMode) return MOCK.enrollByAadhaar({ name, mobile, gender, dob });
 
     const publicKey = await tokenManager.getPublicKey();
 
     return post('/enrollment/enrol/byAadhaar', {
       txnId,
-      otp: '123456',
+      otp,
       aadhaar: rsaEncrypt(aadhaar, publicKey),
       name,
       mobile: rsaEncrypt(mobile, publicKey),
@@ -175,4 +185,4 @@ export default {
 
     return post('/profile/login/verify/user', { txnId, abhaNumber });
   },
-};   
+};

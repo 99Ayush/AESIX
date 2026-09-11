@@ -1,5 +1,8 @@
 // src/shared/config.js
-import 'dotenv/config';
+import dotenv from 'dotenv';
+
+dotenv.config();
+dotenv.config({ path: 'AESIX-DB.env' });
 
 const config = {
   abdm: {
@@ -10,6 +13,9 @@ const config = {
     xCmId: 'sbx',
     mockMode: process.env.ABDM_MOCK !== 'false',
   },
+  database: {
+    uri: process.env.MONGODB_URI || process.env.MONGO_URI || '',
+  },
 };
 
-export default config;   
+export default config;

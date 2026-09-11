@@ -16,17 +16,17 @@ export default {
     }), { maxRetries: 2, baseDelay: 1000 });
   },
 
-  async enroll({ txnId, aadhaar, name, mobile, gender, dob }) {
+  async enroll({ txnId, otp, aadhaar, name, mobile, gender, dob }) {
     logger.info(`[register] Enrolling: ${name}`);
 
     return withRetry(() => abdmClient.enrollByAadhaar({
       txnId,
+      otp,
       aadhaar,
       name,
       mobile,
       gender,
       dob,
-    }), { maxRetries: 1, baseDelay: 2000 });
-    // Only 1 retry — enrollment is not idempotent, double-call creates duplicate
+    }), { maxRetries: 0, baseDelay: 2000 });
   },
-};   
+};

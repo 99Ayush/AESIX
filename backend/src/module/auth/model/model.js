@@ -19,7 +19,6 @@ const userSchema = new mongoose.Schema({
   loginMethod:  { type: String, enum: ['aadhaar', 'mobile', 'abha', 'register'] },
 }, { timestamps: true });
 
-userSchema.index({ abhaNumber: 1 });
 userSchema.index({ mobile: 1 });
 
 // ─── USER SESSION (ephemeral ABDM X-token) ────────────────────────────────────
@@ -52,4 +51,4 @@ otpTxnSchema.index({ requestedAt: 1 }, { expireAfterSeconds: 600 });
 // ─── EXPORTS ──────────────────────────────────────────────────────────────────
 export const User = mongoose.model('User', userSchema);
 export const UserSession = mongoose.model('UserSession', userSessionSchema);
-export const OtpTxn = mongoose.model('OtpTxn', otpTxnSchema);   
+export const OtpTxn = mongoose.model('OtpTxn', otpTxnSchema);

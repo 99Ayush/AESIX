@@ -32,8 +32,13 @@ async function upsertUserFromProfile(profile, { mobile, loginMethod }) {
       },
       $setOnInsert: { userId: randomUUID() },
     },
-    { upsert: true, new: true, setDefaultsOnInsert: true }
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   );
+}
+
+function sendServiceError(res, error) {
+  const status = error.status >= 400 && error.status < 600 ? error.status : 500;
+  return res.status(status).json({ error: error.message || 'Internal Server Error' });
 }
 
 const router = Router();
@@ -66,7 +71,7 @@ router.post('/login/request-otp',
       res.json(result);
     } catch (e) {
       logger.error('[auth/login/request-otp]', e);
-      res.status(500).json({ error: e.message });
+      sendServiceError(res, e);
     }
   }
 );
@@ -122,7 +127,7 @@ router.post('/login/verify',
       });
     } catch (e) {
       logger.error('[auth/login/verify]', e);
-      res.status(500).json({ error: e.message });
+      sendServiceError(res, e);
     }
   }
 );
@@ -166,7 +171,7 @@ router.post('/login/verify-user',
       });
     } catch (e) {
       logger.error('[auth/login/verify-user]', e);
-      res.status(500).json({ error: e.message });
+      sendServiceError(res, e);
     }
   }
 );
@@ -198,7 +203,7 @@ router.post('/register/request-otp',
       res.json(result);
     } catch (e) {
       logger.error('[auth/register/request-otp]', e);
-      res.status(500).json({ error: e.message });
+      sendServiceError(res, e);
     }
   }
 );
@@ -247,9 +252,9 @@ router.post('/register/enroll',
       });
     } catch (e) {
       logger.error('[auth/register/enroll]', e);
-      res.status(500).json({ error: e.message });
+      sendServiceError(res, e);
     }
   }
 );
 
-export default router;   
+export default router;

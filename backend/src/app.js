@@ -1,12 +1,14 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 import { handleGenAiChat } from "./module/genAi/controller/controller.js";
 import { errorLogger } from "./shared/logger.js";
-import authRouter from './module/auth/controller/auth.controller.js'
+import authRouter from './module/auth/controller/auth.controller.js';
+import config from './shared/config.js';
 import mongoose from "mongoose";
+
 const app = express();
 const PORT = process.env.PORT || 5000;
+let server;
 
 app.use(cors());
 app.use(express.json());
@@ -29,14 +31,37 @@ app.use('/api/auth', authRouter)
 // Centralized Error Handling Middleware (logs to backend/logs/error.log)
 app.use(errorLogger);
 
-// connect to Mongo DB 
-// console.log(process.env.MONGO_URI)
-// connection error occuring ========================
-mongoose.connect("mongodb+srv://alok2:12332112@cluster0.b3i0g2l.mongodb.net/sih-2026?")
+export async function startServer() {
+  if (server) return server;
 
-app.listen(PORT, () => {
-  console.log(`Backend Express server running on http://localhost:${PORT}`);
-  console.log(`Ollama API configured at: ${process.env.OLLAMA_ENDPOINT || "http://localhost:11434/api/chat"}`);
-});
+  if (!config.database.uri) {
+    throw new Error('MONGODB_URI is required to store auth users and sessions');
+  }
+
+  await mongoose.connect(config.database.uri);
+  console.log(`MongoDB connected (${config.abdm.mockMode ? 'mock ABDM mode' : 'real ABDM mode'})`);
+
+  server = await new Promise((resolve, reject) => {
+    const listeningServer = app.listen(PORT);
+    const rejectStartup = error => reject(error);
+
+    listeningServer.once('error', rejectStartup);
+    listeningServer.once('listening', () => {
+      listeningServer.off('error', rejectStartup);
+      console.log(`Backend Express server running on http://localhost:${PORT}`);
+      console.log(`Ollama API configured at: ${process.env.OLLAMA_ENDPOINT || "http://localhost:11434/api/chat"}`);
+      resolve(listeningServer);
+    });
+  });
+
+  return server;
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  startServer().catch(error => {
+    console.error('Server startup failed:', error.message);
+    process.exitCode = 1;
+  });
+}
 
 export default app;
