@@ -31,7 +31,7 @@ export const handleGenAiChat = async (req, res, next) => {
     });
     return res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred while connecting to Ollama AI service.',
+      error: error.message || 'An error occurred while connecting to Groq AI service.',
     });
   }
 };

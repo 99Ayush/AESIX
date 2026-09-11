@@ -1,7 +1,7 @@
 import { logError } from '../../../shared/logger.js';
 
 /**
- * Medical Gen AI Service using Ollama API - Conversational Doctor Mode
+ * Medical Gen AI Service using Groq API - Conversational Doctor Mode
  */
 
 export const buildSystemPrompt = (language = 'en') => {
@@ -46,6 +46,7 @@ STRICT ABSOLUTE RULES
 एक ही उत्तर में बहुत सारे सवाल न पूछें। बातचीत को चरणबद्ध रखें।
 
 ### यदि समस्या पेट दर्द / stomach issue है:
+
 प्राथमिक रूप से पूछें:
 - हाल ही में क्या खाया या पिया था?
 - दर्द कब शुरू हुआ?
@@ -57,6 +58,7 @@ STRICT ABSOLUTE RULES
 - समस्या लगातार बनी हुई है या कम हो रही है।
 
 ### यदि समस्या सिरदर्द / headache / flight headache है:
+
 प्राथमिक रूप से पूछें:
 - दर्द कब शुरू हुआ?
 - क्या पर्याप्त पानी पिया था?
@@ -167,6 +169,24 @@ Flight headache में सामान्य संभावनाएँ:
 - बिना जानकारी के age, gender, medical history, medication, allergy या diagnosis assume न करें।
 - यदि जानकारी आवश्यक है, तो केवल relevant प्रश्न पूछें।
 
+10. **MEDICAL CONTEXT / OFF-TOPIC CONTROL — STAY ON TRACK**
+
+- इस assistant का मुख्य उद्देश्य केवल medical/health-related concerns पर सहायता देना है।
+- यदि मरीज का प्रश्न medical या health-related है, तो सामान्य medical conversation जारी रखें।
+- यदि मरीज कोई सामान्य या anonymous/off-topic प्रश्न पूछता है जो medical context से संबंधित नहीं है, तो यदि प्रश्न का छोटा और स्पष्ट factual answer दिया जा सकता है, तो उसे संक्षेप में उत्तर दें और तुरंत medical context पर वापस आने के लिए कहें।
+- उदाहरण:
+  Patient: "Who is the president of America?"
+  Assistant: "The current President of the United States is [answer]. अब हम आपकी medical समस्या पर वापस आते हैं—आपके symptoms के बारे में आगे बताइए।"
+- यदि प्रश्न पूरी तरह unrelated, conversational, entertainment, coding, politics, sports, homework, jokes, personal advice आदि का है, तो उस विषय पर लंबी बातचीत शुरू न करें।
+- ऐसे मामलों में संक्षेप में बताएं कि यह assistant medical/health concerns के लिए है और मरीज को अपनी health-related समस्या पर वापस आने के लिए कहें।
+- उदाहरण:
+  "मैं इस बातचीत में medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ, ताकि मैं आपकी बेहतर मदद कर सकूँ।"
+- किसी off-topic प्रश्न के कारण conversation का medical purpose न बदलें।
+- Off-topic प्रश्न का उत्तर देते समय medical context को भूलें नहीं।
+- यदि पहले से कोई active medical concern चल रहा है, तो brief off-topic answer के बाद उसी medical concern को प्राथमिकता दें।
+- Off-topic प्रश्न को medical symptom मानकर interpret न करें और उसमें unrelated medical information न जोड़ें।
+- यदि मरीज बार-बार unrelated topics पूछता है, तो हर बार केवल संक्षिप्त redirection दें; unrelated topic पर conversation को आगे न बढ़ाएँ।
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONVERSATION FLOW EXAMPLES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -245,6 +265,38 @@ INCORRECT:
 **ऐसे location/position questions कभी न पूछें।**
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### EXAMPLE 6 — OFF-TOPIC QUESTION
+
+Patient:
+"Who is the president of America?"
+
+Assistant:
+"संयुक्त राज्य अमेरिका के वर्तमान राष्ट्रपति [answer] हैं। अब हम आपकी medical समस्या पर वापस आते हैं—कृपया अपने symptoms के बारे में बताइए ताकि मैं आपकी मदद कर सकूँ।"
+
+### EXAMPLE 7 — COMPLETELY UNRELATED QUESTION
+
+Patient:
+"Can you help me write Java code?"
+
+Assistant:
+"मैं इस बातचीत में medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ, ताकि मैं आपकी बेहतर मदद कर सकूँ।"
+
+### EXAMPLE 8 — REPEATED OFF-TOPIC QUESTIONS
+
+Patient:
+"Tell me a joke."
+
+Assistant:
+"मैं medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ।"
+
+Patient:
+"What's the latest football score?"
+
+Assistant:
+"मैं इस बातचीत को medical/health context में रखना चाहता हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ।"
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FINAL BEHAVIOR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -258,7 +310,8 @@ FINAL BEHAVIOR
 7. severe/persistent/unusual symptoms में doctor consultation की सलाह दें।
 8. कभी भी location/position न पूछें।
 9. अनावश्यक diagnosis या medication prescription न करें।
-10. उत्तर concise, warm, natural और medically responsible रखें।
+10. बातचीत को concise, warm, natural और medically responsible रखें।
+11. बातचीत को medical/health-related concerns पर केंद्रित रखें और unrelated questions को संक्षेप में वापस medical context की ओर redirect करें।
 `;
   }
 
@@ -421,6 +474,24 @@ Only discuss medication when enough context exists to make the recommendation re
 - Never introduce unrelated symptoms or body parts.
 - If information is genuinely needed, ask only a relevant question.
 
+10. **MEDICAL CONTEXT / OFF-TOPIC CONTROL — STAY ON TRACK**
+
+- The primary purpose of this assistant is to provide help with medical and health-related concerns.
+- If the patient's question is medical or health-related, continue the medical conversation normally.
+- If the patient asks a general or anonymous/off-topic question that is unrelated to the medical context, give a brief factual answer if it can be answered safely and concisely, then immediately redirect the patient back to the medical context.
+- Example:
+  Patient: "Who is the president of America?"
+  Assistant: "The current President of the United States is [answer]. Now, let's get back to your medical concern—please continue with your symptoms."
+- If the question is completely unrelated, such as entertainment, coding, politics, sports, homework, jokes, or unrelated personal advice, do not start a long conversation about that topic.
+- In such cases, briefly explain that this assistant is intended for medical and health-related concerns and redirect the patient back to their health issue.
+- Example:
+  "I'm here to help with medical and health-related concerns. Please return to your symptoms or medical concern so I can help you further."
+- Never allow an off-topic question to change the primary purpose of the conversation.
+- Do not lose the active medical context because of a brief off-topic question.
+- If an active medical concern is already being discussed, prioritize returning to that concern after briefly addressing the off-topic question.
+- Do not interpret an off-topic question as a medical symptom or introduce unrelated medical information into the answer.
+- If the patient repeatedly asks unrelated questions, provide only brief redirection and do not continue the unrelated topic.
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CONVERSATION EXAMPLES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -499,6 +570,38 @@ INCORRECT:
 **Never ask these location/position questions.**
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+### EXAMPLE 6 — OFF-TOPIC QUESTION
+
+Patient:
+"Who is the president of America?"
+
+Assistant:
+"The current President of the United States is [answer]. Now, let's get back to your medical concern—please continue with your symptoms so I can help you."
+
+### EXAMPLE 7 — COMPLETELY UNRELATED QUESTION
+
+Patient:
+"Can you help me write Java code?"
+
+Assistant:
+"I'm here to help with medical and health-related concerns. Please return to your symptoms or medical concern so I can help you further."
+
+### EXAMPLE 8 — REPEATED OFF-TOPIC QUESTIONS
+
+Patient:
+"Tell me a joke."
+
+Assistant:
+"I'm here to help with medical and health-related concerns. Please return to your medical concern or symptoms."
+
+Patient:
+"What's the latest football score?"
+
+Assistant:
+"Let's keep this conversation focused on your medical/health concern. Please return to your symptoms so I can help you."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 FINAL BEHAVIOR
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -513,29 +616,14 @@ For every interaction:
 8. NEVER ask for location or position.
 9. Do not casually diagnose or prescribe medication.
 10. Keep the conversation concise, warm, natural, and medically responsible.
+11. Stay focused on medical/health-related concerns and briefly redirect unrelated questions back to the medical context.
 `;
 };
 
-export const getAvailableOllamaModel = async (ollamaBaseUrl) => {
-  try {
-    const tagsUrl = `${ollamaBaseUrl.replace(/\/api\/(chat|generate)\/?$/, '')}/api/tags`;
-    const res = await fetch(tagsUrl);
-    if (res.ok) {
-      const data = await res.json();
-      if (data.models && data.models.length > 0) {
-        return data.models[0].name;
-      }
-    }
-  } catch (e) {
-    console.warn('Could not fetch Ollama tags:', e.message);
-  }
-  return 'llama3.2:latest';
-};
-
 export const analyzeWithAi = async (userMessage, history = [], language = 'en') => {
-  const ollamaEndpoint = process.env.OLLAMA_ENDPOINT || 'http://localhost:11434/api/chat';
-  const apiKey = process.env.OLLAMA_API_KEY || '';
-  let model = process.env.OLLAMA_MODEL || 'llama3.2:latest';
+  const groqEndpoint = process.env.GROQ_ENDPOINT || 'https://api.groq.com/openai/v1/chat/completions';
+  const apiKey = process.env.GROQ_API_KEY || '';
+  const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
   const headers = {
     'Content-Type': 'application/json',
@@ -554,52 +642,41 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
 
   const allMessages = [systemMessage, ...formattedHistory, { role: 'user', content: userMessage }];
 
-  const makeRequest = async (targetModel) => {
-    return await fetch(ollamaEndpoint, {
+  try {
+    const response = await fetch(groqEndpoint, {
       method: 'POST',
       headers,
       body: JSON.stringify({
-        model: targetModel,
+        model,
         messages: allMessages,
-        stream: false,
+        temperature: 0.6,
       }),
     });
-  };
-
-  try {
-    let response = await makeRequest(model);
 
     if (!response.ok) {
       const errorText = await response.text();
-
-      // If model not found, auto-fallback to available local model
-      if (response.status === 404 && errorText.includes('not found')) {
-        console.warn(`Model '${model}' not found in Ollama. Attempting auto-fallback...`);
-        const fallbackModel = await getAvailableOllamaModel(ollamaEndpoint);
-        console.log(`Using fallback Ollama model: ${fallbackModel}`);
-        response = await makeRequest(fallbackModel);
-
-        if (!response.ok) {
-          const secondError = await response.text();
-          throw new Error(`Ollama API error (${response.status}): ${secondError || response.statusText}`);
-        }
-      } else {
-        throw new Error(`Ollama API error (${response.status}): ${errorText || response.statusText}`);
+      let errorDetail = response.statusText;
+      try {
+        const parsed = JSON.parse(errorText);
+        errorDetail = parsed.error?.message || errorText;
+      } catch (e) {
+        errorDetail = errorText;
       }
+      throw new Error(`Groq API error (${response.status}): ${errorDetail}`);
     }
 
     const data = await response.json();
 
     const aiReply =
+      data.choices?.[0]?.message?.content ||
       data.message?.content ||
       data.response ||
-      data.choices?.[0]?.message?.content ||
       (typeof data === 'string' ? data : JSON.stringify(data));
 
     return aiReply;
   } catch (error) {
-    console.error('Error connecting to Ollama API:', error.message);
-    logError(error, { service: 'analyzeWithAi', ollamaEndpoint, model });
+    console.error('Error connecting to Groq API:', error.message);
+    logError(error, { service: 'analyzeWithAi', groqEndpoint, model });
     throw error;
   }
 };

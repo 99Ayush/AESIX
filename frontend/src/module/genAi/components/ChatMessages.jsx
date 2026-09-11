@@ -51,7 +51,7 @@ export const ChatMessages = ({ messages, loading, chatEndRef }) => {
             <div className="typing-dots">
               <span></span><span></span><span></span>
             </div>
-            <span className="loading-text">Analyzing query with Ollama...</span>
+            <span className="loading-text">Analyzing query with Groq...</span>
           </div>
         </div>
       )}
