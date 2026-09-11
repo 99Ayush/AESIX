@@ -3,7 +3,8 @@ import cors from "cors";
 import "dotenv/config";
 import { handleGenAiChat } from "./module/genAi/controller/controller.js";
 import { errorLogger } from "./shared/logger.js";
-
+import authRouter from './module/auth/controller/auth.controller.js'
+import mongoose from "mongoose";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -22,8 +23,16 @@ app.get("/api/genai/health", (req, res) => {
   });
 });
 
+// Auth Router
+app.use('/api/auth', authRouter)
+
 // Centralized Error Handling Middleware (logs to backend/logs/error.log)
 app.use(errorLogger);
+
+// connect to Mongo DB 
+// console.log(process.env.MONGO_URI)
+// connection error occuring ========================
+mongoose.connect("mongodb+srv://alok2:12332112@cluster0.b3i0g2l.mongodb.net/sih-2026?")
 
 app.listen(PORT, () => {
   console.log(`Backend Express server running on http://localhost:${PORT}`);
