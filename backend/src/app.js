@@ -17,8 +17,8 @@ app.post("/api/genai/chat", handleGenAiChat);
 app.get("/api/genai/health", (req, res) => {
   res.json({
     status: "ok",
-    ollamaEndpoint: process.env.OLLAMA_ENDPOINT || "http://localhost:11434/api/chat",
-    model: process.env.OLLAMA_MODEL || "llama3.2:latest",
+    groqEndpoint: process.env.GROQ_ENDPOINT || "https://api.groq.com/openai/v1/chat/completions",
+    model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
   });
 });
 
@@ -27,7 +27,7 @@ app.use(errorLogger);
 
 app.listen(PORT, () => {
   console.log(`Backend Express server running on http://localhost:${PORT}`);
-  console.log(`Ollama API configured at: ${process.env.OLLAMA_ENDPOINT || "http://localhost:11434/api/chat"}`);
+  console.log(`Groq API configured at: ${process.env.GROQ_ENDPOINT || "https://api.groq.com/openai/v1/chat/completions"}`);
 });
 
 export default app;
