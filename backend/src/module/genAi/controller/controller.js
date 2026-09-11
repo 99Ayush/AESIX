@@ -6,7 +6,7 @@ import { logError } from '../../../shared/logger.js';
  */
 export const handleGenAiChat = async (req, res, next) => {
   try {
-    const { message, history } = req.body;
+    const { message, history, language = 'en' } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim() === '') {
       const err = new Error('A valid message string is required in the request body.');
@@ -17,7 +17,7 @@ export const handleGenAiChat = async (req, res, next) => {
       });
     }
 
-    const reply = await analyzeWithAi(message.trim(), Array.isArray(history) ? history : []);
+    const reply = await analyzeWithAi(message.trim(), Array.isArray(history) ? history : [], language);
 
     return res.status(200).json({
       success: true,
