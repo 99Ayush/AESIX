@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -16,7 +17,6 @@ export const formatDate = (dateString) => {
 export default function Consent() {
   const navigate = useNavigate();
 
-  // Mock Consent Records Data
   const [consents, setConsents] = useState([
     {
       id: 1,
@@ -105,13 +105,26 @@ export default function Consent() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  useEffect(() => {
+    userApi.consents().then((items) => setConsents(items.map((item) => ({
+      ...item,
+      title: item.purpose,
+      date: item.requestedAt,
+      expiry: item.respondedAt || 'N/A',
+      scope: [item.purpose],
+    })))).catch((error) => showNotification(error.message));
+  }, []);
+
   // Status Action Handlers
-  const handleUpdateStatus = (id, newStatus) => {
-    setConsents(prev =>
-      prev.map(c => (c.id === id ? { ...c, status: newStatus } : c))
-    );
-    setSelectedConsent(null);
-    showNotification(`Consent status updated to ${newStatus.toUpperCase()}!`);
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const saved = await userApi.setConsentStatus(id, newStatus);
+      setConsents((previous) => previous.map((consent) => consent.id === id ? { ...consent, ...saved } : consent));
+      setSelectedConsent(null);
+      showNotification(`Consent status saved as ${newStatus.toUpperCase()}.`);
+    } catch (error) {
+      showNotification(error.message);
+    }
   };
 
   // Filtering Logic

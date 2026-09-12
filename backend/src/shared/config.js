@@ -1,8 +1,11 @@
 // src/shared/config.js
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'node:url';
+import { dirname, resolve } from 'node:path';
 
-dotenv.config();
-dotenv.config({ path: 'AESIX-DB.env' });
+const backendDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+dotenv.config({ path: resolve(backendDirectory, '.env') });
+dotenv.config({ path: resolve(backendDirectory, 'AESIX-DB.env'), override: false });
 
 const config = {
   abdm: {

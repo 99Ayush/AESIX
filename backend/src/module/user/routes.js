@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Router } from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -7,7 +8,7 @@ import { MongoClient } from 'mongodb';
 
 const router = Router();
 const dataFile = path.join(path.dirname(fileURLToPath(import.meta.url)), 'user.json');
-const mongoUri = process.env.MONGODB_URI;
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 let mongoCollection;
 let mongoConnecting;
 let mongoUnavailableUntil = 0;

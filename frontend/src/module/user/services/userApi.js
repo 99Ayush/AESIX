@@ -1,4 +1,4 @@
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 async function request(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, { headers: { 'Content-Type': 'application/json' }, ...options });
@@ -9,6 +9,7 @@ async function request(path, options = {}) {
 }
 
 export const userApi = {
+  dashboard: () => request('/users/dashboard'),
   profile: () => request('/users/profile'),
   saveProfile: (data) => request('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
   abha: () => request('/users/abha'),

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -100,6 +101,13 @@ export default function BasicInfo() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  useEffect(() => {
+    userApi.profile().then((profile) => {
+      setPatient(profile);
+      setFormData(profile);
+    }).catch((error) => showNotification(error.message));
+  }, []);
+
   const handleInputChange = (field, val) => {
     setFormData(prev => ({ ...prev, [field]: val }));
   };
@@ -159,10 +167,16 @@ export default function BasicInfo() {
     }));
   };
 
-  const handleSave = () => {
-    setPatient({ ...formData });
-    setIsEditing(false);
-    showNotification('Patient basic information updated successfully!');
+  const handleSave = async () => {
+    try {
+      const saved = await userApi.saveProfile(formData);
+      setPatient(saved);
+      setFormData(saved);
+      setIsEditing(false);
+      showNotification('Patient basic information saved permanently.');
+    } catch (error) {
+      showNotification(error.message);
+    }
   };
 
   const handleCancel = () => {
