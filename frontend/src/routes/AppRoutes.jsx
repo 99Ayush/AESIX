@@ -11,6 +11,8 @@ import DoctorDashboard from '../module/doctor';
 import Login from '../module/auth/login';
 import Register from '../module/auth/register';
 
+import KindleMain from '../module/user/pages/kindleMain';
+
 export const AppRoutes = () => {
   return (
     <Router>
@@ -30,12 +32,19 @@ export const AppRoutes = () => {
         <Route path="/abha" element={<AbhaID />} />
         <Route path="/abhaId" element={<AbhaID />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/kindle" element={<KindleMain />} />
+        <Route path="/kindlemain" element={<KindleMain />} />
+        <Route path="/health-code" element={<KindleMain />} />
 
         <Route path="/genai" element={<GenAiBot />} />
 
-        {/* Doctor routes */}
-        <Route path="/doctor" element={<DoctorDashboard />} />
-        <Route path="/doctor/patient/:id?" element={<DoctorDashboard />} />
+        {/* Doctor routes & segregated sub-pages */}
+        <Route path="/doctor" element={<DoctorDashboard activeTabDefault="overview" />} />
+        <Route path="/doctor/patient-data" element={<DoctorDashboard activeTabDefault="patient-data" />} />
+        <Route path="/doctor/consultations" element={<DoctorDashboard activeTabDefault="consultations" />} />
+        <Route path="/doctor/alerts" element={<DoctorDashboard activeTabDefault="alerts" />} />
+        <Route path="/doctor/directory" element={<DoctorDashboard activeTabDefault="directory" />} />
+        <Route path="/doctor/patient/:id?" element={<DoctorDashboard activeTabDefault="patient-data" />} />
 
         {/* Default: redirect to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
