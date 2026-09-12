@@ -26,11 +26,16 @@ export default function ProfilePage() {
 
   const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [profileUpdateDue, setProfileUpdateDue] = useState(true);
 
   useEffect(() => {
     Promise.all([userApi.profile(), userApi.abha()]).then(([profile, abha]) => {
       setPatientProfile((current) => ({ ...current, ...profile, abhaNumber: abha.number, phrAddress: abha.phrAddress, abhaStatus: abha.verificationStatus, mobile: profile.contact?.phone || current.mobile, email: profile.contact?.email || current.email, address: profile.contact?.address || current.address, emergencyContact: profile.contact ? `${profile.contact.emergencyContactName} (${profile.contact.emergencyContactPhone})` : current.emergencyContact }));
     }).catch(() => {});
+
+    const lastProfileUpdate = localStorage.getItem('aesix:lastProfileUpdate');
+    setProfileUpdateDue(!lastProfileUpdate || Date.now() - Number(lastProfileUpdate) >= 30 * 24 * 60 * 60 * 1000);
   }, []);
 
   const showNotification = (msg) => {
@@ -93,6 +98,40 @@ export default function ProfilePage() {
               <option value="Bengali">🌐 বাংলা (Bengali)</option>
               <option value="Tamil">🌐 தமிழ் (Tamil)</option>
             </select>
+
+            {/* Monthly profile update notification */}
+            <div style={{ position: 'relative' }}>
+              <button
+                type="button"
+                aria-label="Profile update notifications"
+                onClick={() => setIsNotificationOpen((current) => !current)}
+                style={{ position: 'relative', width: '2.25rem', height: '2.25rem', display: 'grid', placeItems: 'center', border: '1px solid #475569', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--navy-hover)', color: 'white', cursor: 'pointer' }}
+              >
+                <span aria-hidden="true" style={{ fontSize: '1.15rem' }}>🔔</span>
+                {profileUpdateDue && (
+                  <span aria-label="Profile update due" style={{ position: 'absolute', top: '0.2rem', right: '0.2rem', width: '0.5rem', height: '0.5rem', borderRadius: '50%', backgroundColor: '#EF4444', border: '2px solid var(--navy-hover)' }} />
+                )}
+              </button>
+
+              {isNotificationOpen && (
+                <div style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 10, width: 'min(18rem, 80vw)', padding: '0.9rem', backgroundColor: 'white', color: 'var(--text-main)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', boxShadow: '0 10px 25px rgba(15, 23, 42, 0.2)' }}>
+                  <p style={{ margin: 0, fontWeight: 900, color: 'var(--primary-navy)', fontSize: '0.8rem' }}>Profile update reminder</p>
+                  <p style={{ margin: '0.4rem 0 0.75rem', fontSize: '0.75rem', lineHeight: 1.45 }}>
+                    {profileUpdateDue ? 'Please review and update the patient profile this month.' : 'The profile was updated recently.'}
+                  </p>
+                  {profileUpdateDue && (
+                    <button
+                      type="button"
+                      className="sih-btn sih-btn-primary"
+                      style={{ width: '100%', fontSize: '0.72rem' }}
+                      onClick={() => { navigate('/basicInfo'); setIsNotificationOpen(false); }}
+                    >
+                      Update Profile
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="sih-doctor-profile">
               <div className="sih-doctor-avatar">
