@@ -10,19 +10,13 @@ export const ChatInput = ({
   onOpenVoiceToVoice,
   language = 'en',
 }) => {
-  const isHindi = language === 'hi';
-
   return (
     <form className="chat-input-form" onSubmit={handleSendMessage}>
       <div className="input-box-wrapper">
         <input
           type="text"
           className="chat-text-input"
-          placeholder={
-            isHindi
-              ? 'अपनी स्वास्थ्य संबंधी समस्या लिखें या वॉयस चैट शुरू करें...'
-              : 'Type your medical query or start voice conversation...'
-          }
+          placeholder="Type your medical query or start voice conversation..."
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
         />
@@ -35,10 +29,10 @@ export const ChatInput = ({
               type="button"
               className="control-btn voice-to-voice-btn"
               onClick={onOpenVoiceToVoice}
-              title={isHindi ? 'वॉयस टू वॉयस बातचीत शुरू करें' : 'Launch Voice to Voice Conversation Mode'}
+              title="Launch Voice to Voice Conversation Mode"
             >
               <span className="btn-icon">🎙️⚡</span>
-              <span className="btn-label">{isHindi ? 'वॉयस मोड' : 'Voice Convo'}</span>
+              <span className="btn-label">Voice Convo</span>
             </button>
           )}
 
@@ -47,17 +41,17 @@ export const ChatInput = ({
             type="button"
             className={`control-btn voice-chat-btn ${isVoiceActive ? 'active listening' : ''}`}
             onClick={toggleVoiceMode}
-            title={isVoiceActive ? 'माइक बंद करें' : 'माइक चालू करें'}
+            title={isVoiceActive ? 'Mute Mic' : 'Unmute Mic'}
           >
             {isVoiceActive ? (
               <>
                 <span className="btn-icon mic-pulse">🎙️</span>
-                <span className="btn-label">{isHindi ? 'माइक चालू' : 'Mic ON'}</span>
+                <span className="btn-label">Mic ON</span>
               </>
             ) : (
               <>
                 <span className="btn-icon">🎙️</span>
-                <span className="btn-label">{isHindi ? 'माइक बंद' : 'Mic OFF'}</span>
+                <span className="btn-label">Mic OFF</span>
               </>
             )}
           </button>
@@ -67,9 +61,9 @@ export const ChatInput = ({
             type="submit"
             className="send-btn"
             disabled={!inputMessage.trim() || loading}
-            title={isHindi ? 'संदेश भेजें' : 'Send Message'}
+            title="Send Message"
           >
-            <span>{isHindi ? 'भेजें' : 'Send'}</span>
+            <span>Send</span>
             <span className="send-icon">➤</span>
           </button>
         </div>

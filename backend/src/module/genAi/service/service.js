@@ -622,7 +622,7 @@ For every interaction:
 
 export const analyzeWithAi = async (userMessage, history = [], language = 'en') => {
   const groqEndpoint = process.env.GROQ_ENDPOINT || 'https://api.groq.com/openai/v1/chat/completions';
-  const apiKey = "" ;
+  const apiKey = process.env.GROQ_API_KEY;
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
   const headers = {

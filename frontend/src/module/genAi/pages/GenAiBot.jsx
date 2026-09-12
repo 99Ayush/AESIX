@@ -8,7 +8,8 @@ import { VoiceToVoiceView } from '../components/VoiceToVoiceView';
 import '../components/GenAiChat.css';
 
 export const GenAiBot = () => {
-  const [language, setLanguage] = useState('en'); // 'en' | 'hi'
+  // Conversation language state ('en' | 'hi')
+  const [convoLanguage, setConvoLanguage] = useState('en');
 
   const getWelcomeMessage = (lang) => ({
     id: 'welcome_1',
@@ -41,6 +42,18 @@ export const GenAiBot = () => {
   const isProcessingSpeechRef = useRef(false);
   const lastV2vTranscriptRef = useRef('');
 
+  // Update initial welcome message whenever conversation language toggles
+  useEffect(() => {
+    setMessages((prev) => {
+      if (!prev || prev.length === 0) return [getWelcomeMessage(convoLanguage)];
+      const hasWelcome = prev.some((m) => m.id === 'welcome_1');
+      if (hasWelcome) {
+        return prev.map((m) => (m.id === 'welcome_1' ? getWelcomeMessage(convoLanguage) : m));
+      }
+      return prev;
+    });
+  }, [convoLanguage]);
+
   // Auto-scroll to bottom of text chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -53,7 +66,7 @@ export const GenAiBot = () => {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+      recognition.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
 
       recognition.onresult = (event) => {
         let transcript = '';
@@ -101,23 +114,37 @@ export const GenAiBot = () => {
         window.speechSynthesis.cancel();
       }
     };
-  }, [language]);
+  }, [convoLanguage]);
 
-  // Toggle Language Handler (English <-> Hindi)
-  const handleToggleLanguage = () => {
-    const newLang = language === 'en' ? 'hi' : 'en';
-    setLanguage(newLang);
+  // Toggle Language Handler (English <-> Hindi for conversation)
+  const handleToggleLanguage = (targetLang) => {
+    const newLang = targetLang ? targetLang : convoLanguage === 'en' ? 'hi' : 'en';
+    if (newLang === convoLanguage) return;
 
-    if (messages.length === 1 && messages[0].id === 'welcome_1') {
-      setMessages([getWelcomeMessage(newLang)]);
-    }
+    setConvoLanguage(newLang);
+
+    // Add a system notice message so the user visually sees the change in chat stream
+    const sysMsg = {
+      id: `sys_${Date.now()}`,
+      sender: 'system',
+      text:
+        newLang === 'hi'
+          ? '🌐 बातचीत की भाषा "हिंदी" (Hindi) पर सेट की गई है। एआई अब हिंदी में जवाब देगा।'
+          : '🌐 Conversation language set to "English". AI will now respond in English.',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+
+    setMessages((prev) => {
+      const updated = prev.map((m) => (m.id === 'welcome_1' ? getWelcomeMessage(newLang) : m));
+      return [...updated, sysMsg];
+    });
   };
 
   // Standard Voice Mode Toggle (Single-turn Mic Recognition & TTS)
   const toggleVoiceMode = () => {
     if (!speechSupported && !('speechSynthesis' in window)) {
       alert(
-        language === 'hi'
+        convoLanguage === 'hi'
           ? 'आपके ब्राउज़र में वॉयस रिकग्निशन / स्पीच सपोर्ट उपलब्ध नहीं है।'
           : 'Speech Recognition / Voice Output is not supported in your browser.'
       );
@@ -141,7 +168,7 @@ export const GenAiBot = () => {
       isListeningRef.current = true;
       if (recognitionRef.current) {
         try {
-          recognitionRef.current.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+          recognitionRef.current.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
           recognitionRef.current.start();
         } catch (err) {
           console.warn('Error starting mic:', err);
@@ -158,7 +185,7 @@ export const GenAiBot = () => {
 
     const cleanText = text.replace(/[*#\-_]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+    utterance.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
@@ -188,7 +215,7 @@ export const GenAiBot = () => {
         content: m.text,
       }));
 
-      const replyText = await sendChatMessageToBackend(query, historyPayload, language);
+      const replyText = await sendChatMessageToBackend(query, historyPayload, convoLanguage);
       const aiMsg = {
         id: `ai_${Date.now()}`,
         sender: 'assistant',
@@ -202,7 +229,7 @@ export const GenAiBot = () => {
         id: `err_${Date.now()}`,
         sender: 'assistant',
         text:
-          language === 'hi'
+          convoLanguage === 'hi'
             ? `⚠️ उत्तर प्राप्त नहीं हो सका: ${err.message}`
             : `⚠️ Could not get AI response: ${err.message}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -252,7 +279,7 @@ export const GenAiBot = () => {
         content: m.text,
       }));
 
-      const replyText = await sendChatMessageToBackend(spokenText, historyPayload, language);
+      const replyText = await sendChatMessageToBackend(spokenText, historyPayload, convoLanguage);
 
       const aiMsg = {
         id: `ai_${Date.now()}`,
@@ -263,13 +290,12 @@ export const GenAiBot = () => {
       setMessages((prev) => [...prev, aiMsg]);
       setV2vAiResponse(replyText);
 
-      // Speak AI response aloud in Voice-to-Voice mode
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
 
         const cleanText = replyText.replace(/[*#\-_]/g, '').trim();
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+        utterance.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
         utterance.rate = 0.95;
         utterance.pitch = 1.0;
 
@@ -316,7 +342,7 @@ export const GenAiBot = () => {
   const restartV2vListening = () => {
     if (v2vRecognitionRef.current && !isMicMuted) {
       try {
-        v2vRecognitionRef.current.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+        v2vRecognitionRef.current.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
         v2vRecognitionRef.current.start();
       } catch (e) {}
     }
@@ -339,10 +365,9 @@ export const GenAiBot = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const rec = new SpeechRecognition();
-      // Set to false so the browser doesn't wait 10-15s to finalize speech boundaries
       rec.continuous = false;
       rec.interimResults = true;
-      rec.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+      rec.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
 
       rec.onresult = (event) => {
         let transcript = '';
@@ -357,7 +382,6 @@ export const GenAiBot = () => {
           lastV2vTranscriptRef.current = trimmedTranscript;
           setV2vState('listening');
 
-          // Reset 4-second silence timer on every new speech fragment
           if (v2vSilenceTimerRef.current) {
             clearTimeout(v2vSilenceTimerRef.current);
           }
@@ -366,7 +390,7 @@ export const GenAiBot = () => {
             if (!isProcessingSpeechRef.current && lastV2vTranscriptRef.current) {
               processVoiceInput(lastV2vTranscriptRef.current);
             }
-          }, 4000); // 4 Seconds silence threshold
+          }, 4000);
         }
       };
 
@@ -375,11 +399,9 @@ export const GenAiBot = () => {
       };
 
       rec.onend = () => {
-        // If the browser auto-ended and we have a transcript ready, process immediately
         if (!isProcessingSpeechRef.current && lastV2vTranscriptRef.current.trim()) {
           processVoiceInput(lastV2vTranscriptRef.current.trim());
         } else if (!isProcessingSpeechRef.current && !isMicMuted && isVoiceToVoiceOpen) {
-          // Restart recognition if user hasn't said anything yet
           try {
             rec.start();
           } catch (err) {}
@@ -392,7 +414,7 @@ export const GenAiBot = () => {
       v2vRecognitionRef.current = rec;
     } else {
       alert(
-        language === 'hi'
+        convoLanguage === 'hi'
           ? 'आपका ब्राउज़र वॉयस बातचीत के लिए वेब स्पीच सपोर्ट नहीं करता है।'
           : 'Browser does not support Web Speech API for voice conversation.'
       );
@@ -442,7 +464,7 @@ export const GenAiBot = () => {
     <div className="medical-genai-container">
       <ChatHeader
         onOpenVoiceToVoice={handleOpenVoiceToVoice}
-        language={language}
+        language={convoLanguage}
         onToggleLanguage={handleToggleLanguage}
       />
 
@@ -454,12 +476,12 @@ export const GenAiBot = () => {
           onClose={handleCloseVoiceToVoice}
           toggleMic={handleToggleV2vMic}
           isMicMuted={isMicMuted}
-          language={language}
+          language={convoLanguage}
         />
       ) : (
         <>
-          <QuickActions onSelectAction={handleSelectQuickAction} language={language} />
-          <ChatMessages messages={messages} loading={loading} chatEndRef={chatEndRef} />
+          <QuickActions onSelectAction={handleSelectQuickAction} language={convoLanguage} />
+          <ChatMessages messages={messages} loading={loading} chatEndRef={chatEndRef} language={convoLanguage} />
           <ChatInput
             inputMessage={inputMessage}
             setInputMessage={setInputMessage}
@@ -468,7 +490,7 @@ export const GenAiBot = () => {
             isVoiceActive={isVoiceActive}
             toggleVoiceMode={toggleVoiceMode}
             onOpenVoiceToVoice={handleOpenVoiceToVoice}
-            language={language}
+            language={convoLanguage}
           />
         </>
       )}
