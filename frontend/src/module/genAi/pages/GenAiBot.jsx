@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, useRef } from 'react';
 import { sendChatMessageToBackend } from '../services/bot';
 import { ChatHeader } from '../components/ChatHeader';
@@ -97,7 +95,7 @@ export const GenAiBot = () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch (e) { }
+        } catch (e) {}
       }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -205,8 +203,6 @@ export const GenAiBot = () => {
         sender: 'assistant',
         text:
           language === 'hi'
-            ? `⚠️ ग्रोक एआई उत्तर प्राप्त नहीं हो सका: ${err.message}\n\nकृपया सुनिश्चित करें कि बैकएंड .env में GROQ_API_KEY सही है और बैकएंड सर्वर (पोर्ट 5001) चालू है।`
-            : `⚠️ Could not get AI response from Groq API: ${err.message}\n\nPlease ensure your GROQ_API_KEY is configured in backend .env and backend server is running on port 5001.`,
             ? `⚠️ उत्तर प्राप्त नहीं हो सका: ${err.message}`
             : `⚠️ Could not get AI response: ${err.message}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
@@ -237,7 +233,7 @@ export const GenAiBot = () => {
     if (v2vRecognitionRef.current) {
       try {
         v2vRecognitionRef.current.stop();
-      } catch (e) { }
+      } catch (e) {}
     }
 
     setV2vState('thinking');
@@ -322,7 +318,7 @@ export const GenAiBot = () => {
       try {
         v2vRecognitionRef.current.lang = language === 'hi' ? 'hi-IN' : 'en-US';
         v2vRecognitionRef.current.start();
-      } catch (e) { }
+      } catch (e) {}
     }
   };
 
@@ -386,13 +382,13 @@ export const GenAiBot = () => {
           // Restart recognition if user hasn't said anything yet
           try {
             rec.start();
-          } catch (err) { }
+          } catch (err) {}
         }
       };
 
       try {
         rec.start();
-      } catch (e) { }
+      } catch (e) {}
       v2vRecognitionRef.current = rec;
     } else {
       alert(
@@ -416,7 +412,7 @@ export const GenAiBot = () => {
     if (v2vRecognitionRef.current) {
       try {
         v2vRecognitionRef.current.abort();
-      } catch (e) { }
+      } catch (e) {}
     }
 
     if ('speechSynthesis' in window) {
@@ -437,7 +433,7 @@ export const GenAiBot = () => {
       if (v2vRecognitionRef.current) {
         try {
           v2vRecognitionRef.current.stop();
-        } catch (e) { }
+        } catch (e) {}
       }
     }
   };
