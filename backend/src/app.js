@@ -1,12 +1,15 @@
 import express from "express";
 import cors from "cors";
-import "dotenv/config";
 import { handleGenAiChat } from "./module/genAi/controller/controller.js";
 import { errorLogger } from "./shared/logger.js";
+import authRouter from './module/auth/controller/auth.controller.js';
+import config from './shared/config.js';
+import mongoose from "mongoose";
 import userRoutes from './module/user/routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
+let server;
 
 app.use(cors());
 app.use(express.json({ limit: '22mb' }));
@@ -24,12 +27,43 @@ app.get("/api/genai/health", (req, res) => {
   });
 });
 
+// Auth Router
+app.use('/api/auth', authRouter)
+
 // Centralized Error Handling Middleware (logs to backend/logs/error.log)
 app.use(errorLogger);
 
-app.listen(PORT, () => {
-  console.log(`Backend Express server running on http://localhost:${PORT}`);
-  console.log(`Groq API configured at: ${process.env.GROQ_ENDPOINT || "https://api.groq.com/openai/v1/chat/completions"}`);
-});
+export async function startServer() {
+  if (server) return server;
+
+  if (!config.database.uri) {
+    throw new Error('MONGODB_URI is required to store auth users and sessions');
+  }
+
+  await mongoose.connect(config.database.uri);
+  console.log(`MongoDB connected (${config.abdm.mockMode ? 'mock ABDM mode' : 'real ABDM mode'})`);
+
+  server = await new Promise((resolve, reject) => {
+    const listeningServer = app.listen(PORT);
+    const rejectStartup = error => reject(error);
+
+    listeningServer.once('error', rejectStartup);
+    listeningServer.once('listening', () => {
+      listeningServer.off('error', rejectStartup);
+      console.log(`Backend Express server running on http://localhost:${PORT}`);
+      console.log(`Ollama API configured at: ${process.env.OLLAMA_ENDPOINT || "http://localhost:11434/api/chat"}`);
+      resolve(listeningServer);
+    });
+  });
+
+  return server;
+}
+
+if (process.env.NODE_ENV !== 'test') {
+  startServer().catch(error => {
+    console.error('Server startup failed:', error.message);
+    process.exitCode = 1;
+  });
+}
 
 export default app;
