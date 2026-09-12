@@ -1698,3 +1698,455 @@
     display: none;
   }
 }
+
+/* ------------------------------------------
+   LANDING PAGE — PROFILE DASHBOARD
+   ------------------------------------------ */
+
+.lp-main {
+  padding: 1.5rem 2.5rem 3rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.lp-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+
+.lp-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #4B927F;
+}
+
+.lp-welcome {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #12304A;
+  margin-top: 0.35rem;
+  letter-spacing: -0.02em;
+}
+
+.lp-date-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+/* Grid */
+.lp-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(320px, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+  .lp-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== PROFILE CARD ===== */
+.lp-profile-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #DCEAE6;
+  overflow: hidden;
+  position: relative;
+}
+
+.lp-profile-header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid #E4ECEA;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lp-profile-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #61988E;
+}
+
+.lp-profile-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #12304A;
+  margin-top: 0.2rem;
+}
+
+.lp-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.lp-active-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #E2F6EE;
+  color: #32816D;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.lp-active-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #4DBE8D;
+}
+
+.lp-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: #F1F7F5;
+  color: #183B56;
+  padding: 0.55rem 1.25rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.lp-edit-btn:hover {
+  background-color: #E2F6EE;
+}
+
+/* Card Body */
+.lp-profile-body {
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .lp-profile-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Left — Photo */
+.lp-profile-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.lp-photo-wrapper {
+  position: relative;
+}
+
+.lp-photo-bg {
+  height: 210px;
+  width: 100%;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #DCEFEB, #EDF5F4);
+  border: 8px solid #EDF7F4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.lp-photo-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background-color: #277F88;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.lp-camera-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #277F88;
+  border: 4px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+/* Allergies */
+.lp-allergies {
+  margin-top: 0.5rem;
+}
+
+.lp-allergies-title {
+  font-weight: 800;
+  color: #367C73;
+  letter-spacing: 0.05em;
+  font-size: 0.82rem;
+  margin-bottom: 0.75rem;
+}
+
+.lp-allergy-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lp-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Info Panel */
+.lp-info-panel {
+  border: 1px solid #E2ECE9;
+  border-radius: 10px;
+  padding: 1.25rem;
+}
+
+.lp-info-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #4C8D82;
+  margin-bottom: 1.25rem;
+}
+
+.lp-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 2rem;
+}
+
+@media (max-width: 600px) {
+  .lp-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lp-info-item {
+  min-width: 0;
+}
+
+.lp-info-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6B9190;
+  margin-bottom: 0.3rem;
+}
+
+.lp-info-value {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.35rem;
+  font-weight: 700;
+  color: #23475B;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.lp-info-icon {
+  margin-top: 0.1rem;
+  color: #5B928B;
+}
+
+/* Chatbot FAB */
+.lp-chatbot-fab {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 50;
+  width: 90px;
+  height: 90px;
+  cursor: pointer;
+  transition: transform 0.3s;
+  animation: lp-wiggle 1.5s ease-in-out infinite;
+}
+
+.lp-chatbot-fab:hover {
+  transform: scale(1.08);
+}
+
+@keyframes lp-wiggle {
+  0%, 100% { transform: translateX(0) rotate(0deg); }
+  25% { transform: translateX(-2px) rotate(-2deg); }
+  50% { transform: translateX(2px) rotate(2deg); }
+  75% { transform: translateX(-2px) rotate(-2deg); }
+}
+
+/* ===== MEDICAL DICTIONARY ===== */
+.lp-dictionary {
+  background: white;
+  border-radius: 20px;
+  border: 1px solid #DCEAE6;
+  padding: 1.5rem;
+  height: fit-content;
+  position: sticky;
+  top: 80px;
+}
+
+.lp-dict-header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.lp-dict-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: #E7EEFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.lp-dict-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #12304A;
+}
+
+.lp-dict-subtitle {
+  font-size: 0.82rem;
+  color: #7C9297;
+  margin-top: 0.15rem;
+}
+
+/* Search */
+.lp-dict-search-wrap {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.lp-dict-search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  color: #75929B;
+  z-index: 2;
+}
+
+.lp-dict-search {
+  width: 100%;
+  height: 48px;
+  padding: 0 1rem 0 2.75rem;
+  border-radius: 14px;
+  border: 1px solid #D9E5E4;
+  background: #FBFDFC;
+  outline: none;
+  font-size: 0.88rem;
+  color: #183B56;
+  font-family: var(--font-family);
+  transition: border-color 0.2s;
+}
+
+.lp-dict-search:focus {
+  border-color: #65A99D;
+}
+
+/* Dictionary Cards */
+.lp-dict-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.lp-dict-card {
+  border-radius: 14px;
+  padding: 1rem;
+  border: 1px solid #E3ECEA;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.lp-dict-card-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.lp-dict-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.lp-dict-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lp-dict-card-title {
+  font-weight: 800;
+  color: #23445A;
+  font-size: 0.92rem;
+}
+
+.lp-dict-card-arrow {
+  color: #617F88;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.lp-dict-card-cat {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-top: 0.35rem;
+}
+
+.lp-dict-card-desc {
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: #789097;
+  margin-top: 0.4rem;
+}
