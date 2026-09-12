@@ -6,6 +6,7 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
   return (
     <div className="quick-actions-bar">
       <button
+        type="button"
         className="action-chip emergency"
         onClick={() =>
           onSelectAction(
@@ -15,9 +16,10 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-        🚨 {isHindi ? 'आपातकालीन चिकित्सा (Emergency)' : 'Medical Emergency'}
+        🚨 Medical Emergency
       </button>
       <button
+        type="button"
         className="action-chip consultation"
         onClick={() =>
           onSelectAction(
@@ -27,9 +29,10 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-        🩺 {isHindi ? 'लक्षण परामर्श (Symptom Check)' : 'Symptom Consultation'}
+        🩺 Symptom Consultation
       </button>
       <button
+        type="button"
         className="action-chip medtalk"
         onClick={() =>
           onSelectAction(
@@ -39,7 +42,7 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-        💊 {isHindi ? 'दैनिक स्वास्थ्य एवं जीवनशैली' : 'Daily Med Talk'}
+        💊 Daily Med Talk
       </button>
     </div>
   );

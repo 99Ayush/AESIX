@@ -770,7 +770,200 @@
 }
 
 /* ------------------------------------------
-   6. RESPONSIVE BREAKPOINTS
+   6. VIEW SWITCHER PILLS & SEGREGATED LAYOUTS
+   ------------------------------------------ */
+.doc-view-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0.4rem 0;
+  margin-bottom: 0.25rem;
+}
+
+.doc-switcher-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--primary-navy, #12304A);
+  white-space: nowrap;
+}
+
+.doc-view-pill {
+  background-color: #FFFFFF;
+  color: var(--text-main, #183B56);
+  border: 1px solid var(--border-light, #E2E8F0);
+  padding: 0.45rem 0.9rem;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.doc-view-pill:hover {
+  background-color: var(--mint-light, #E4F5EF);
+  color: var(--teal-primary, #2F8F83);
+  border-color: var(--teal-primary, #2F8F83);
+}
+
+.doc-view-pill.active {
+  background-color: var(--teal-primary, #2F8F83);
+  color: #FFFFFF;
+  border-color: var(--teal-primary, #2F8F83);
+  box-shadow: 0 2px 8px rgba(47, 143, 131, 0.25);
+}
+
+.doc-single-view-full {
+  width: 100%;
+  animation: fadeInDoc 0.25s ease-out;
+}
+
+@keyframes fadeInDoc {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Patient Directory Grid */
+.doc-directory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.doc-directory-item-card {
+  background-color: var(--mint-bg, #F5FAF8);
+  border: 1.5px solid var(--border-light, #E2E8F0);
+  border-radius: var(--radius-md, 12px);
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.doc-directory-item-card:hover {
+  border-color: var(--teal-primary, #2F8F83);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(18, 48, 74, 0.08));
+  transform: translateY(-2px);
+}
+
+.doc-dir-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.doc-dir-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--teal-primary, #2F8F83), var(--primary-navy, #12304A));
+  color: #FFFFFF;
+  font-size: 1.2rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.doc-dir-main {
+  flex: 1;
+}
+
+.doc-dir-name {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--primary-navy, #12304A);
+  margin: 0;
+}
+
+.doc-dir-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+}
+
+.doc-risk-badge {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+  text-transform: uppercase;
+}
+
+.risk-high-risk {
+  background-color: #FEE2E2;
+  color: #DC2626;
+}
+
+.risk-moderate {
+  background-color: #FEF3C7;
+  color: #D97706;
+}
+
+.risk-low {
+  background-color: #DCFCE7;
+  color: #15803D;
+}
+
+.doc-dir-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  background: #FFFFFF;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light, #E2E8F0);
+}
+
+.doc-dir-detail-row {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-main, #183B56);
+}
+
+.doc-dir-card-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.doc-dir-action-btn {
+  flex: 1;
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.doc-dir-action-btn.primary {
+  background-color: var(--teal-primary, #2F8F83);
+  color: #FFFFFF;
+}
+
+.doc-dir-action-btn.primary:hover {
+  background-color: var(--navy-hover, #1a4163);
+}
+
+.doc-dir-action-btn.secondary {
+  background-color: var(--mint-light, #E4F5EF);
+  color: var(--teal-primary, #2F8F83);
+  border: 1px solid var(--teal-primary, #2F8F83);
+}
+
+.doc-dir-action-btn.secondary:hover {
+  background-color: var(--teal-primary, #2F8F83);
+  color: #FFFFFF;
+}
+
+/* ------------------------------------------
+   7. RESPONSIVE BREAKPOINTS
    ------------------------------------------ */
 @media (max-width: 1100px) {
   .doc-main-container {
