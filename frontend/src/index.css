@@ -4,11 +4,14 @@
   --navy-hover: #1a4163;
   --teal-primary: #2F8F83;
   --teal-hover: #25756b;
+  --teal-light: #3BA99B;
   --mint-light: #E4F5EF;
   --mint-bg: #F5FAF8;
   --text-main: #183B56;
   --text-muted: #64748B;
   --border-light: #E2E8F0;
+  --navbar-bg: #FFFFFF;
+  --navbar-border: #E1ECE8;
   --white: #FFFFFF;
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
   --shadow-md: 0 4px 12px rgba(18, 48, 74, 0.08);

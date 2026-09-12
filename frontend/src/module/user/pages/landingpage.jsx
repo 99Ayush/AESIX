@@ -1,0 +1,248 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../userPages.css';
+
+export default function LandingPage() {
+  const navigate = useNavigate();
+  const [language, setLanguage] = useState('English');
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const patientName = 'Aanchal.Chaudhary';
+  const initials = 'AC';
+
+  // Patient information data
+  const patientInfo = [
+    { title: 'Patient ID', value: 'ABHA-2847-1923-4561' },
+    { title: 'Date of Birth', value: '14 March 1988' },
+    { title: 'Gender', value: 'Male · 38 yrs' },
+    { title: 'Blood Type', value: 'O Positive' },
+    { title: 'Contact', value: '+91 98765 43210', icon: '📞' },
+    { title: 'Email', value: 'arjun.ramesh@gmail.com', icon: '✉️' },
+    { title: 'Address', value: 'Koramangala, Bengaluru, KA', icon: '📍' },
+    { title: 'Emergency', value: 'Priya Ramesh · +91 98700 12345' },
+    { title: 'Insurance', value: 'Star Health · SH8847291' },
+    { title: 'Physician', value: 'Dr. Kavitha Menon' },
+  ];
+
+  // Known allergies
+  const allergies = [
+    { text: 'Penicillin', icon: '♥', bg: '#FDE8EC', color: '#D43C5B' },
+    { text: 'Aspirin', icon: '✦', bg: '#EFEAFF', color: '#6850C7' },
+    { text: 'Shellfish', icon: '★', bg: '#FFF4D5', color: '#C88C18' },
+    { text: 'Latex', icon: '✚', bg: '#E4F5EC', color: '#42966F' },
+    { text: 'Pollen', icon: '⌁', bg: '#EAF1FF', color: '#5278D0' },
+    { text: 'Dust', icon: '✦', bg: '#EEEFF5', color: '#78809A' },
+  ];
+
+  // Medical dictionary terms
+  const dictTerms = [
+    { title: 'Hypertension', category: 'Cardiovascular', desc: 'Persistently elevated blood pressure ≥130/80 mmHg in the arteries, increasing risk of heart...', bg: '#FFF4F5', iconBg: '#F9D7DD', iconColor: '#D94761', catBg: '#F9DDEA', catColor: '#B45576' },
+    { title: 'Metformin', category: 'Pharmacology', desc: 'First-line oral antidiabetic drug that lowers hepatic glucose output and improves...', bg: '#F1FBF5', iconBg: '#D7F2E2', iconColor: '#41A16F', catBg: '#DFF3E6', catColor: '#4B8D6C' },
+    { title: 'HbA1c', category: 'Diagnostics', desc: 'Glycated hemoglobin test reflecting average blood glucose over the past 2–3 months...', bg: '#F1F7FF', iconBg: '#D9E8FF', iconColor: '#477DD4', catBg: '#DFEBFF', catColor: '#527AC5' },
+    { title: 'Amlodipine', category: 'Pharmacology', desc: 'Calcium channel blocker used for hypertension and angina. Relaxes blood ve...', bg: '#F7F1FF', iconBg: '#E5D8FF', iconColor: '#7655CE', catBg: '#EADFFF', catColor: '#755BB9' },
+    { title: 'oGER', category: 'Nephrology', desc: 'A medical term related to kidney health and renal function...', bg: '#F1FBF7', iconBg: '#D8F1E8', iconColor: '#439579', catBg: '#DDF2EA', catColor: '#4A8D78' },
+  ];
+
+  return (
+    <div className="sih-page-wrapper">
+
+      {/* ===== HEADER ===== */}
+      <header className="sih-header">
+        <div className="sih-header-inner">
+          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
+            <div className="sih-logo-badge">🛡</div>
+            <div>
+              <h1 className="sih-brand-title">MedVault</h1>
+              <p className="sih-brand-subtitle">Health Portal</p>
+            </div>
+          </div>
+
+          <nav className="sih-nav-menu">
+            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn active">
+              <span className="sih-nav-icon">🏠</span> Dashboard
+            </button>
+            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🛡</span> ABHA
+            </button>
+            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
+              <span className="sih-nav-icon">📄</span> Documents
+            </button>
+            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🔍</span> Basic Info
+            </button>
+          </nav>
+
+          <div className="sih-header-controls">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
+              <option value="English">🌐 English</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
+            </select>
+            <button className="sih-notif-bell">
+              🔔
+              <span className="sih-notif-badge">3</span>
+            </button>
+            <div className="sih-profile-wrapper" ref={profileRef}>
+              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="sih-profile-avatar">{initials}</div>
+                <span className="sih-profile-name">{patientName}</span>
+                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+              </button>
+              {profileOpen && (
+                <div className="sih-profile-dropdown">
+                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                    <span className="dd-icon">👤</span> Profile
+                  </button>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                    <span className="dd-icon">🚪</span> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ===== MAIN ===== */}
+      <main className="lp-main">
+
+        {/* Heading */}
+        <div className="lp-heading-row">
+          <div>
+            <p className="lp-label">My Health Dashboard</p>
+            <h2 className="lp-welcome">Welcome back, {patientName} <span>👋</span></h2>
+          </div>
+          <div className="lp-date-badge">
+            <span>📅</span>
+            <div>
+              <span style={{ fontWeight: 700 }}>Thursday, 11 September 2026</span>
+              <span style={{ color: '#82999B', marginLeft: '0.5rem' }}>• Last synced 3 min ago</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid: Profile + Dictionary */}
+        <div className="lp-grid">
+
+          {/* ===== PROFILE CARD ===== */}
+          <section className="lp-profile-card">
+
+            {/* Card Header */}
+            <div className="lp-profile-header">
+              <div>
+                <p className="lp-profile-label">Patient Profile</p>
+                <h3 className="lp-profile-name">{patientName}</h3>
+              </div>
+              <div className="lp-profile-actions">
+                <span className="lp-active-badge">
+                  <span className="lp-active-dot" />
+                  Active Patient
+                </span>
+                <button className="lp-edit-btn">
+                  ✏️ Edit Profile
+                </button>
+              </div>
+            </div>
+
+            {/* Card Body — 3 columns */}
+            <div className="lp-profile-body">
+
+              {/* Left — Photo + Allergies */}
+              <div className="lp-profile-left">
+                <div className="lp-photo-wrapper">
+                  <div className="lp-photo-bg">
+                    <div className="lp-photo-circle">{initials}</div>
+                  </div>
+                  <button className="lp-camera-btn">📷</button>
+                </div>
+
+                <div className="lp-allergies">
+                  <h4 className="lp-allergies-title">⭐ KNOWN ALLERGIES</h4>
+                  <div className="lp-allergy-tags">
+                    {allergies.map((a, i) => (
+                      <span key={i} className="lp-tag" style={{ backgroundColor: a.bg, color: a.color }}>
+                        <span>{a.icon}</span> {a.text}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Middle — Patient Information */}
+              <div className="lp-info-panel">
+                <p className="lp-info-title">Patient Information</p>
+                <div className="lp-info-grid">
+                  {patientInfo.map((item, i) => (
+                    <div key={i} className="lp-info-item">
+                      <p className="lp-info-label">{item.title}</p>
+                      <div className="lp-info-value">
+                        {item.icon && <span className="lp-info-icon">{item.icon}</span>}
+                        <span>{item.value}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Chatbot FAB */}
+            <div className="lp-chatbot-fab" onClick={() => navigate('/genai')}>
+              <img src="/chatbot.png" alt="AI Chatbot" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+
+          </section>
+
+          {/* ===== MEDICAL DICTIONARY ===== */}
+          <aside className="lp-dictionary">
+            <div className="lp-dict-header">
+              <div className="lp-dict-icon-box">📖</div>
+              <div>
+                <h3 className="lp-dict-title">Medical Dictionary</h3>
+                <p className="lp-dict-subtitle">Understand your health terms</p>
+              </div>
+            </div>
+
+            <div className="lp-dict-search-wrap">
+              <span className="lp-dict-search-icon">🔍</span>
+              <input type="text" placeholder="Search terms..." className="lp-dict-search" />
+            </div>
+
+            <div className="lp-dict-list">
+              {dictTerms.map((term, i) => (
+                <div key={i} className="lp-dict-card" style={{ backgroundColor: term.bg }}>
+                  <div className="lp-dict-card-icon" style={{ backgroundColor: term.iconBg, color: term.iconColor }}>
+                    💊
+                  </div>
+                  <div className="lp-dict-card-body">
+                    <div className="lp-dict-card-top">
+                      <h4 className="lp-dict-card-title">{term.title}</h4>
+                      <span className="lp-dict-card-arrow">›</span>
+                    </div>
+                    <span className="lp-dict-card-cat" style={{ backgroundColor: term.catBg, color: term.catColor }}>
+                      {term.category}
+                    </span>
+                    <p className="lp-dict-card-desc">{term.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
+
+        </div>
+      </main>
+    </div>
+  );
+}

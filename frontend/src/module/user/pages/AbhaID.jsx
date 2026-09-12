@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
-import { userApi } from '../services/userApi';
-import { useDashboardLanguage } from '../LanguageContext';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -19,7 +17,7 @@ export default function AbhaID() {
   const navigate = useNavigate();
 
   // Local Mock Data inside AbhaID.jsx
-  const [abhaDetails, setAbhaDetails] = useState({
+  const [abhaDetails] = useState({
     name: 'Rajesh Kumar',
     abhaNumber: '91-8472-1029-4821',
     phrAddress: 'rajesh.kumar@abdm',
@@ -33,7 +31,7 @@ export default function AbhaID() {
     issuedDate: '2023-01-12'
   });
 
-  const [pendingConsents, setPendingConsents] = useState([
+  const [pendingConsents] = useState([
     {
       id: 1,
       requester: "Apex Diagnostics Lab",
@@ -54,14 +52,19 @@ export default function AbhaID() {
     }
   ]);
 
-  const { language, setLanguage } = useDashboardLanguage();
+  const [language, setLanguage] = useState('English');
   const [toastMessage, setToastMessage] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
 
   useEffect(() => {
-    Promise.all([userApi.abha(), userApi.consents()]).then(([abha, consents]) => {
-      setAbhaDetails((current) => ({ ...current, ...abha, abhaNumber: abha.number, mobile: abha.contact?.phone || current.mobile, address: abha.contact?.address || current.address, emergencyContact: abha.contact ? `${abha.contact.emergencyContactName} (${abha.contact.emergencyContactPhone})` : current.emergencyContact }));
-      setPendingConsents(consents.filter((item) => item.status === 'pending').map((item) => ({ ...item, date: item.requestedAt })));
-    }).catch(() => {});
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const showNotification = (msg) => {
@@ -89,80 +92,55 @@ export default function AbhaID() {
       {/* TOP NAVBAR */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          
-          {/* Logo & Branding */}
-          <div className="sih-brand">
-            <div className="sih-logo-badge">
-              SIH
-            </div>
+          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
+            <div className="sih-logo-badge">🛡</div>
             <div>
-              <h1 className="sih-brand-title">SIH 2026 | Patient Case-Taking</h1>
-              <p className="sih-brand-subtitle">Doctor View • Clinical Documentation</p>
+              <h1 className="sih-brand-title">MedVault</h1>
+              <p className="sih-brand-subtitle">Health Portal</p>
             </div>
           </div>
 
-          {/* Navigation Links */}
           <nav className="sih-nav-menu">
-            <button
-              onClick={() => navigate('/abha')}
-              className="sih-nav-btn active"
-            >
-              ABHA ID
+            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🏠</span> Dashboard
             </button>
-
-            <button
-              onClick={() => navigate('/uploadDoc')}
-              className="sih-nav-btn"
-            >
-              Docs
+            <button onClick={() => navigate('/abha')} className="sih-nav-btn active">
+              <span className="sih-nav-icon">🛡</span> ABHA
             </button>
-
-            <button
-              onClick={() => navigate('/basicInfo')}
-              className="sih-nav-btn"
-            >
-              Basic Info
+            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
+              <span className="sih-nav-icon">📄</span> Documents
             </button>
-
-            <button
-              onClick={() => navigate('/consent')}
-              className="sih-nav-btn"
-            >
-              Consent
-            </button>
-
-            <button
-              onClick={() => navigate('/profile')}
-              className="sih-nav-btn"
-            >
-              Profile
+            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🔍</span> Basic Info
             </button>
           </nav>
 
-          {/* Right Controls: Language & Doctor Profile */}
           <div className="sih-header-controls">
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="sih-lang-select"
-            >
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
               <option value="English">🌐 English</option>
-              <option value="Hindi">🌐 हिंदी (Hindi)</option>
-              <option value="Bengali">🌐 বাংলা (Bengali)</option>
-              <option value="Tamil">🌐 தமிழ் (Tamil)</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
             </select>
-
-            <div className="sih-doctor-profile">
-              <div className="sih-doctor-avatar">
-                DR
-              </div>
-              <div className="sih-doctor-info">
-                <p className="sih-doctor-name">Dr. A. Verma</p>
-                <p className="sih-doctor-role">General Medicine</p>
-              </div>
+            <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
+            <div className="sih-profile-wrapper" ref={profileRef}>
+              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="sih-profile-avatar">RK</div>
+                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+              </button>
+              {profileOpen && (
+                <div className="sih-profile-dropdown">
+                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                    <span className="dd-icon">👤</span> Profile
+                  </button>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                    <span className="dd-icon">🚪</span> Sign Out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-
         </div>
       </header>
 

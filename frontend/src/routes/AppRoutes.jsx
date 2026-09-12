@@ -6,11 +6,15 @@ import UploadDoc from '../module/user/pages/uploadDoc';
 import Consent from '../module/user/pages/concent';
 import AbhaID from '../module/user/pages/AbhaID';
 import ProfilePage from '../module/user/pages/profilepage';
+import LandingPage from '../module/user/pages/landingpage';
 
 export const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* Landing Page (shown after login) */}
+        <Route path="/dashboard" element={<LandingPage />} />
+
         {/* User routes */}
         <Route path="/basicInfo" element={<BasicInfo />} />
         <Route path="/uploadDoc" element={<UploadDoc />} />
@@ -20,9 +24,11 @@ export const AppRoutes = () => {
         <Route path="/abhaId" element={<AbhaID />} />
         <Route path="/profile" element={<ProfilePage />} />
 
-        <Route path="/" element={<Navigate to="/profile" replace />} />
         <Route path="/genai" element={<GenAiBot />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+
+        {/* Default: redirect to dashboard */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
   );
