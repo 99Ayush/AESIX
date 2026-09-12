@@ -8,11 +8,17 @@ import AbhaID from '../module/user/pages/AbhaID';
 import ProfilePage from '../module/user/pages/profilepage';
 import LandingPage from '../module/user/pages/landingpage';
 import DoctorDashboard from '../module/doctor';
+import Login from '../module/auth/login';
+import Register from '../module/auth/register';
 
 export const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* Auth routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
         {/* Landing Page (shown after login) */}
         <Route path="/dashboard" element={<LandingPage />} />
 

@@ -1,7 +1,13 @@
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 async function request(path, options = {}) {
-  const response = await fetch(`${baseUrl}${path}`, { headers: { 'Content-Type': 'application/json' }, ...options });
+  const token = localStorage.getItem('token');
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers || {}),
+  };
+  const response = await fetch(`${baseUrl}${path}`, { ...options, headers });
   if (response.status === 204) return null;
   const body = await response.json();
   if (!response.ok) throw new Error(body.error || 'Request failed');
