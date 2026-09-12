@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
-import { userApi } from '../services/userApi';
-import { useDashboardLanguage } from '../LanguageContext';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -75,31 +73,27 @@ export default function BasicInfo() {
   // UI State
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'medications' | 'checkups'
-  const { language, setLanguage } = useDashboardLanguage();
+  const [language, setLanguage] = useState('English');
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [profileUpdateDue, setProfileUpdateDue] = useState(true);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Form State for Edit Mode
   const [formData, setFormData] = useState({ ...patient });
   const [newMed, setNewMed] = useState({ name: '', dosage: '', frequency: '', timing: '' });
   const [newAllergy, setNewAllergy] = useState('');
   const [newCondition, setNewCondition] = useState('');
-  const [quickAction, setQuickAction] = useState(null);
-  const [prescription, setPrescription] = useState({ medication: '', dosage: '', frequency: '', instructions: '' });
-  const [labRequest, setLabRequest] = useState({ test: '', notes: '' });
-  const [followUp, setFollowUp] = useState({ date: '', time: '', reason: '' });
-
-  useEffect(() => {
-    userApi.profile().then((data) => {
-      setPatient((current) => ({ ...current, ...data }));
-      setFormData((current) => ({ ...current, ...data }));
-    }).catch(() => {});
-
-    const lastProfileUpdate = localStorage.getItem('aesix:lastProfileUpdate');
-    setProfileUpdateDue(!lastProfileUpdate || Date.now() - Number(lastProfileUpdate) >= 30 * 24 * 60 * 60 * 1000);
-  }, []);
 
   const showNotification = (msg) => {
     setToastMessage(msg);
@@ -165,16 +159,10 @@ export default function BasicInfo() {
     }));
   };
 
-  const handleSave = async () => {
-    try {
-      const saved = await userApi.saveProfile(formData);
-      setPatient((current) => ({ ...current, ...saved }));
-      setFormData((current) => ({ ...current, ...saved }));
-      localStorage.setItem('aesix:lastProfileUpdate', String(Date.now()));
-      setProfileUpdateDue(false);
-      setIsEditing(false);
-      showNotification('Patient basic information updated successfully!');
-    } catch (error) { showNotification(error.message); }
+  const handleSave = () => {
+    setPatient({ ...formData });
+    setIsEditing(false);
+    showNotification('Patient basic information updated successfully!');
   };
 
   const handleCancel = () => {
@@ -184,30 +172,6 @@ export default function BasicInfo() {
 
   const handlePrint = () => {
     window.print();
-  };
-
-  const handleLabRequest = (event) => {
-    event.preventDefault();
-    if (!labRequest.test.trim()) return;
-    showNotification(`Lab investigation requested: ${labRequest.test}`);
-    setLabRequest({ test: '', notes: '' });
-    setQuickAction(null);
-  };
-
-  const handlePrescription = (event) => {
-    event.preventDefault();
-    if (!prescription.medication.trim() || !prescription.dosage.trim() || !prescription.frequency.trim()) return;
-    showNotification(`Prescription generated for ${prescription.medication}.`);
-    setPrescription({ medication: '', dosage: '', frequency: '', instructions: '' });
-    setQuickAction(null);
-  };
-
-  const handleFollowUp = (event) => {
-    event.preventDefault();
-    if (!followUp.date || !followUp.time) return;
-    showNotification(`Follow-up scheduled for ${followUp.date} at ${followUp.time}.`);
-    setFollowUp({ date: '', time: '', reason: '' });
-    setQuickAction(null);
   };
 
   return (
@@ -226,130 +190,55 @@ export default function BasicInfo() {
       {/* TOP NAVBAR */}
       <header className="sih-header">
         <div className="sih-header-inner">
-
-          {/* Logo & Title */}
-          <div className="sih-brand">
-            <div className="sih-logo-badge">
-              SIH
-            </div>
+          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
+            <div className="sih-logo-badge">🛡</div>
             <div>
-              <h1 className="sih-brand-title">SIH 2026 | Patient Case-Taking</h1>
-              <p className="sih-brand-subtitle">Doctor View • Clinical Documentation</p>
+              <h1 className="sih-brand-title">MedVault</h1>
+              <p className="sih-brand-subtitle">Health Portal</p>
             </div>
           </div>
 
-          {/* Navigation Links */}
           <nav className="sih-nav-menu">
-            <button
-              onClick={() => navigate('/abha')}
-              className="sih-nav-btn"
-            >
-              ABHA ID
+            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🏠</span> Dashboard
             </button>
-
-            <button
-              onClick={() => navigate('/uploadDoc')}
-              className="sih-nav-btn"
-            >
-              Docs
+            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🛡</span> ABHA
             </button>
-
-            <button
-              onClick={() => navigate('/basicInfo')}
-              className="sih-nav-btn active"
-            >
-              Basic Info
+            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
+              <span className="sih-nav-icon">📄</span> Documents
             </button>
-
-            <button
-              onClick={() => navigate('/consent')}
-              className="sih-nav-btn"
-            >
-              Consent
-            </button>
-
-            <button
-              onClick={() => navigate('/profile')}
-              className="sih-nav-btn"
-            >
-              Profile
+            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn active">
+              <span className="sih-nav-icon">🔍</span> Basic Info
             </button>
           </nav>
 
-          {/* Search, Language & Doctor Info */}
           <div className="sih-header-controls">
-
-            {/* Search Input */}
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search patient record..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="sih-input"
-                style={{ width: '180px', padding: '0.45rem 0.75rem', fontSize: '0.75rem', backgroundColor: 'var(--navy-hover)', color: 'white', borderColor: '#475569' }}
-              />
-            </div>
-
-            {/* Language Selector */}
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="sih-lang-select"
-            >
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
               <option value="English">🌐 English</option>
-              <option value="Hindi">🌐 हिंदी (Hindi)</option>
-              <option value="Bengali">🌐 বাংলা (Bengali)</option>
-              <option value="Tamil">🌐 தமிழ் (Tamil)</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
             </select>
-
-            {/* Monthly profile update notification */}
-            <div style={{ position: 'relative' }}>
-              <button
-                type="button"
-                aria-label="Profile update notifications"
-                onClick={() => setIsNotificationOpen((current) => !current)}
-                style={{ position: 'relative', width: '2.25rem', height: '2.25rem', display: 'grid', placeItems: 'center', border: '1px solid #475569', borderRadius: 'var(--radius-md)', backgroundColor: 'var(--navy-hover)', color: 'white', cursor: 'pointer' }}
-              >
-                <span aria-hidden="true" style={{ fontSize: '1.15rem' }}>🔔</span>
-                {profileUpdateDue && (
-                  <span aria-label="Profile update due" style={{ position: 'absolute', top: '0.2rem', right: '0.2rem', width: '0.5rem', height: '0.5rem', borderRadius: '50%', backgroundColor: '#EF4444', border: '2px solid var(--navy-hover)' }} />
-                )}
+            <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
+            <div className="sih-profile-wrapper" ref={profileRef}>
+              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="sih-profile-avatar">RK</div>
+                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
-
-              {isNotificationOpen && (
-                <div style={{ position: 'absolute', top: 'calc(100% + 0.5rem)', right: 0, zIndex: 10, width: 'min(18rem, 80vw)', padding: '0.9rem', backgroundColor: 'white', color: 'var(--text-main)', border: '1px solid var(--border-light)', borderRadius: 'var(--radius-md)', boxShadow: '0 10px 25px rgba(15, 23, 42, 0.2)' }}>
-                  <p style={{ margin: 0, fontWeight: 900, color: 'var(--primary-navy)', fontSize: '0.8rem' }}>Profile update reminder</p>
-                  <p style={{ margin: '0.4rem 0 0.75rem', fontSize: '0.75rem', lineHeight: 1.45 }}>
-                    {profileUpdateDue ? 'Please review and update the patient profile this month.' : 'The profile was updated recently.'}
-                  </p>
-                  {profileUpdateDue && (
-                    <button
-                      type="button"
-                      className="sih-btn sih-btn-primary"
-                      style={{ width: '100%', fontSize: '0.72rem' }}
-                      onClick={() => { setIsEditing(true); setIsNotificationOpen(false); }}
-                    >
-                      Update Profile
-                    </button>
-                  )}
+              {profileOpen && (
+                <div className="sih-profile-dropdown">
+                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                    <span className="dd-icon">👤</span> Profile
+                  </button>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                    <span className="dd-icon">🚪</span> Sign Out
+                  </button>
                 </div>
               )}
             </div>
-
-            {/* Doctor Profile */}
-            <div className="sih-doctor-profile">
-              <div className="sih-doctor-avatar">
-                DR
-              </div>
-              <div className="sih-doctor-info">
-                <p className="sih-doctor-name">Dr. A. Verma</p>
-                <p className="sih-doctor-role">General Medicine</p>
-              </div>
-            </div>
-
           </div>
-
         </div>
       </header>
 
@@ -856,25 +745,6 @@ export default function BasicInfo() {
               </div>
             )}
 
-            {isEditing && (
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', padding: '1rem 0 0' }}>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  className="sih-btn sih-btn-outline"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className="sih-btn sih-btn-primary"
-                >
-                  💾 Save Details
-                </button>
-              </div>
-            )}
-
           </div>
 
           {/* RIGHT COLUMN: Critical Alerts & Doctor Notes */}
@@ -909,7 +779,7 @@ export default function BasicInfo() {
               </h3>
 
               <button
-                onClick={() => setQuickAction(quickAction === 'rx' ? null : 'rx')}
+                onClick={() => showNotification('Prescription generator opened.')}
                 className="sih-btn sih-btn-outline"
                 style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
               >
@@ -917,45 +787,8 @@ export default function BasicInfo() {
                 <span>→</span>
               </button>
 
-              {quickAction === 'rx' && (
-                <form onSubmit={handlePrescription} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem', padding: '0.75rem', backgroundColor: 'var(--mint-bg)', borderRadius: 'var(--radius-md)' }}>
-                  <input
-                    type="text"
-                    placeholder="Medication name"
-                    value={prescription.medication}
-                    onChange={(event) => setPrescription({ ...prescription, medication: event.target.value })}
-                    className="sih-input"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Dosage"
-                    value={prescription.dosage}
-                    onChange={(event) => setPrescription({ ...prescription, dosage: event.target.value })}
-                    className="sih-input"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Frequency"
-                    value={prescription.frequency}
-                    onChange={(event) => setPrescription({ ...prescription, frequency: event.target.value })}
-                    className="sih-input"
-                    required
-                  />
-                  <textarea
-                    rows={2}
-                    placeholder="Instructions (optional)"
-                    value={prescription.instructions}
-                    onChange={(event) => setPrescription({ ...prescription, instructions: event.target.value })}
-                    className="sih-textarea"
-                  />
-                  <button type="submit" className="sih-btn sih-btn-primary">Generate Prescription</button>
-                </form>
-              )}
-
               <button
-                onClick={() => setQuickAction(quickAction === 'lab' ? null : 'lab')}
+                onClick={() => showNotification('Lab test request form opened.')}
                 className="sih-btn sih-btn-outline"
                 style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
               >
@@ -963,62 +796,14 @@ export default function BasicInfo() {
                 <span>→</span>
               </button>
 
-              {quickAction === 'lab' && (
-                <form onSubmit={handleLabRequest} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem', padding: '0.75rem', backgroundColor: 'var(--mint-bg)', borderRadius: 'var(--radius-md)' }}>
-                  <input
-                    type="text"
-                    placeholder="Investigation name"
-                    value={labRequest.test}
-                    onChange={(event) => setLabRequest({ ...labRequest, test: event.target.value })}
-                    className="sih-input"
-                    required
-                  />
-                  <textarea
-                    rows={2}
-                    placeholder="Notes for the laboratory (optional)"
-                    value={labRequest.notes}
-                    onChange={(event) => setLabRequest({ ...labRequest, notes: event.target.value })}
-                    className="sih-textarea"
-                  />
-                  <button type="submit" className="sih-btn sih-btn-primary">Submit Lab Request</button>
-                </form>
-              )}
-
               <button
-                onClick={() => setQuickAction(quickAction === 'followUp' ? null : 'followUp')}
+                onClick={() => showNotification('Follow-up appointment scheduled.')}
                 className="sih-btn sih-btn-outline"
                 style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
               >
                 <span>📅 Schedule Follow-up Visit</span>
                 <span>→</span>
               </button>
-
-              {quickAction === 'followUp' && (
-                <form onSubmit={handleFollowUp} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.25rem', padding: '0.75rem', backgroundColor: 'var(--mint-bg)', borderRadius: 'var(--radius-md)' }}>
-                  <input
-                    type="date"
-                    value={followUp.date}
-                    onChange={(event) => setFollowUp({ ...followUp, date: event.target.value })}
-                    className="sih-input"
-                    required
-                  />
-                  <input
-                    type="time"
-                    value={followUp.time}
-                    onChange={(event) => setFollowUp({ ...followUp, time: event.target.value })}
-                    className="sih-input"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Reason (optional)"
-                    value={followUp.reason}
-                    onChange={(event) => setFollowUp({ ...followUp, reason: event.target.value })}
-                    className="sih-input"
-                  />
-                  <button type="submit" className="sih-btn sih-btn-primary">Schedule Visit</button>
-                </form>
-              )}
             </div>
 
             {/* Doctor Note */}

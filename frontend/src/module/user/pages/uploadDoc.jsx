@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
-import { fileToBase64, userApi } from '../services/userApi';
-import { useDashboardLanguage } from '../LanguageContext';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -77,7 +75,7 @@ export default function UploadDoc() {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'disease' | 'prescription' | 'discharge summary'
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
   const [searchQuery, setSearchQuery] = useState('');
-  const { language, setLanguage } = useDashboardLanguage();
+  const [language, setLanguage] = useState('English');
   const [toastMessage, setToastMessage] = useState(null);
 
   // Upload Modal / Selected File State
@@ -89,10 +87,18 @@ export default function UploadDoc() {
   // Preview Modal State
   const [viewingDoc, setViewingDoc] = useState(null);
 
+  // Profile dropdown
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
   useEffect(() => {
-    userApi.documents().then((items) => setDocuments(items.map((item) => ({
-      ...item, date: item.createdAt, fileSize: `${(item.size / (1024 * 1024)).toFixed(2)} MB`, status: 'Saved', doctor: 'Patient'
-    })))).catch(() => {});
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Toast Notification Helper
@@ -135,7 +141,7 @@ export default function UploadDoc() {
   };
 
   // Submit Upload
-  const handleConfirmUpload = async () => {
+  const handleConfirmUpload = () => {
     if (!selectedFile) {
       showNotification('Please select a file first!');
       return;
@@ -153,29 +159,16 @@ export default function UploadDoc() {
       doctor: 'Dr. A. Verma'
     };
 
-    try {
-      const saved = await userApi.uploadDocument({
-        title: newDoc.title, type: newDoc.type, fileName: selectedFile.name,
-        mimeType: selectedFile.type, size: selectedFile.size, content: await fileToBase64(selectedFile)
-      });
-      newDoc.id = saved.id;
-      newDoc.date = saved.createdAt;
-      setDocuments(prev => [newDoc, ...prev]);
-    } catch (error) { showNotification(error.message); return; }
+    setDocuments(prev => [newDoc, ...prev]);
     setSelectedFile(null);
     setUploadTitle('');
     showNotification(`Document "${newDoc.title}" uploaded successfully!`);
   };
 
   // Delete Document Handler
-  const handleDeleteDoc = async (id) => {
-    try { await userApi.deleteDocument(id); setDocuments(prev => prev.filter(d => d.id !== id)); showNotification('Document removed.'); }
-    catch (error) { showNotification(error.message); }
-  };
-
-  const handleDownload = (id, fileName) => {
-    window.open(userApi.downloadUrl(id), '_blank', 'noopener,noreferrer');
-    showNotification(`Downloading ${fileName}...`);
+  const handleDeleteDoc = (id) => {
+    setDocuments(prev => prev.filter(d => d.id !== id));
+    showNotification('Document removed.');
   };
 
   // Filter & Sort Logic
@@ -208,96 +201,55 @@ export default function UploadDoc() {
       {/* TOP NAVIGATION BAR */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          
-          {/* Brand Logo & App Title */}
-          <div className="sih-brand">
-            <div className="sih-logo-badge">
-              SIH
-            </div>
+          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
+            <div className="sih-logo-badge">🛡</div>
             <div>
-              <h1 className="sih-brand-title">SIH 2026 | Patient Case-Taking</h1>
-              <p className="sih-brand-subtitle">Doctor View • Clinical Documentation</p>
+              <h1 className="sih-brand-title">MedVault</h1>
+              <p className="sih-brand-subtitle">Health Portal</p>
             </div>
           </div>
 
-          {/* Section Tabs */}
           <nav className="sih-nav-menu">
-            <button
-              onClick={() => navigate('/abha')}
-              className="sih-nav-btn"
-            >
-              ABHA ID
+            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🏠</span> Dashboard
             </button>
-
-            <button
-              onClick={() => navigate('/uploadDoc')}
-              className="sih-nav-btn active"
-            >
-              Docs (Medical Records)
+            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🛡</span> ABHA
             </button>
-
-            <button
-              onClick={() => navigate('/basicInfo')}
-              className="sih-nav-btn"
-            >
-              Basic Info
+            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn active">
+              <span className="sih-nav-icon">📄</span> Documents
             </button>
-
-            <button
-              onClick={() => navigate('/consent')}
-              className="sih-nav-btn"
-            >
-              Consent
-            </button>
-
-            <button
-              onClick={() => navigate('/profile')}
-              className="sih-nav-btn"
-            >
-              Profile
+            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🔍</span> Basic Info
             </button>
           </nav>
 
-          {/* Right Controls: Search, Language, Doctor Profile */}
           <div className="sih-header-controls">
-            
-            {/* Search Input */}
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search records..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="sih-input"
-                style={{ width: '180px', padding: '0.45rem 0.75rem', fontSize: '0.75rem', backgroundColor: 'var(--navy-hover)', color: 'white', borderColor: '#475569' }}
-              />
-            </div>
-
-            {/* Language Selector */}
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="sih-lang-select"
-            >
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
               <option value="English">🌐 English</option>
-              <option value="Hindi">🌐 हिंदी (Hindi)</option>
-              <option value="Bengali">🌐 বাংলা (Bengali)</option>
-              <option value="Tamil">🌐 தமிழ் (Tamil)</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
             </select>
-
-            {/* Doctor Profile */}
-            <div className="sih-doctor-profile">
-              <div className="sih-doctor-avatar">
-                DR
-              </div>
-              <div className="sih-doctor-info">
-                <p className="sih-doctor-name">Dr. A. Verma</p>
-                <p className="sih-doctor-role">General Medicine</p>
-              </div>
+            <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
+            <div className="sih-profile-wrapper" ref={profileRef}>
+              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="sih-profile-avatar">RK</div>
+                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+              </button>
+              {profileOpen && (
+                <div className="sih-profile-dropdown">
+                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                    <span className="dd-icon">👤</span> Profile
+                  </button>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                    <span className="dd-icon">🚪</span> Sign Out
+                  </button>
+                </div>
+              )}
             </div>
-
           </div>
-
         </div>
       </header>
 
@@ -580,7 +532,10 @@ export default function UploadDoc() {
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', paddingTop: '0.5rem' }}>
                 <button
-                  onClick={() => { handleDownload(viewingDoc.id, viewingDoc.fileName); setViewingDoc(null); }}
+                  onClick={() => {
+                    showNotification(`Downloading ${viewingDoc.fileName}...`);
+                    setViewingDoc(null);
+                  }}
                   className="sih-btn sih-btn-primary"
                 >
                   Download Document
