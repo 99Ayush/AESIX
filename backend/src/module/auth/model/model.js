@@ -10,7 +10,10 @@ const userSchema = new mongoose.Schema({
   firstName:    { type: String },
   lastName:     { type: String },
   mobile:       { type: String },
-  email:        { type: String },
+  // NOTE: never make email unique without `sparse:true` — auth upserts
+  // (login verify / register enroll) don't set email, and a plain unique
+  // index rejects multiple docs with `email: null` (E11000 on test.users).
+  email:        { type: String, default: undefined },
   gender:       { type: String, enum: ['M', 'F', 'O'] },
   dob:          { type: String },                                  // "1990-01-15"
   abhaStatus:   { type: String, default: 'ACTIVE' },
