@@ -7,6 +7,7 @@ import Consent from '../module/user/pages/concent';
 import AbhaID from '../module/user/pages/AbhaID';
 import ProfilePage from '../module/user/pages/profilepage';
 import LandingPage from '../module/user/pages/landingpage';
+import DoctorDashboard from '../module/doctor';
 
 export const AppRoutes = () => {
   return (
@@ -25,6 +26,10 @@ export const AppRoutes = () => {
         <Route path="/profile" element={<ProfilePage />} />
 
         <Route path="/genai" element={<GenAiBot />} />
+
+        {/* Doctor routes */}
+        <Route path="/doctor" element={<DoctorDashboard />} />
+        <Route path="/doctor/patient/:id?" element={<DoctorDashboard />} />
 
         {/* Default: redirect to dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

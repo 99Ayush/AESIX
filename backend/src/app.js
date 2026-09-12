@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import { handleGenAiChat } from './module/genAi/controller/controller.js';
 import authRouter from './module/auth/controller/auth.controller.js';
 import userRoutes from './module/user/routes.js';
+import doctorRoutes from './module/doctor/routes/doctorRoutes.js';
 import config from './shared/config.js';
 import { errorLogger } from './shared/logger.js';
 import { startRealtimeDatabaseEvents, stopRealtimeDatabaseEvents } from './shared/realtime.js';
@@ -35,6 +36,7 @@ app.get('/api/genai/health', (_req, res) => res.json({
 app.post('/api/genai/chat', handleGenAiChat);
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRoutes);
+app.use('/api/doctor', doctorRoutes);
 app.use(errorLogger);
 
 export async function startServer() {
