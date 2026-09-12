@@ -7,8 +7,7 @@ import config from './shared/config.js';
 import mongoose from "mongoose";
 import userRoutes from './module/user/routes.js';
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+
 let server;
 
 app.use(cors());
@@ -17,6 +16,24 @@ app.use(express.json({ limit: '22mb' }));
 // Medical GenAI Chatbot Endpoint
 app.post("/api/genai/chat", handleGenAiChat);
 app.use('/api/users', userRoutes);
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import "dotenv/config";
+import { handleGenAiChat } from "./module/genAi/controller/controller.js";
+import { errorLogger } from "./shared/logger.js";
+import userRouter from "./user/userRoutes.js";
+import { connectUserDatabase, seedUserDemoData } from "./user/model/userModel.js";
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+app.use("/api/users/uploads", express.static(join(fileURLToPath(new URL(".", import.meta.url)), "user", "uploads")));
+
+// Medical GenAI Chatbot Endpoint
+app.post("/api/genai/chat", handleGenAiChat);
+app.use("/api/users", userRouter);
 
 // Health check endpoint
 app.get("/api/genai/health", (req, res) => {
@@ -65,5 +82,20 @@ if (process.env.NODE_ENV !== 'test') {
     process.exitCode = 1;
   });
 }
+async function startServer() {
+  app.listen(PORT, () => {
+    console.log(`Backend Express server running on http://localhost:${PORT}`);
+    console.log(`MongoDB user API available at http://localhost:${PORT}/api/users`);
+  });
+  try {
+    await connectUserDatabase();
+    await seedUserDemoData();
+    console.log("MongoDB user data connected and ready.");
+  } catch (error) {
+    console.error("MongoDB is unavailable. User endpoints will work once it reconnects:", error.message);
+  }
+}
+
+startServer();
 
 export default app;
