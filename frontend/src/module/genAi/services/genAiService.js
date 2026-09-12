@@ -2,16 +2,18 @@
  * Service to communicate with backend GenAI server
  */
 
-const API_BASE_URL = 'http://localhost:5000/api/genai';
+const API_BASE_URL = import.meta.env.VITE_API_URL
+  ? `${import.meta.env.VITE_API_URL}/genai`
+  : 'http://localhost:5001/api/genai';
 
-export const sendChatMessageToBackend = async (message, history = []) => {
+export const sendChatMessageToBackend = async (message, history = [], language = 'en') => {
   try {
     const response = await fetch(`${API_BASE_URL}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message, history }),
+      body: JSON.stringify({ message, history, language }),
     });
 
     if (!response.ok) {

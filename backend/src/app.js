@@ -5,23 +5,25 @@ import { errorLogger } from "./shared/logger.js";
 import authRouter from './module/auth/controller/auth.controller.js';
 import config from './shared/config.js';
 import mongoose from "mongoose";
+import userRoutes from './module/user/routes.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 let server;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '22mb' }));
 
 // Medical GenAI Chatbot Endpoint
 app.post("/api/genai/chat", handleGenAiChat);
+app.use('/api/users', userRoutes);
 
 // Health check endpoint
 app.get("/api/genai/health", (req, res) => {
   res.json({
     status: "ok",
-    ollamaEndpoint: process.env.OLLAMA_ENDPOINT || "http://localhost:11434/api/chat",
-    model: process.env.OLLAMA_MODEL || "llama3.2:latest",
+    groqEndpoint: process.env.GROQ_ENDPOINT || "https://api.groq.com/openai/v1/chat/completions",
+    model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
   });
 });
 
