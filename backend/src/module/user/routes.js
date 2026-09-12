@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { MongoClient } from 'mongodb';
+import { notifyDatabaseChange } from '../../shared/realtime.js';
 
 const router = Router();
 const dataFile = path.join(path.dirname(fileURLToPath(import.meta.url)), 'user.json');
@@ -14,12 +15,34 @@ let mongoConnecting;
 let mongoUnavailableUntil = 0;
 const seed = {
   profile: {
-    id: 'user-1', name: 'Rajesh Kumar', dob: '1992-03-15', gender: 'Male', bloodGroup: 'O+', maritalStatus: 'Married', occupation: 'Software Engineer', primaryLanguage: 'Hindi / English',
-    contact: { phone: '9876543210', email: 'rajesh.kumar@example.com', address: 'House #104, Green Park Extension, New Delhi - 110016', emergencyContactName: 'Sunita Kumar', emergencyContactRelation: 'Spouse', emergencyContactPhone: '9876543211' },
-    medications: [{ id: 'med-1', name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', timing: 'After Meals' }], allergies: ['Penicillin (Severe)'], conditions: ['Type 2 Diabetes'], criticalAlerts: []
+    id: 'user-1',
+    name: '',
+    dob: '',
+    gender: '',
+    bloodGroup: '',
+    maritalStatus: '',
+    occupation: '',
+    primaryLanguage: '',
+    contact: {
+      phone: '',
+      email: '',
+      address: '',
+      emergencyContactName: '',
+      emergencyContactRelation: '',
+      emergencyContactPhone: ''
+    },
+    medications: [],
+    allergies: [],
+    conditions: [],
+    criticalAlerts: []
   },
-  abha: { number: '91-8472-1029-4821', phrAddress: 'rajesh.kumar@abdm', verificationStatus: 'Verified', issuedDate: '2023-01-12' },
-  consents: [{ id: 'consent-1', requester: 'Apex Diagnostics Lab', purpose: 'Lab Report & Scan Access', requestedAt: '2026-09-09', status: 'pending' }, { id: 'consent-2', requester: 'Genomics India Lab', purpose: 'DNA Variant Data Access', requestedAt: '2026-09-11', status: 'pending' }],
+  abha: {
+    number: '',
+    phrAddress: '',
+    verificationStatus: 'Unlinked',
+    issuedDate: ''
+  },
+  consents: [],
   documents: []
 };
 const copySeed = () => JSON.parse(JSON.stringify(seed));
@@ -53,10 +76,15 @@ const read = async () => {
   await collection.insertOne({ _id: 'user-1', ...data, createdAt: new Date() });
   return data;
 };
+
 const write = async (data) => {
   const collection = await getCollection();
-  if (!collection) return fs.writeFile(dataFile, JSON.stringify(data, null, 2));
-  await collection.replaceOne({ _id: 'user-1' }, { _id: 'user-1', ...data, updatedAt: new Date() }, { upsert: true });
+  if (!collection) {
+    await fs.writeFile(dataFile, JSON.stringify(data, null, 2));
+  } else {
+    await collection.replaceOne({ _id: 'user-1' }, { _id: 'user-1', ...data, updatedAt: new Date() }, { upsert: true });
+  }
+  notifyDatabaseChange('update', 'users', 'user-1');
 };
 const respond = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const fail = (res, error, status = 400) => res.status(status).json({ success: false, error });

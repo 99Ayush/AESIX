@@ -1,15 +1,27 @@
 import express from 'express';
+import http from 'node:http';
 import cors from 'cors';
 import mongoose from 'mongoose';
+import { Server } from 'socket.io';
 import { handleGenAiChat } from './module/genAi/controller/controller.js';
 import authRouter from './module/auth/controller/auth.controller.js';
 import userRoutes from './module/user/routes.js';
 import config from './shared/config.js';
 import { errorLogger } from './shared/logger.js';
+import { startRealtimeDatabaseEvents, stopRealtimeDatabaseEvents } from './shared/realtime.js';
 
 const app = express();
-const port = Number(process.env.PORT || 5000);
+const port = Number(process.env.PORT || 5001);
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+  cors: { origin: process.env.FRONTEND_URL || 'http://localhost:5173', methods: ['GET', 'POST', 'PATCH', 'DELETE'] },
+});
 let server;
+
+io.on('connection', (socket) => {
+  console.log(`Realtime client connected: ${socket.id}`);
+  socket.on('disconnect', () => console.log(`Realtime client disconnected: ${socket.id}`));
+});
 
 app.use(cors());
 app.use(express.json({ limit: '22mb' }));
@@ -30,8 +42,9 @@ export async function startServer() {
   if (!config.database.uri) throw new Error('MONGODB_URI is required. Configure backend/.env.');
 
   await mongoose.connect(config.database.uri, { serverSelectionTimeoutMS: 10_000 });
+  startRealtimeDatabaseEvents(io);
   server = await new Promise((resolve, reject) => {
-    const candidate = app.listen(port);
+    const candidate = httpServer.listen(port);
     candidate.once('error', reject);
     candidate.once('listening', () => resolve(candidate));
   });
@@ -43,6 +56,7 @@ export async function stopServer() {
   if (!server) return;
   await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   server = undefined;
+  await stopRealtimeDatabaseEvents();
   await mongoose.disconnect();
 }
 

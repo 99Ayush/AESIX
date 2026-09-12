@@ -203,8 +203,8 @@ export const GenAiBot = () => {
         sender: 'assistant',
         text:
           language === 'hi'
-            ? `⚠️ ग्रोक एआई उत्तर प्राप्त नहीं हो सका: ${err.message}\n\nकृपया सुनिश्चित करें कि बैकएंड .env में GROQ_API_KEY सही है और बैकएंड सर्वर (पोर्ट 5000) चालू है।`
-            : `⚠️ Could not get AI response from Groq API: ${err.message}\n\nPlease ensure your GROQ_API_KEY is configured in backend .env and backend server is running on port 5000.`,
+            ? `⚠️ ग्रोक एआई उत्तर प्राप्त नहीं हो सका: ${err.message}\n\nकृपया सुनिश्चित करें कि बैकएंड .env में GROQ_API_KEY सही है और बैकएंड सर्वर (पोर्ट 5001) चालू है।`
+            : `⚠️ Could not get AI response from Groq API: ${err.message}\n\nPlease ensure your GROQ_API_KEY is configured in backend .env and backend server is running on port 5001.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);

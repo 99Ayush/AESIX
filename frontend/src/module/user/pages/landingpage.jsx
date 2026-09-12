@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -21,7 +22,9 @@ export default function LandingPage() {
   }, []);
 
   useEffect(() => {
-    userApi.dashboard().then(setDashboard).catch(() => setDashboard(null));
+    const loadDashboard = () => userApi.dashboard().then(setDashboard).catch(() => setDashboard(null));
+    loadDashboard();
+    return onDatabaseChange(loadDashboard);
   }, []);
 
   const profile = dashboard?.profile;
@@ -47,13 +50,12 @@ export default function LandingPage() {
     text, icon: '✦', bg: ['#FDE8EC', '#EFEAFF', '#FFF4D5'][index % 3], color: '#5278D0',
   }));
 
-  // Medical dictionary terms
   const dictTerms = [
-    { title: 'Hypertension', category: 'Cardiovascular', desc: 'Persistently elevated blood pressure ≥130/80 mmHg in the arteries, increasing risk of heart...', bg: '#FFF4F5', iconBg: '#F9D7DD', iconColor: '#D94761', catBg: '#F9DDEA', catColor: '#B45576' },
-    { title: 'Metformin', category: 'Pharmacology', desc: 'First-line oral antidiabetic drug that lowers hepatic glucose output and improves...', bg: '#F1FBF5', iconBg: '#D7F2E2', iconColor: '#41A16F', catBg: '#DFF3E6', catColor: '#4B8D6C' },
-    { title: 'HbA1c', category: 'Diagnostics', desc: 'Glycated hemoglobin test reflecting average blood glucose over the past 2–3 months...', bg: '#F1F7FF', iconBg: '#D9E8FF', iconColor: '#477DD4', catBg: '#DFEBFF', catColor: '#527AC5' },
-    { title: 'Amlodipine', category: 'Pharmacology', desc: 'Calcium channel blocker used for hypertension and angina. Relaxes blood ve...', bg: '#F7F1FF', iconBg: '#E5D8FF', iconColor: '#7655CE', catBg: '#EADFFF', catColor: '#755BB9' },
-    { title: 'oGER', category: 'Nephrology', desc: 'A medical term related to kidney health and renal function...', bg: '#F1FBF7', iconBg: '#D8F1E8', iconColor: '#439579', catBg: '#DDF2EA', catColor: '#4A8D78' },
+    { title: 'Metformin', category: 'Prescription Medication', desc: 'An oral anti-diabetic medication used to control high blood sugar levels in Type 2 Diabetes.', bg: '#F8FAFC', iconBg: '#E2E8F0', iconColor: '#0F172A', catBg: '#E2E8F0', catColor: '#1E293B' },
+    { title: 'HbA1c', category: 'Lab Marker', desc: 'Measures average blood sugar levels over the past 2 to 3 months.', bg: '#F0FDF4', iconBg: '#DCFCE7', iconColor: '#166534', catBg: '#DCFCE7', catColor: '#15803D' },
+    { title: 'Type 2 Diabetes', category: 'Chronic Condition', desc: 'A metabolic condition where the body does not use insulin properly.', bg: '#EFF6FF', iconBg: '#DBEAFE', iconColor: '#1E40AF', catBg: '#DBEAFE', catColor: '#1D4ED8' },
+    { title: 'SpO2', category: 'Vital Measurement', desc: 'Peripheral capillary oxygen saturation level, indicating blood oxygen levels.', bg: '#FAF5FF', iconBg: '#F3E8FF', iconColor: '#6B21A8', catBg: '#F3E8FF', catColor: '#7E22CE' },
+    { title: 'ABDM PHR', category: 'Health Account', desc: 'Personal Health Record address assigned under the Ayushman Bharat Digital Mission.', bg: '#FFFBEB', iconBg: '#FEF3C7', iconColor: '#92400E', catBg: '#FEF3C7', catColor: '#B45309' },
   ];
 
   return (

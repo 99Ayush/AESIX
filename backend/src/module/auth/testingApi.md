@@ -4,12 +4,12 @@ Use this guide with Postman while the backend is running.
 
 ## Setup
 
-- Base URL: `http://localhost:5000/api/auth`
+- Base URL: `http://localhost:5001/api/auth`
 - Header for every request: `Content-Type: application/json`
 - Mock mode is enabled by default. Start the backend with `npm run dev`. Mock ABDM responses are used, but OTP transactions, users, and sessions are stored in MongoDB.
 - To use real ABDM and MongoDB instead, set `ABDM_MOCK=false` and ensure `MONGODB_URI` is configured in `.env` or `AESIX-DB.env`.
 
-In Postman, create an environment variable named `baseUrl` with the value `http://localhost:5000/api/auth`. The examples below use `{{baseUrl}}`.
+In Postman, create an environment variable named `baseUrl` with the value `http://localhost:5001/api/auth`. The examples below use `{{baseUrl}}`.
 
 ## 1. Request Login OTP
 

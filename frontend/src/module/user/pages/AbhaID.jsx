@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -16,41 +18,8 @@ export const formatDate = (dateString) => {
 export default function AbhaID() {
   const navigate = useNavigate();
 
-  // Local Mock Data inside AbhaID.jsx
-  const [abhaDetails] = useState({
-    name: 'Rajesh Kumar',
-    abhaNumber: '91-8472-1029-4821',
-    phrAddress: 'rajesh.kumar@abdm',
-    dob: '1992-03-15',
-    gender: 'Male',
-    mobile: '+91 98765 43210',
-    bloodGroup: 'O+',
-    address: 'House #104, Green Park Extension, New Delhi - 110016',
-    emergencyContact: 'Sunita Kumar (+91 98765 43211)',
-    verificationStatus: 'Verified (Aadhaar Seeded)',
-    issuedDate: '2023-01-12'
-  });
-
-  const [pendingConsents] = useState([
-    {
-      id: 1,
-      requester: "Apex Diagnostics Lab",
-      purpose: "Lab Report & Scan Access",
-      date: "2026-09-09"
-    },
-    {
-      id: 2,
-      requester: "Genomics India Lab",
-      purpose: "DNA Variant Data Access",
-      date: "2026-09-11"
-    },
-    {
-      id: 3,
-      requester: "Apollo Specialty Hospital",
-      purpose: "EHR Transfer Request",
-      date: "2026-09-08"
-    }
-  ]);
+  const [abhaDetails, setAbhaDetails] = useState({});
+  const [pendingConsents, setPendingConsents] = useState([]);
 
   const [language, setLanguage] = useState('English');
   const [toastMessage, setToastMessage] = useState(null);
@@ -71,6 +40,21 @@ export default function AbhaID() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
+
+  useEffect(() => {
+    const fetchData = () => {
+      userApi.abha().then((data) => setAbhaDetails({
+        ...data,
+        abhaNumber: data.number,
+        mobile: data.contact?.phone,
+        address: data.contact?.address,
+        emergencyContact: data.contact?.emergencyContactName,
+      })).catch((error) => showNotification(error.message));
+      userApi.consents().then((items) => setPendingConsents(items.filter((item) => item.status === 'pending'))).catch((error) => showNotification(error.message));
+    };
+    fetchData();
+    return onDatabaseChange(fetchData);
+  }, []);
 
   const handleDownload = () => {
     showNotification('Downloading official ABHA Health Card (PDF)...');
@@ -126,7 +110,7 @@ export default function AbhaID() {
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
-                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className="sih-profile-name">{abhaDetails.name || 'Profile'}</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (
@@ -183,7 +167,7 @@ export default function AbhaID() {
                   {/* Photo & Main Demographics */}
                   <div className="abha-user-profile">
                     <div className="abha-avatar-box">
-                      {abhaDetails.name.split(' ').map(n => n[0]).join('')}
+                      {(abhaDetails.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>

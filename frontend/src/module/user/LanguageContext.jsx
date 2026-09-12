@@ -163,10 +163,23 @@ export function DashboardLanguageProvider({ children }) {
   const [language, setLanguage] = useState(() => localStorage.getItem('dashboard-language') || 'English');
   useEffect(() => {
     localStorage.setItem('dashboard-language', language);
-    document.documentElement.lang = languages[language];
-    translateTree(language);
-    const observer = new MutationObserver(() => translateTree(language));
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    document.documentElement.lang = languages[language] || 'en';
+    let isTranslating = false;
+    const runTranslation = () => {
+      if (isTranslating) return;
+      isTranslating = true;
+      observer.disconnect();
+      try {
+        translateTree(language);
+      } catch (err) {
+        console.warn('Translation error:', err);
+      } finally {
+        observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+        isTranslating = false;
+      }
+    };
+    const observer = new MutationObserver(runTranslation);
+    runTranslation();
     return () => observer.disconnect();
   }, [language]);
   return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>;

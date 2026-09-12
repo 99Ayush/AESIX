@@ -1,26 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  const [patientProfile] = useState({
-    name: 'Rajesh Kumar',
-    abhaNumber: '91-8472-1029-4821',
-    phrAddress: 'rajesh.kumar@abdm',
-    dob: '1992-03-15',
-    gender: 'Male',
-    bloodGroup: 'O+',
-    mobile: '+91 98765 43210',
-    email: 'rajesh.kumar@example.com',
-    emergencyContact: 'Sunita Kumar (+91 98765 43211)',
-    address: 'House #104, Green Park Extension, New Delhi - 110016',
-    abhaStatus: 'Verified (Aadhaar Seeded)',
-    registeredHospital: 'AIIMS New Delhi',
-    primaryDoctor: 'Dr. A. Verma (General Medicine)',
-    insuranceProvider: 'Star Health Insurance (Pol #SH-829104)'
-  });
+  const [patientProfile, setPatientProfile] = useState({});
 
   const [language, setLanguage] = useState('English');
   const [toastMessage, setToastMessage] = useState(null);
@@ -41,6 +28,21 @@ export default function ProfilePage() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
+
+  useEffect(() => {
+    const fetchProfileData = () => {
+      Promise.all([userApi.profile(), userApi.abha()]).then(([profile, abha]) => {
+        setPatientProfile({
+          name: profile.name, abhaNumber: abha.number, phrAddress: abha.phrAddress, dob: profile.dob,
+          gender: profile.gender, bloodGroup: profile.bloodGroup, mobile: profile.contact?.phone,
+          email: profile.contact?.email, emergencyContact: profile.contact?.emergencyContactName,
+          address: profile.contact?.address, abhaStatus: abha.verificationStatus,
+        });
+      }).catch((error) => showNotification(error.message));
+    };
+    fetchProfileData();
+    return onDatabaseChange(fetchProfileData);
+  }, []);
 
   return (
     <div className="sih-page-wrapper">
@@ -92,7 +94,7 @@ export default function ProfilePage() {
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
-                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className="sih-profile-name">{patientProfile.name || 'Profile'}</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (
@@ -117,7 +119,7 @@ export default function ProfilePage() {
         <div className="profile-hero-banner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div className="profile-avatar-large">
-              {patientProfile.name.split(' ').map(n => n[0]).join('')}
+              {(patientProfile.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')}
             </div>
             <div>
               <span className="sih-badge sih-badge-teal" style={{ marginBottom: '0.4rem' }}>

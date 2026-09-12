@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -17,68 +18,7 @@ export const formatDate = (dateString) => {
 export default function Consent() {
   const navigate = useNavigate();
 
-  const [consents, setConsents] = useState([
-    {
-      id: 1,
-      title: "Medical History & EHR Access",
-      status: "accepted",
-      date: "2026-09-10",
-      expiry: "2027-09-10",
-      requester: "Dr. A. Verma (General Medicine)",
-      purpose: "Allows viewing patient past diagnoses, vitals logs, and clinical notes for active treatment.",
-      scope: ["Medical History", "Vitals", "Diagnoses"]
-    },
-    {
-      id: 2,
-      title: "Diagnostic Document Processing",
-      status: "pending",
-      date: "2026-09-09",
-      expiry: "2026-10-09",
-      requester: "Apex Diagnostics Lab",
-      purpose: "Permission to process and store uploaded blood test reports and radiologic scans.",
-      scope: ["Lab Reports", "Scans & Images"]
-    },
-    {
-      id: 3,
-      title: "Third-Party Research Data Sharing",
-      status: "rejected",
-      date: "2026-09-08",
-      expiry: "N/A",
-      requester: "BioMed Research Institute",
-      purpose: "Anonymized case data sharing for epidemiological research studies.",
-      scope: ["Anonymized Records"]
-    },
-    {
-      id: 4,
-      title: "Emergency Tele-Consultation Consent",
-      status: "accepted",
-      date: "2026-08-25",
-      expiry: "2027-08-25",
-      requester: "SIH Emergency Telehealth Network",
-      purpose: "Consent for video consultation and instant digital prescription generation during emergency care.",
-      scope: ["Video Call", "Digital Rx"]
-    },
-    {
-      id: 5,
-      title: "Pharmacy Medication Dispensing Access",
-      status: "accepted",
-      date: "2026-08-15",
-      expiry: "2026-11-15",
-      requester: "Jan Aushadhi Pharmacy",
-      purpose: "Permission for pharmacy to verify active electronic prescriptions for medication fulfillment.",
-      scope: ["Prescriptions Only"]
-    },
-    {
-      id: 6,
-      title: "Genomic Sequencing Data Access",
-      status: "pending",
-      date: "2026-09-11",
-      expiry: "2026-12-11",
-      requester: "Genomics India Lab",
-      purpose: "Access request for DNA variant analysis data to customize pharmacological dosage.",
-      scope: ["Genomic Data"]
-    }
-  ]);
+  const [consents, setConsents] = useState([]);
 
   // State Management
   const [activeStatus, setActiveStatus] = useState('accepted');
@@ -106,13 +46,17 @@ export default function Consent() {
   };
 
   useEffect(() => {
-    userApi.consents().then((items) => setConsents(items.map((item) => ({
-      ...item,
-      title: item.purpose,
-      date: item.requestedAt,
-      expiry: item.respondedAt || 'N/A',
-      scope: [item.purpose],
-    })))).catch((error) => showNotification(error.message));
+    const fetchConsents = () => {
+      userApi.consents().then((items) => setConsents(items.map((item) => ({
+        ...item,
+        title: item.purpose,
+        date: item.requestedAt,
+        expiry: item.respondedAt || 'N/A',
+        scope: [item.purpose],
+      })))).catch((error) => showNotification(error.message));
+    };
+    fetchConsents();
+    return onDatabaseChange(fetchConsents);
   }, []);
 
   // Status Action Handlers
@@ -190,7 +134,7 @@ export default function Consent() {
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
-                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className="sih-profile-name">Profile</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (

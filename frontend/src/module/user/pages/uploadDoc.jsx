@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { fileToBase64, userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -65,7 +66,11 @@ export default function UploadDoc() {
   };
 
   useEffect(() => {
-    userApi.documents().then((items) => setDocuments(items.map(toViewModel))).catch((error) => showNotification(error.message));
+    const fetchDocuments = () => {
+      userApi.documents().then((items) => setDocuments(items.map(toViewModel))).catch((error) => showNotification(error.message));
+    };
+    fetchDocuments();
+    return onDatabaseChange(fetchDocuments);
   }, []);
 
   // Handle File Selection
@@ -201,7 +206,7 @@ export default function UploadDoc() {
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
-                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className="sih-profile-name">Profile</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (
