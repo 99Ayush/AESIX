@@ -9,6 +9,8 @@ import ProfilePage from '../module/user/pages/profilepage';
 import LandingPage from '../module/user/pages/landingpage';
 import DoctorDashboard from '../module/doctor';
 
+import KindleMain from '../module/user/pages/kindleMain';
+
 export const AppRoutes = () => {
   return (
     <Router>
@@ -24,6 +26,9 @@ export const AppRoutes = () => {
         <Route path="/abha" element={<AbhaID />} />
         <Route path="/abhaId" element={<AbhaID />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/kindle" element={<KindleMain />} />
+        <Route path="/kindlemain" element={<KindleMain />} />
+        <Route path="/health-code" element={<KindleMain />} />
 
         <Route path="/genai" element={<GenAiBot />} />
 
