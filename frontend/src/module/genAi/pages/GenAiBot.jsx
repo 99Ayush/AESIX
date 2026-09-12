@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { sendChatMessageToBackend } from '../services/bot';
 import { ChatHeader } from '../components/ChatHeader';
@@ -39,6 +41,7 @@ export const GenAiBot = () => {
   const isListeningRef = useRef(false);
   const v2vSilenceTimerRef = useRef(null);
   const isProcessingSpeechRef = useRef(false);
+  const lastV2vTranscriptRef = useRef('');
 
   // Auto-scroll to bottom of text chat
   useEffect(() => {
@@ -94,7 +97,7 @@ export const GenAiBot = () => {
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
-        } catch (e) {}
+        } catch (e) { }
       }
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
@@ -107,7 +110,6 @@ export const GenAiBot = () => {
     const newLang = language === 'en' ? 'hi' : 'en';
     setLanguage(newLang);
 
-    // If chat only contains initial welcome message, update it to new language
     if (messages.length === 1 && messages[0].id === 'welcome_1') {
       setMessages([getWelcomeMessage(newLang)]);
     }
@@ -159,7 +161,7 @@ export const GenAiBot = () => {
     const cleanText = text.replace(/[*#\-_]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
     utterance.lang = language === 'hi' ? 'hi-IN' : 'en-US';
-    utterance.rate = 0.95; // Slightly calmer, soothing rate
+    utterance.rate = 0.95;
     utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
   };
@@ -205,6 +207,8 @@ export const GenAiBot = () => {
           language === 'hi'
             ? `⚠️ ग्रोक एआई उत्तर प्राप्त नहीं हो सका: ${err.message}\n\nकृपया सुनिश्चित करें कि बैकएंड .env में GROQ_API_KEY सही है और बैकएंड सर्वर (पोर्ट 5001) चालू है।`
             : `⚠️ Could not get AI response from Groq API: ${err.message}\n\nPlease ensure your GROQ_API_KEY is configured in backend .env and backend server is running on port 5001.`,
+            ? `⚠️ उत्तर प्राप्त नहीं हो सका: ${err.message}`
+            : `⚠️ Could not get AI response: ${err.message}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -213,7 +217,6 @@ export const GenAiBot = () => {
     }
   };
 
-  // Quick Action Handler
   const handleSelectQuickAction = (actionText) => {
     setInputMessage(actionText);
   };
@@ -226,10 +229,15 @@ export const GenAiBot = () => {
     if (!spokenText || isProcessingSpeechRef.current) return;
     isProcessingSpeechRef.current = true;
 
+    if (v2vSilenceTimerRef.current) {
+      clearTimeout(v2vSilenceTimerRef.current);
+      v2vSilenceTimerRef.current = null;
+    }
+
     if (v2vRecognitionRef.current) {
       try {
         v2vRecognitionRef.current.stop();
-      } catch (e) {}
+      } catch (e) { }
     }
 
     setV2vState('thinking');
@@ -277,6 +285,7 @@ export const GenAiBot = () => {
           setV2vState('listening');
           isProcessingSpeechRef.current = false;
           setV2vUserTranscript('');
+          lastV2vTranscriptRef.current = '';
           restartV2vListening();
         };
 
@@ -284,6 +293,8 @@ export const GenAiBot = () => {
           console.warn('Speech synthesis error:', err);
           setV2vState('listening');
           isProcessingSpeechRef.current = false;
+          setV2vUserTranscript('');
+          lastV2vTranscriptRef.current = '';
           restartV2vListening();
         };
 
@@ -291,6 +302,8 @@ export const GenAiBot = () => {
       } else {
         setV2vState('listening');
         isProcessingSpeechRef.current = false;
+        setV2vUserTranscript('');
+        lastV2vTranscriptRef.current = '';
         restartV2vListening();
       }
     } catch (err) {
@@ -298,6 +311,8 @@ export const GenAiBot = () => {
       setV2vAiResponse(`Error: ${err.message}`);
       setV2vState('listening');
       isProcessingSpeechRef.current = false;
+      setV2vUserTranscript('');
+      lastV2vTranscriptRef.current = '';
       restartV2vListening();
     }
   };
@@ -307,7 +322,7 @@ export const GenAiBot = () => {
       try {
         v2vRecognitionRef.current.lang = language === 'hi' ? 'hi-IN' : 'en-US';
         v2vRecognitionRef.current.start();
-      } catch (e) {}
+      } catch (e) { }
     }
   };
 
@@ -319,6 +334,7 @@ export const GenAiBot = () => {
     setV2vAiResponse('');
     setIsMicMuted(false);
     isProcessingSpeechRef.current = false;
+    lastV2vTranscriptRef.current = '';
 
     if (isVoiceActive) {
       toggleVoiceMode();
@@ -327,7 +343,8 @@ export const GenAiBot = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition) {
       const rec = new SpeechRecognition();
-      rec.continuous = true;
+      // Set to false so the browser doesn't wait 10-15s to finalize speech boundaries
+      rec.continuous = false;
       rec.interimResults = true;
       rec.lang = language === 'hi' ? 'hi-IN' : 'en-US';
 
@@ -337,14 +354,23 @@ export const GenAiBot = () => {
           transcript += event.results[i][0].transcript;
         }
 
-        if (transcript.trim()) {
-          setV2vUserTranscript(transcript);
+        const trimmedTranscript = transcript.trim();
+
+        if (trimmedTranscript) {
+          setV2vUserTranscript(trimmedTranscript);
+          lastV2vTranscriptRef.current = trimmedTranscript;
           setV2vState('listening');
 
-          if (v2vSilenceTimerRef.current) clearTimeout(v2vSilenceTimerRef.current);
+          // Reset 4-second silence timer on every new speech fragment
+          if (v2vSilenceTimerRef.current) {
+            clearTimeout(v2vSilenceTimerRef.current);
+          }
+
           v2vSilenceTimerRef.current = setTimeout(() => {
-            processVoiceInput(transcript.trim());
-          }, 1600);
+            if (!isProcessingSpeechRef.current && lastV2vTranscriptRef.current) {
+              processVoiceInput(lastV2vTranscriptRef.current);
+            }
+          }, 4000); // 4 Seconds silence threshold
         }
       };
 
@@ -353,16 +379,20 @@ export const GenAiBot = () => {
       };
 
       rec.onend = () => {
-        if (!isProcessingSpeechRef.current && !isMicMuted && isVoiceToVoiceOpen) {
+        // If the browser auto-ended and we have a transcript ready, process immediately
+        if (!isProcessingSpeechRef.current && lastV2vTranscriptRef.current.trim()) {
+          processVoiceInput(lastV2vTranscriptRef.current.trim());
+        } else if (!isProcessingSpeechRef.current && !isMicMuted && isVoiceToVoiceOpen) {
+          // Restart recognition if user hasn't said anything yet
           try {
             rec.start();
-          } catch (err) {}
+          } catch (err) { }
         }
       };
 
       try {
         rec.start();
-      } catch (e) {}
+      } catch (e) { }
       v2vRecognitionRef.current = rec;
     } else {
       alert(
@@ -380,12 +410,13 @@ export const GenAiBot = () => {
 
     if (v2vSilenceTimerRef.current) {
       clearTimeout(v2vSilenceTimerRef.current);
+      v2vSilenceTimerRef.current = null;
     }
 
     if (v2vRecognitionRef.current) {
       try {
         v2vRecognitionRef.current.abort();
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if ('speechSynthesis' in window) {
@@ -400,10 +431,13 @@ export const GenAiBot = () => {
       restartV2vListening();
     } else {
       setIsMicMuted(true);
+      if (v2vSilenceTimerRef.current) {
+        clearTimeout(v2vSilenceTimerRef.current);
+      }
       if (v2vRecognitionRef.current) {
         try {
           v2vRecognitionRef.current.stop();
-        } catch (e) {}
+        } catch (e) { }
       }
     }
   };
