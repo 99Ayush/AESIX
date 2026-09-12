@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -25,50 +27,13 @@ export const formatPhone = (phone) => {
 export default function BasicInfo() {
   const navigate = useNavigate();
 
-  // Mock Patient Data
-  const [patient, setPatient] = useState({
-    id: '13520802724',
-    abhaId: '91-8472-1029-4821',
-    name: 'Rajesh Kumar',
-    age: 32,
-    gender: 'Male',
-    dob: '1992-03-15',
-    bloodGroup: 'O+',
-    maritalStatus: 'Married',
-    occupation: 'Software Engineer',
-    primaryLanguage: 'Hindi / English',
-    photo: null,
-    contact: {
-      phone: '9876543210',
-      email: 'rajesh.kumar@example.com',
-      address: 'House #104, Green Park Extension, New Delhi - 110016',
-      emergencyContactName: 'Sunita Kumar',
-      emergencyContactRelation: 'Spouse',
-      emergencyContactPhone: '9876543211'
-    },
-    medications: [
-      { id: 1, name: 'Metformin', dosage: '500mg', frequency: 'Twice daily', timing: 'After Meals' },
-      { id: 2, name: 'Amlodipine', dosage: '5mg', frequency: 'Once daily', timing: 'Morning' }
-    ],
-    allergies: ['Penicillin (Severe)', 'Dust Pollen (Mild)'],
-    conditions: ['Type 2 Diabetes', 'Mild Hypertension'],
-    criticalAlerts: [
-      { id: 1, type: 'allergy', text: 'Penicillin Allergy - Severe Anaphylaxis Risk', severity: 'high' },
-      { id: 2, type: 'vital', text: 'Monitor Blood Pressure Daily', severity: 'medium' }
-    ],
-    recentCheckups: [
-      { id: 1, date: '2024-09-05', type: 'General Checkup', summary: 'BP: 130/85, Pulse: 72 bpm, Weight: 74 kg' },
-      { id: 2, date: '2024-08-12', type: 'Endocrinology Consult', summary: 'HbA1c: 6.8%, Fasting Glucose: 118 mg/dL' },
-      { id: 3, date: '2024-06-20', type: 'Annual Health Assessment', summary: 'Overall vitals stable. Advised diet control.' }
-    ],
-    vitalsSnapshot: {
-      bp: '130/85 mmHg',
-      heartRate: '72 bpm',
-      spo2: '98%',
-      temp: '98.4 °F',
-      glucose: '118 mg/dL'
-    }
-  });
+  const emptyPatient = {
+    id: '', abhaId: '', name: '', age: '', gender: '', dob: '', bloodGroup: '', maritalStatus: '', occupation: '', primaryLanguage: '', photo: null,
+    contact: { phone: '', email: '', address: '', emergencyContactName: '', emergencyContactRelation: '', emergencyContactPhone: '' },
+    medications: [], allergies: [], conditions: [], criticalAlerts: [], recentCheckups: [],
+    vitalsSnapshot: { bp: '', heartRate: '', spo2: '', temp: '', glucose: '' },
+  };
+  const [patient, setPatient] = useState(emptyPatient);
 
   // UI State
   const [isEditing, setIsEditing] = useState(false);
@@ -99,6 +64,30 @@ export default function BasicInfo() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
+
+  const normalizePatient = (data) => ({
+    ...emptyPatient,
+    ...data,
+    contact: { ...emptyPatient.contact, ...(data?.contact || {}) },
+    vitalsSnapshot: { ...emptyPatient.vitalsSnapshot, ...(data?.vitalsSnapshot || {}) },
+    medications: Array.isArray(data?.medications) ? data.medications : [],
+    allergies: Array.isArray(data?.allergies) ? data.allergies : [],
+    conditions: Array.isArray(data?.conditions) ? data.conditions : [],
+    criticalAlerts: Array.isArray(data?.criticalAlerts) ? data.criticalAlerts : [],
+    recentCheckups: Array.isArray(data?.recentCheckups) ? data.recentCheckups : [],
+  });
+
+  useEffect(() => {
+    const fetchProfile = () => {
+      userApi.profile().then((profile) => {
+        const normalized = normalizePatient(profile);
+        setPatient(normalized);
+        setFormData((prev) => (isEditing ? prev : normalized));
+      }).catch((error) => showNotification(error.message));
+    };
+    fetchProfile();
+    return onDatabaseChange(fetchProfile);
+  }, [isEditing]);
 
   const handleInputChange = (field, val) => {
     setFormData(prev => ({ ...prev, [field]: val }));
@@ -159,10 +148,17 @@ export default function BasicInfo() {
     }));
   };
 
-  const handleSave = () => {
-    setPatient({ ...formData });
-    setIsEditing(false);
-    showNotification('Patient basic information updated successfully!');
+  const handleSave = async () => {
+    try {
+      const saved = await userApi.saveProfile(formData);
+      const normalized = normalizePatient(saved);
+      setPatient(normalized);
+      setFormData(normalized);
+      setIsEditing(false);
+      showNotification('Patient basic information saved permanently.');
+    } catch (error) {
+      showNotification(error.message);
+    }
   };
 
   const handleCancel = () => {
@@ -224,7 +220,7 @@ export default function BasicInfo() {
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
-                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className="sih-profile-name">{patient.name || 'Profile'}</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (
@@ -312,7 +308,7 @@ export default function BasicInfo() {
               <div style={{ padding: '1.25rem' }}>
                 <div style={{ marginTop: '-2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                   <div style={{ width: '80px', height: '80px', borderRadius: 'var(--radius-md)', backgroundColor: '#EAF3FF', border: '3px solid white', boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontSize: '2rem', fontWeight: 900, color: 'var(--primary-navy)' }}>
-                    {patient.name.split(' ').map(n => n[0]).join('')}
+                    {(patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')}
                   </div>
 
                   <div className="sih-badge sih-badge-teal">
@@ -810,7 +806,7 @@ export default function BasicInfo() {
             <div style={{ backgroundColor: 'var(--primary-navy)', color: 'white', borderRadius: 'var(--radius-xl)', padding: '1.25rem', fontSize: '0.75rem' }}>
               <p style={{ fontWeight: 900, color: 'var(--mint-light)', fontSize: '0.85rem', margin: '0 0 0.5rem 0' }}>Doctor Note</p>
               <p style={{ color: '#CBD5E1', lineHeight: '1.5', margin: 0 }}>
-                Patient presents with controlled HbA1c (6.8%). Continue current Metformin dosage. Monitor BP weekly and maintain sodium restriction.
+                No clinical note has been recorded yet.
               </p>
             </div>
 

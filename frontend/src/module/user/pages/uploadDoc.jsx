@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { fileToBase64, userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -17,59 +19,7 @@ export default function UploadDoc() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
-  // Initial Mock Medical Documents Data
-  const [documents, setDocuments] = useState([
-    {
-      id: 1,
-      title: "Blood Test & HbA1c Report",
-      type: "disease",
-      date: "2026-09-10",
-      fileName: "blood-test-report.pdf",
-      fileSize: "2.4 MB",
-      status: "Processed",
-      doctor: "Dr. A. Verma"
-    },
-    {
-      id: 2,
-      title: "Diabetes Medication Rx",
-      type: "prescription",
-      date: "2026-09-05",
-      fileName: "metformin-prescription.pdf",
-      fileSize: "1.1 MB",
-      status: "Verified",
-      doctor: "Dr. A. Verma"
-    },
-    {
-      id: 3,
-      title: "AIIMS Inpatient Discharge Summary",
-      type: "discharge summary",
-      date: "2026-08-20",
-      fileName: "hospital-discharge-summary.pdf",
-      fileSize: "4.8 MB",
-      status: "Processed",
-      doctor: "Dr. S. R. Kaplan"
-    },
-    {
-      id: 4,
-      title: "Chest X-Ray & Pulmonology Scan",
-      type: "disease",
-      date: "2026-07-15",
-      fileName: "chest-scan-mri.png",
-      fileSize: "5.2 MB",
-      status: "Verified",
-      doctor: "Dr. M. Sharma"
-    },
-    {
-      id: 5,
-      title: "Hypertension & BP Follow-up Rx",
-      type: "prescription",
-      date: "2026-06-12",
-      fileName: "hypertension-rx.pdf",
-      fileSize: "850 KB",
-      status: "Processed",
-      doctor: "Dr. A. Verma"
-    }
-  ]);
+  const [documents, setDocuments] = useState([]);
 
   // State Management
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'disease' | 'prescription' | 'discharge summary'
@@ -101,11 +51,27 @@ export default function UploadDoc() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const toViewModel = (document) => ({
+    ...document,
+    date: document.createdAt,
+    fileSize: `${(document.size / (1024 * 1024)).toFixed(1)} MB`,
+    status: 'Stored',
+    doctor: 'You',
+  });
+
   // Toast Notification Helper
   const showNotification = (msg) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
+
+  useEffect(() => {
+    const fetchDocuments = () => {
+      userApi.documents().then((items) => setDocuments(items.map(toViewModel))).catch((error) => showNotification(error.message));
+    };
+    fetchDocuments();
+    return onDatabaseChange(fetchDocuments);
+  }, []);
 
   // Handle File Selection
   const handleFileChange = (e) => {
@@ -141,34 +107,39 @@ export default function UploadDoc() {
   };
 
   // Submit Upload
-  const handleConfirmUpload = () => {
+  const handleConfirmUpload = async () => {
     if (!selectedFile) {
       showNotification('Please select a file first!');
       return;
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
-    const newDoc = {
-      id: Date.now(),
-      title: uploadTitle.trim() || selectedFile.name,
-      type: uploadCategory,
-      date: todayStr,
-      fileName: selectedFile.name,
-      fileSize: `${(selectedFile.size / (1024 * 1024)).toFixed(1)} MB`,
-      status: 'Processed',
-      doctor: 'Dr. A. Verma'
-    };
-
-    setDocuments(prev => [newDoc, ...prev]);
-    setSelectedFile(null);
-    setUploadTitle('');
-    showNotification(`Document "${newDoc.title}" uploaded successfully!`);
+    try {
+      const saved = await userApi.uploadDocument({
+        title: uploadTitle.trim() || selectedFile.name,
+        type: uploadCategory,
+        fileName: selectedFile.name,
+        mimeType: selectedFile.type,
+        size: selectedFile.size,
+        content: await fileToBase64(selectedFile),
+      });
+      setDocuments((previous) => [toViewModel(saved), ...previous]);
+      setSelectedFile(null);
+      setUploadTitle('');
+      showNotification(`Document "${saved.title}" saved permanently.`);
+    } catch (error) {
+      showNotification(error.message);
+    }
   };
 
   // Delete Document Handler
-  const handleDeleteDoc = (id) => {
-    setDocuments(prev => prev.filter(d => d.id !== id));
-    showNotification('Document removed.');
+  const handleDeleteDoc = async (id) => {
+    try {
+      await userApi.deleteDocument(id);
+      setDocuments((previous) => previous.filter((document) => document.id !== id));
+      showNotification('Document removed.');
+    } catch (error) {
+      showNotification(error.message);
+    }
   };
 
   // Filter & Sort Logic
@@ -235,7 +206,7 @@ export default function UploadDoc() {
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
-                <span className="sih-profile-name">Rajesh Kumar</span>
+                <span className="sih-profile-name">Profile</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (

@@ -9,6 +9,7 @@ async function request(path, options = {}) {
 }
 
 export const userApi = {
+  dashboard: () => request('/users/dashboard'),
   profile: () => request('/users/profile'),
   saveProfile: (data) => request('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
   abha: () => request('/users/abha'),

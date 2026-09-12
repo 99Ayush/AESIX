@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
+import { userApi } from '../services/userApi';
+import { onDatabaseChange } from '../services/realtime';
 
 export default function LandingPage() {
   const navigate = useNavigate();
   const [language, setLanguage] = useState('English');
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -18,40 +21,41 @@ export default function LandingPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const patientName = 'Aanchal.Chaudhary';
-  const initials = 'AC';
+  useEffect(() => {
+    const loadDashboard = () => userApi.dashboard().then(setDashboard).catch(() => setDashboard(null));
+    loadDashboard();
+    return onDatabaseChange(loadDashboard);
+  }, []);
+
+  const profile = dashboard?.profile;
+  const patientName = profile?.name || 'Loading profile…';
+  const initials = patientName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 
   // Patient information data
   const patientInfo = [
-    { title: 'Patient ID', value: 'ABHA-2847-1923-4561' },
-    { title: 'Date of Birth', value: '14 March 1988' },
-    { title: 'Gender', value: 'Male · 38 yrs' },
-    { title: 'Blood Type', value: 'O Positive' },
-    { title: 'Contact', value: '+91 98765 43210', icon: '📞' },
-    { title: 'Email', value: 'arjun.ramesh@gmail.com', icon: '✉️' },
-    { title: 'Address', value: 'Koramangala, Bengaluru, KA', icon: '📍' },
-    { title: 'Emergency', value: 'Priya Ramesh · +91 98700 12345' },
-    { title: 'Insurance', value: 'Star Health · SH8847291' },
-    { title: 'Physician', value: 'Dr. Kavitha Menon' },
+    { title: 'Patient ID', value: profile?.id || '—' },
+    { title: 'Date of Birth', value: profile?.dob || '—' },
+    { title: 'Gender', value: profile?.gender || '—' },
+    { title: 'Blood Type', value: profile?.bloodGroup || '—' },
+    { title: 'Contact', value: profile?.contact?.phone || '—', icon: '📞' },
+    { title: 'Email', value: profile?.contact?.email || '—', icon: '✉️' },
+    { title: 'Address', value: profile?.contact?.address || '—', icon: '📍' },
+    { title: 'Emergency', value: profile?.contact?.emergencyContactName || '—' },
+    { title: 'ABHA number', value: dashboard?.abha?.number || '—' },
+    { title: 'Status', value: dashboard?.abha?.verificationStatus || '—' },
   ];
 
   // Known allergies
-  const allergies = [
-    { text: 'Penicillin', icon: '♥', bg: '#FDE8EC', color: '#D43C5B' },
-    { text: 'Aspirin', icon: '✦', bg: '#EFEAFF', color: '#6850C7' },
-    { text: 'Shellfish', icon: '★', bg: '#FFF4D5', color: '#C88C18' },
-    { text: 'Latex', icon: '✚', bg: '#E4F5EC', color: '#42966F' },
-    { text: 'Pollen', icon: '⌁', bg: '#EAF1FF', color: '#5278D0' },
-    { text: 'Dust', icon: '✦', bg: '#EEEFF5', color: '#78809A' },
-  ];
+  const allergies = (profile?.allergies || []).map((text, index) => ({
+    text, icon: '✦', bg: ['#FDE8EC', '#EFEAFF', '#FFF4D5'][index % 3], color: '#5278D0',
+  }));
 
-  // Medical dictionary terms
   const dictTerms = [
-    { title: 'Hypertension', category: 'Cardiovascular', desc: 'Persistently elevated blood pressure ≥130/80 mmHg in the arteries, increasing risk of heart...', bg: '#FFF4F5', iconBg: '#F9D7DD', iconColor: '#D94761', catBg: '#F9DDEA', catColor: '#B45576' },
-    { title: 'Metformin', category: 'Pharmacology', desc: 'First-line oral antidiabetic drug that lowers hepatic glucose output and improves...', bg: '#F1FBF5', iconBg: '#D7F2E2', iconColor: '#41A16F', catBg: '#DFF3E6', catColor: '#4B8D6C' },
-    { title: 'HbA1c', category: 'Diagnostics', desc: 'Glycated hemoglobin test reflecting average blood glucose over the past 2–3 months...', bg: '#F1F7FF', iconBg: '#D9E8FF', iconColor: '#477DD4', catBg: '#DFEBFF', catColor: '#527AC5' },
-    { title: 'Amlodipine', category: 'Pharmacology', desc: 'Calcium channel blocker used for hypertension and angina. Relaxes blood ve...', bg: '#F7F1FF', iconBg: '#E5D8FF', iconColor: '#7655CE', catBg: '#EADFFF', catColor: '#755BB9' },
-    { title: 'oGER', category: 'Nephrology', desc: 'A medical term related to kidney health and renal function...', bg: '#F1FBF7', iconBg: '#D8F1E8', iconColor: '#439579', catBg: '#DDF2EA', catColor: '#4A8D78' },
+    { title: 'Metformin', category: 'Prescription Medication', desc: 'An oral anti-diabetic medication used to control high blood sugar levels in Type 2 Diabetes.', bg: '#F8FAFC', iconBg: '#E2E8F0', iconColor: '#0F172A', catBg: '#E2E8F0', catColor: '#1E293B' },
+    { title: 'HbA1c', category: 'Lab Marker', desc: 'Measures average blood sugar levels over the past 2 to 3 months.', bg: '#F0FDF4', iconBg: '#DCFCE7', iconColor: '#166534', catBg: '#DCFCE7', catColor: '#15803D' },
+    { title: 'Type 2 Diabetes', category: 'Chronic Condition', desc: 'A metabolic condition where the body does not use insulin properly.', bg: '#EFF6FF', iconBg: '#DBEAFE', iconColor: '#1E40AF', catBg: '#DBEAFE', catColor: '#1D4ED8' },
+    { title: 'SpO2', category: 'Vital Measurement', desc: 'Peripheral capillary oxygen saturation level, indicating blood oxygen levels.', bg: '#FAF5FF', iconBg: '#F3E8FF', iconColor: '#6B21A8', catBg: '#F3E8FF', catColor: '#7E22CE' },
+    { title: 'ABDM PHR', category: 'Health Account', desc: 'Personal Health Record address assigned under the Ayushman Bharat Digital Mission.', bg: '#FFFBEB', iconBg: '#FEF3C7', iconColor: '#92400E', catBg: '#FEF3C7', catColor: '#B45309' },
   ];
 
   return (

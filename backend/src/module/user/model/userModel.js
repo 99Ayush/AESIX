@@ -53,7 +53,7 @@ function buildMongoUri() {
 
 export async function connectUserDatabase() {
   if (databaseReady && mongoose.connection.readyState === 1) return;
-  await mongoose.connect(buildMongoUri(), { serverSelectionTimeoutMS: 10000 });
+  await mongoose.connect("mongodb+srv://ayushpanther_db_user:K0dEyxPngLRn5i9B@aesix-db.85x9avh.mongodb.net");
   databaseReady = true;
 }
 
