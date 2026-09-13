@@ -109,20 +109,28 @@ export default function LandingPage() {
     .slice(0, 2)
     .toUpperCase();
 
+  const getVal = (primary, ...fallbacks) => {
+    if (primary && String(primary).trim() && String(primary).trim() !== '—') return String(primary).trim();
+    for (const fb of fallbacks) {
+      if (fb && String(fb).trim() && String(fb).trim() !== '—') return String(fb).trim();
+    }
+    return '—';
+  };
+
   // Patient information data
   const patientInfoLeft = [
-    { title: 'Patient ID', value: profile?.id || '—' },
-    { title: 'Gender', value: profile?.gender || '—' },
-    { title: 'Contact', value: profile?.contact?.phone || '—', icon: '📞' },
-    { title: 'Address', value: profile?.contact?.address || '—', icon: '📍' },
-    { title: 'ABHA Number', value: dashboard?.abha?.number || '—' },
+    { title: 'Patient ID', value: getVal(profile?.id, storedUser?.id, storedUser?.userId) },
+    { title: 'Gender', value: getVal(profile?.gender, storedUser?.gender) },
+    { title: 'Contact', value: getVal(profile?.contact?.phone, storedUser?.mobile, storedUser?.phone), icon: '📞' },
+    { title: 'Address', value: getVal(profile?.contact?.address, storedUser?.city, storedUser?.address), icon: '📍' },
+    { title: 'ABHA Number', value: getVal(dashboard?.abha?.number, storedUser?.abhaNumber, storedUser?.ABHANumber) },
   ];
   const patientInfoRight = [
-    { title: 'Date of Birth', value: profile?.dob || '—' },
-    { title: 'Blood Type', value: profile?.bloodGroup || '—' },
-    { title: 'Email', value: profile?.contact?.email || '—', icon: '✉️' },
-    { title: 'Emergency', value: profile?.contact?.emergencyContactName || '—' },
-    { title: 'Status', value: dashboard?.abha?.verificationStatus || '—' },
+    { title: 'Date of Birth', value: getVal(profile?.dob, storedUser?.dob, storedUser?.dateOfBirth) },
+    { title: 'Blood Type', value: getVal(profile?.bloodGroup, storedUser?.bloodGroup) },
+    { title: 'Email', value: getVal(profile?.contact?.email, storedUser?.email), icon: '✉️' },
+    { title: 'Emergency', value: getVal(profile?.contact?.emergencyContactName, storedUser?.emergencyContactName) },
+    { title: 'Status', value: getVal(dashboard?.abha?.verificationStatus, storedUser?.abhaStatus, 'Verified') },
   ];
 
   // Known allergies
@@ -509,11 +517,11 @@ export default function LandingPage() {
 
               {/* Sockets Button */}
               <div style={s.utilBtn}
-                onClick={() => { }}
+                onClick={() => navigate('/socrates')}
                 onMouseEnter={e => { e.currentTarget.style.background = '#D0F0E8'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(12,154,154,0.12)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = '#E8F7F4'; e.currentTarget.style.boxShadow = 'none'; }}>
                 <div style={s.utilBtnIcon}><PlugIcon /></div>
-                <span style={s.utilBtnText}>Sockets</span>
+                <span style={s.utilBtnText}>Sockets (SOCRATES)</span>
                 <span style={s.utilBtnChevron}><ChevronRight /></span>
               </div>
 

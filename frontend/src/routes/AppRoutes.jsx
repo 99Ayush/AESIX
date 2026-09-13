@@ -14,6 +14,7 @@ import Register from '../module/auth/register';
 import KindleMain from '../module/user/pages/kindleMain';
 import NamasteCode from '../module/user/pages/namasteCode';
 import ICDCode from '../module/user/pages/ICD-Code';
+import SocratesForm from '../module/user/pages/SocratesForm';
 
 export const AppRoutes = () => {
   return (
@@ -41,8 +42,10 @@ export const AppRoutes = () => {
         {/* NAMASTE & ICD-11 Code Search Pages */}
         <Route path="/namaste-code" element={<NamasteCode />} />
         <Route path="/icd-code" element={<ICDCode />} />
+        <Route path="/socrates" element={<SocratesForm />} />
 
         <Route path="/genai" element={<GenAiBot />} />
+
 
         {/* Doctor routes & segregated sub-pages */}
         <Route path="/doctor" element={<DoctorDashboard activeTabDefault="overview" />} />

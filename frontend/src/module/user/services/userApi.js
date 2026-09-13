@@ -29,7 +29,32 @@ export const userApi = {
   searchNamaste: (q) => request(`/users/cdss/search/namaste?q=${encodeURIComponent(q || '')}`),
   searchICD11: (q) => request(`/users/cdss/search/icd11?q=${encodeURIComponent(q || '')}`),
   getDiseaseRecord: (code, entityUri) => request(`/users/cdss/disease/${encodeURIComponent(code)}${entityUri ? `?entityUri=${encodeURIComponent(entityUri)}` : ''}`),
+  submitSocratesForm: async (formData) => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${baseUrl}/users/socrates`, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: formData
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Failed to submit SOCRATES form');
+    return body;
+  },
+  getSocratesHistory: async () => {
+    const token = localStorage.getItem('token');
+    const response = await fetch(`${baseUrl}/users/socrates`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      }
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Failed to fetch SOCRATES history');
+    return body;
+  },
 };
+
 
 export async function fileToBase64(file) {
   const buffer = new Uint8Array(await file.arrayBuffer());

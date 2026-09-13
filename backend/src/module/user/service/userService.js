@@ -1,6 +1,6 @@
 import { Appointment, Doctor, Notification, User } from "../model/userModel.js";
 
-const serializeUser = (user) => ({ id: user._id.toString(), fullName: user.fullName, email: user.email, phone: user.phone, dateOfBirth: user.dateOfBirth, bloodGroup: user.bloodGroup, photoUrl: user.photoUrl, allergies: user.allergies });
+const serializeUser = (user) => ({ id: user._id.toString(), fullName: user.fullName, email: user.email, phone: user.phone, gender: user.gender, address: user.address, dateOfBirth: user.dateOfBirth, bloodGroup: user.bloodGroup, photoUrl: user.photoUrl, allergies: user.allergies });
 async function getDemoUser() {
   const user = await User.findOne({ isDemoUser: true });
   if (!user) throw new Error("Demo user is unavailable. Check the database connection.");
@@ -29,7 +29,7 @@ export async function registerUser({ fullName, email, password, phone = "", date
   }
 }
 export async function updateProfile(updates) {
-  const allowed = ["fullName", "email", "phone", "dateOfBirth", "bloodGroup", "photoUrl"];
+  const allowed = ["fullName", "email", "phone", "gender", "address", "dateOfBirth", "bloodGroup", "photoUrl"];
   const safeUpdates = Object.fromEntries(allowed.filter((key) => updates[key] !== undefined).map((key) => [key, updates[key]]));
   const user = await User.findOneAndUpdate({ isDemoUser: true }, safeUpdates, { new: true, runValidators: true });
   if (!user) throw new Error("Demo user is unavailable.");

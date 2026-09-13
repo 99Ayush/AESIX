@@ -13,6 +13,8 @@ const userSchema = new mongoose.Schema({
 },
   phone: { type: String, default: "" },
   dateOfBirth: { type: Date },
+  gender: { type: String, default: "" },
+  address: { type: String, default: "" },
   bloodGroup: { type: String, default: "" },
   photoUrl: { type: String, default: null },
   allergies: { type: [String], default: [] },
