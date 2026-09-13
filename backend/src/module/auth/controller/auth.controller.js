@@ -183,7 +183,7 @@ router.post('/register/request-otp',
   async (req, res) => {
     try {
       const { aadhaar } = req.body;
-
+      console.log('Received register request OTP for Aadhaar:', aadhaar);
       const cooldown = checkOtpCooldown(aadhaar);
       if (!cooldown.allowed) {
         return res.status(429).json({

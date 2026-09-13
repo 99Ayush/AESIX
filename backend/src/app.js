@@ -42,7 +42,7 @@ app.use(errorLogger);
 export async function startServer() {
   if (server) return server;
   if (!config.database.uri) throw new Error('MONGODB_URI is required. Configure backend/.env.');
-
+  console.log('Connecting to MongoDB...', config.database.uri);
   await mongoose.connect(config.database.uri, { serverSelectionTimeoutMS: 10_000 });
   startRealtimeDatabaseEvents(io);
   server = await new Promise((resolve, reject) => {
