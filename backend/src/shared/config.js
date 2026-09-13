@@ -17,7 +17,7 @@ const config = {
     mockMode: process.env.ABDM_MOCK !== 'false',
   },
   database: {
-    uri: process.env.MONGODB_URI || process.env.MONGO_URI || '',
+    uri: process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb+srv://ayushpanther_db_user:K0dEyxPngLRn5i9B@aesix-db.85x9avh.mongodb.net/SIH-2026',
   },
 };
 
