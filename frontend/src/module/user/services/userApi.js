@@ -25,6 +25,9 @@ export const userApi = {
   uploadDocument: (data) => request('/users/documents', { method: 'POST', body: JSON.stringify(data) }),
   deleteDocument: (id) => request(`/users/documents/${id}`, { method: 'DELETE' }),
   downloadUrl: (id) => `${baseUrl}/users/documents/${id}/download`,
+  searchNamaste: (q) => request(`/users/cdss/search/namaste?q=${encodeURIComponent(q || '')}`),
+  searchICD11: (q) => request(`/users/cdss/search/icd11?q=${encodeURIComponent(q || '')}`),
+  getDiseaseRecord: (code, entityUri) => request(`/users/cdss/disease/${encodeURIComponent(code)}${entityUri ? `?entityUri=${encodeURIComponent(entityUri)}` : ''}`),
 };
 
 export async function fileToBase64(file) {

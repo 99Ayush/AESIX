@@ -28,8 +28,19 @@ export default function LandingPage() {
   }, []);
 
   const profile = dashboard?.profile;
-  const patientName = profile?.name || 'Loading profile…';
-  const initials = patientName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+  const storedUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user_profile') || '{}'); } catch { return {}; }
+  })();
+  const patientName = profile?.name?.trim() 
+    || (storedUser?.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '')
+    || dashboard?.abha?.name?.trim()
+    || (dashboard ? 'Patient' : 'Loading profile…');
+  const initials = (patientName.replace(/[^a-zA-Z\s]/g, '').trim() || 'PT')
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   // Patient information data
   const patientInfo = [
@@ -49,14 +60,6 @@ export default function LandingPage() {
   const allergies = (profile?.allergies || []).map((text, index) => ({
     text, icon: '✦', bg: ['#FDE8EC', '#EFEAFF', '#FFF4D5'][index % 3], color: '#5278D0',
   }));
-
-  const dictTerms = [
-    { title: 'Metformin', category: 'Prescription Medication', desc: 'An oral anti-diabetic medication used to control high blood sugar levels in Type 2 Diabetes.', bg: '#F8FAFC', iconBg: '#E2E8F0', iconColor: '#0F172A', catBg: '#E2E8F0', catColor: '#1E293B' },
-    { title: 'HbA1c', category: 'Lab Marker', desc: 'Measures average blood sugar levels over the past 2 to 3 months.', bg: '#F0FDF4', iconBg: '#DCFCE7', iconColor: '#166534', catBg: '#DCFCE7', catColor: '#15803D' },
-    { title: 'Type 2 Diabetes', category: 'Chronic Condition', desc: 'A metabolic condition where the body does not use insulin properly.', bg: '#EFF6FF', iconBg: '#DBEAFE', iconColor: '#1E40AF', catBg: '#DBEAFE', catColor: '#1D4ED8' },
-    { title: 'SpO2', category: 'Vital Measurement', desc: 'Peripheral capillary oxygen saturation level, indicating blood oxygen levels.', bg: '#FAF5FF', iconBg: '#F3E8FF', iconColor: '#6B21A8', catBg: '#F3E8FF', catColor: '#7E22CE' },
-    { title: 'ABDM PHR', category: 'Health Account', desc: 'Personal Health Record address assigned under the Ayushman Bharat Digital Mission.', bg: '#FFFBEB', iconBg: '#FEF3C7', iconColor: '#92400E', catBg: '#FEF3C7', catColor: '#B45309' },
-  ];
 
   return (
     <div className="sih-page-wrapper">
@@ -85,6 +88,9 @@ export default function LandingPage() {
             <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
               <span className="sih-nav-icon">🔍</span> Basic Info
             </button>
+            <button onClick={() => navigate('/kindle')} className="sih-nav-btn">
+              <span className="sih-nav-icon">📖</span> Directory
+            </button>
           </nav>
 
           <div className="sih-header-controls">
@@ -109,7 +115,12 @@ export default function LandingPage() {
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
                     <span className="dd-icon">👤</span> Profile
                   </button>
-                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user_profile');
+                    setProfileOpen(false);
+                    navigate('/login');
+                  }}>
                     <span className="dd-icon">🚪</span> Sign Out
                   </button>
                 </div>
@@ -131,14 +142,14 @@ export default function LandingPage() {
           <div className="lp-date-badge">
             <span>📅</span>
             <div>
-              <span style={{ fontWeight: 700 }}>Thursday, 11 September 2026</span>
+              <span style={{ fontWeight: 700 }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
               <span style={{ color: '#82999B', marginLeft: '0.5rem' }}>• Last synced 3 min ago</span>
             </div>
           </div>
         </div>
 
-        {/* Grid: Profile + Dictionary */}
-        <div className="lp-grid">
+        {/* Patient Profile Card (Full Width) */}
+        <div style={{ width: '100%' }}>
 
           {/* ===== PROFILE CARD ===== */}
           <section className="lp-profile-card">
@@ -154,7 +165,7 @@ export default function LandingPage() {
                   <span className="lp-active-dot" />
                   Active Patient
                 </span>
-                <button className="lp-edit-btn">
+                <button className="lp-edit-btn" onClick={() => navigate('/basicInfo')}>
                   ✏️ Edit Profile
                 </button>
               </div>
@@ -208,42 +219,6 @@ export default function LandingPage() {
             </div>
 
           </section>
-
-          {/* ===== MEDICAL DICTIONARY ===== */}
-          <aside className="lp-dictionary">
-            <div className="lp-dict-header">
-              <div className="lp-dict-icon-box">📖</div>
-              <div>
-                <h3 className="lp-dict-title">Medical Dictionary</h3>
-                <p className="lp-dict-subtitle">Understand your health terms</p>
-              </div>
-            </div>
-
-            <div className="lp-dict-search-wrap">
-              <span className="lp-dict-search-icon">🔍</span>
-              <input type="text" placeholder="Search terms..." className="lp-dict-search" />
-            </div>
-
-            <div className="lp-dict-list">
-              {dictTerms.map((term, i) => (
-                <div key={i} className="lp-dict-card" style={{ backgroundColor: term.bg }}>
-                  <div className="lp-dict-card-icon" style={{ backgroundColor: term.iconBg, color: term.iconColor }}>
-                    💊
-                  </div>
-                  <div className="lp-dict-card-body">
-                    <div className="lp-dict-card-top">
-                      <h4 className="lp-dict-card-title">{term.title}</h4>
-                      <span className="lp-dict-card-arrow">›</span>
-                    </div>
-                    <span className="lp-dict-card-cat" style={{ backgroundColor: term.catBg, color: term.catColor }}>
-                      {term.category}
-                    </span>
-                    <p className="lp-dict-card-desc">{term.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
 
         </div>
       </main>

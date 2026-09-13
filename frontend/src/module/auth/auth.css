@@ -1,4 +1,4 @@
-﻿/* MedVault Auth UI Design Tokens and Styles */
+/* MedVault Auth UI Design Tokens and Styles */
 :root {
   --mv-teal: #1A8C7A;
   --mv-teal-dark: #146B5E;
@@ -364,7 +364,7 @@
 /* Stepper for Register */
 .mv-stepper {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   margin-bottom: 2rem;
   position: relative;
@@ -417,7 +417,7 @@
   flex: 1;
   height: 2px;
   background: #E2E8F0;
-  margin: 0 0.5rem -1rem 0.5rem;
+  margin: 15px 0.5rem 0 0.5rem;
   transition: background 0.2s;
 }
 

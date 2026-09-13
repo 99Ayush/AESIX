@@ -418,8 +418,15 @@ export default function Register() {
                   <button
                     type="button"
                     className="mv-btn-primary"
-                    disabled={!firstName.trim() || mobile.length !== 10 || !dob}
-                    onClick={() => setStep(3)}
+                    disabled={!firstName.trim() || !/^[6-9]\d{9}$/.test(mobile) || !dob}
+                    onClick={() => {
+                      if (!/^[6-9]\d{9}$/.test(mobile)) {
+                        setError('Mobile number must be a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.');
+                        return;
+                      }
+                      setError('');
+                      setStep(3);
+                    }}
                   >
                     Next: Contact Details <ArrowRight size={16} />
                   </button>

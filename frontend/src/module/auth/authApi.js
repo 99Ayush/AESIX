@@ -7,6 +7,10 @@ async function authRequest(path, options = {}) {
   });
   const data = await response.json();
   if (!response.ok) {
+    if (data.details && Array.isArray(data.details)) {
+      const detailedMsg = data.details.map((d) => d.message).filter(Boolean).join(', ');
+      throw new Error(detailedMsg || data.error || 'Validation failed');
+    }
     throw new Error(data.error || 'Authentication request failed');
   }
   return data;
