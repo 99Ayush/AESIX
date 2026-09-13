@@ -9,6 +9,7 @@ const handle = (operation, successStatus = 200) => async (req, res) => {
   catch (error) { return sendError(res, error); }
 };
 export const getProfile = handle(() => userService.getProfile());
+export const getUserById = handle((req) => userService.getUserById(req.params.id));
 export const registerUser = handle((req) => userService.registerUser(req.body || {}), 201);
 export const updateProfile = handle((req) => userService.updateProfile(req.body || {}));
 export const uploadProfilePhoto = handle((req) => {
