@@ -40,4 +40,5 @@ export const registerEnrollSchema = z.object({
     O: 'OTHER',
   }[value] ?? value)),
   dob: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  city: z.string().max(100).optional(),
 });

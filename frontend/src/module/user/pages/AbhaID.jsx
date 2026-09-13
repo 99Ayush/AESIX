@@ -43,12 +43,19 @@ export default function AbhaID() {
 
   useEffect(() => {
     const fetchData = () => {
+      const storedProfile = JSON.parse(localStorage.getItem('user_profile') || '{}');
       userApi.abha().then((data) => setAbhaDetails({
         ...data,
-        abhaNumber: data.number,
-        mobile: data.contact?.phone,
-        address: data.contact?.address,
-        emergencyContact: data.contact?.emergencyContactName,
+        name: data.name || storedProfile.fullName || (storedProfile.firstName ? `${storedProfile.firstName} ${storedProfile.lastName || ''}`.trim() : ''),
+        number: data.number || storedProfile.abhaNumber || storedProfile.ABHANumber || 'N/A',
+        abhaNumber: data.number || storedProfile.abhaNumber || storedProfile.ABHANumber || 'N/A',
+        phrAddress: data.phrAddress || storedProfile.abhaAddress || storedProfile.phrAddress || 'N/A',
+        dob: data.dob || storedProfile.dob || 'N/A',
+        gender: data.gender === 'M' ? 'Male' : (data.gender === 'F' ? 'Female' : (data.gender || storedProfile.gender || 'N/A')),
+        mobile: data.contact?.phone || storedProfile.mobile || storedProfile.phone || 'N/A',
+        address: data.contact?.address || storedProfile.city || storedProfile.address || 'N/A',
+        emergencyContact: data.contact?.emergencyContactName || storedProfile.emergencyContactName || 'Family Member',
+        photoUrl: data.photoUrl || storedProfile.photoUrl || null,
       })).catch((error) => showNotification(error.message));
       userApi.consents().then((items) => setPendingConsents(items.filter((item) => item.status === 'pending'))).catch((error) => showNotification(error.message));
     };
@@ -106,7 +113,13 @@ export default function AbhaID() {
             <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
-                <div className="sih-profile-avatar">RK</div>
+                <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                  {abhaDetails.photoUrl ? (
+                    <img src={abhaDetails.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (abhaDetails.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                  )}
+                </div>
                 <span className="sih-profile-name">{abhaDetails.name || 'Profile'}</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
@@ -163,8 +176,12 @@ export default function AbhaID() {
                   
                   {/* Photo & Main Demographics */}
                   <div className="abha-user-profile">
-                    <div className="abha-avatar-box">
-                      {(abhaDetails.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')}
+                    <div className="abha-avatar-box" style={{ overflow: 'hidden', padding: 0 }}>
+                      {abhaDetails.photoUrl ? (
+                        <img src={abhaDetails.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        (abhaDetails.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                      )}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
