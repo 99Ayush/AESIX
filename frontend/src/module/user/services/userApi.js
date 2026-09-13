@@ -18,7 +18,21 @@ export const userApi = {
   dashboard: () => request('/users/dashboard'),
   profile: () => request('/users/profile'),
   getUserById: (id) => request(`/users/${id}`),
-  saveProfile: (data) => request('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
+  saveProfile: async (data) => {
+    const token = localStorage.getItem('token');
+    const isFormData = data instanceof FormData;
+    const response = await fetch(`${baseUrl}/users/profile`, {
+      method: 'PATCH',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      },
+      body: isFormData ? data : JSON.stringify(data),
+    });
+    const body = await response.json();
+    if (!response.ok) throw new Error(body.error || 'Failed to update profile');
+    return body.data || body;
+  },
   abha: () => request('/users/abha'),
   consents: () => request('/users/consents'),
   setConsentStatus: (id, status) => request(`/users/consents/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),

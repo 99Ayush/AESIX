@@ -51,6 +51,8 @@ function buildResponseProfile(user, profile = {}) {
     emergencyContactRelation: user.emergencyContactRelation || 'Relative',
     emergencyContactPhone: user.emergencyContactPhone || mobile || '',
     abhaStatus: user.abhaStatus || profile.abhaStatus || 'ACTIVE',
+    photoUrl: user.photoUrl || profile.photoUrl || profile.photo || null,
+    bloodGroup: user.bloodGroup || profile.bloodGroup || '',
   };
 }
 

@@ -46,6 +46,7 @@ export default function ProfilePage() {
           emergencyContact: profile.contact?.emergencyContactName || storedProfile.emergencyContactName || 'Family Member',
           address: profile.address || profile.contact?.address || storedProfile.city || storedProfile.address || 'N/A',
           abhaStatus: abha.verificationStatus || storedProfile.abhaStatus || 'Verified',
+          photoUrl: profile.photoUrl || profile.photo || storedProfile.photoUrl || null,
         });
       }).catch((error) => showNotification(error.message));
     };
@@ -99,7 +100,13 @@ export default function ProfilePage() {
             <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
-                <div className="sih-profile-avatar">RK</div>
+                <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                  {patientProfile.photoUrl ? (
+                    <img src={patientProfile.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (patientProfile.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                  )}
+                </div>
                 <span className="sih-profile-name">{patientProfile.name || 'Profile'}</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
@@ -124,8 +131,12 @@ export default function ProfilePage() {
         {/* HERO BANNER */}
         <div className="profile-hero-banner">
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <div className="profile-avatar-large">
-              {(patientProfile.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')}
+            <div className="profile-avatar-large" style={{ overflow: 'hidden', padding: 0 }}>
+              {patientProfile.photoUrl ? (
+                <img src={patientProfile.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                (patientProfile.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+              )}
             </div>
             <div>
               <span className="sih-badge sih-badge-teal" style={{ marginBottom: '0.4rem' }}>

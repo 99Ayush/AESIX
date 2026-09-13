@@ -188,11 +188,81 @@ router.route('/profile')
       next(e);
     }
   })
-  .patch(async (req, res, next) => {
+  .patch(upload.single('photo'), async (req, res, next) => {
     try {
       const data = await read(req);
-      Object.assign(data.profile, req.body);
+      const authUser = await resolveAuthUser(req);
+      let photoUrl = req.body.photoUrl || req.body.photo || data.profile.photoUrl || null;
+
+      if (req.file) {
+        try {
+          const result = await uploadBufferToCloudinary(req.file.buffer, req.file.originalname, 'aesix_profile_photos');
+          photoUrl = result.secure_url;
+        } catch (uploadErr) {
+          console.error('Cloudinary photo upload error:', uploadErr);
+          photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+        }
+      }
+
+      const bodyData = { ...req.body };
+      if (photoUrl) bodyData.photoUrl = photoUrl;
+
+      Object.assign(data.profile, bodyData);
+      if (bodyData.contact) {
+        data.profile.contact = { ...data.profile.contact, ...bodyData.contact };
+      }
+      if (bodyData.phone || bodyData.mobile) {
+        data.profile.contact.phone = bodyData.phone || bodyData.mobile;
+      }
+      if (bodyData.address || bodyData.city) {
+        data.profile.contact.address = bodyData.address || bodyData.city;
+      }
+      if (bodyData.name || bodyData.fullName) {
+        data.profile.name = bodyData.name || bodyData.fullName;
+      }
+      if (photoUrl) data.profile.photoUrl = photoUrl;
+
       await write(data);
+
+      if (authUser) {
+        const nameParts = (bodyData.name || bodyData.fullName || '').trim().split(' ');
+        const firstName = nameParts[0] || authUser.firstName;
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : authUser.lastName;
+
+        const updateAuth = {
+          ...(firstName ? { firstName } : {}),
+          ...(lastName !== undefined ? { lastName } : {}),
+          ...(bodyData.contact?.phone || bodyData.phone || bodyData.mobile ? { mobile: bodyData.contact?.phone || bodyData.phone || bodyData.mobile } : {}),
+          ...(bodyData.contact?.email || bodyData.email ? { email: bodyData.contact?.email || bodyData.email } : {}),
+          ...(bodyData.gender ? { gender: bodyData.gender } : {}),
+          ...(bodyData.dob || bodyData.dateOfBirth ? { dob: bodyData.dob || bodyData.dateOfBirth } : {}),
+          ...(bodyData.contact?.address || bodyData.address || bodyData.city ? { city: bodyData.contact?.address || bodyData.address || bodyData.city } : {}),
+          ...(bodyData.bloodGroup ? { bloodGroup: bodyData.bloodGroup } : {}),
+          ...(bodyData.contact?.emergencyContactName ? { emergencyContactName: bodyData.contact.emergencyContactName } : {}),
+          ...(bodyData.contact?.emergencyContactRelation ? { emergencyContactRelation: bodyData.contact.emergencyContactRelation } : {}),
+          ...(bodyData.contact?.emergencyContactPhone ? { emergencyContactPhone: bodyData.contact.emergencyContactPhone } : {}),
+          ...(photoUrl ? { photoUrl } : {}),
+        };
+
+        const updatedUser = await User.findByIdAndUpdate(authUser._id, { $set: updateAuth }, { new: true });
+
+        try {
+          const { User: MongoUser } = await import('./model/userModel.js');
+          await MongoUser.findByIdAndUpdate(authUser._id, {
+            fullName: data.profile.name,
+            email: data.profile.contact.email,
+            phone: data.profile.contact.phone,
+            address: data.profile.contact.address,
+            gender: data.profile.gender,
+            bloodGroup: data.profile.bloodGroup,
+            ...(photoUrl ? { photoUrl } : {}),
+          }, { upsert: true });
+        } catch (_) {}
+
+        const merged = mergeUserWithData(data, updatedUser || authUser);
+        return respond(res, { ...merged.profile, photoUrl });
+      }
+
       respond(res, data.profile);
     } catch (e) {
       next(e);

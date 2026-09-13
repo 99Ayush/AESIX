@@ -468,9 +468,21 @@ export default function LandingPage() {
             <div style={s.leftCol}>
               <div style={{ position: 'relative' }}>
                 <div style={s.photoBg}>
-                  <div style={s.photoCircle}>{initials}</div>
+                  <div style={{ ...s.photoCircle, overflow: 'hidden' }}>
+                    {(profile?.photoUrl || profile?.photo || storedUser?.photoUrl || storedUser?.photo) ? (
+                      <img
+                        src={profile?.photoUrl || profile?.photo || storedUser?.photoUrl || storedUser?.photo}
+                        alt="Profile DP"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      initials
+                    )}
+                  </div>
                 </div>
-                <button style={s.cameraBtn} title="Change photo"><Camera size={20} strokeWidth={2.5} /></button>
+                <button style={s.cameraBtn} title="Change photo" onClick={() => navigate('/basicInfo')}>
+                  <Camera size={20} strokeWidth={2.5} />
+                </button>
               </div>
 
 

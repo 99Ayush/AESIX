@@ -56,9 +56,12 @@ export default function BasicInfo() {
 
   // Form State for Edit Mode
   const [formData, setFormData] = useState({ ...patient });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [newMed, setNewMed] = useState({ name: '', dosage: '', frequency: '', timing: '' });
   const [newAllergy, setNewAllergy] = useState('');
   const [newCondition, setNewCondition] = useState('');
+
 
   const showNotification = (msg) => {
     setToastMessage(msg);
@@ -93,6 +96,7 @@ export default function BasicInfo() {
           maritalStatus: profile.maritalStatus || storedProfile.maritalStatus || 'N/A',
           occupation: profile.occupation || storedProfile.occupation || 'N/A',
           primaryLanguage: profile.primaryLanguage || storedProfile.primaryLanguage || 'English',
+          photoUrl: profile.photoUrl || profile.photo || storedProfile.photoUrl || null,
           contact: {
             phone: profile.phone || profile.mobile || profile.contact?.phone || storedProfile.mobile || storedProfile.phone || '',
             email: profile.email || profile.contact?.email || storedProfile.email || '',
@@ -113,6 +117,7 @@ export default function BasicInfo() {
         setFormData((prev) => (isEditing ? prev : normalized));
       }).catch((error) => showNotification(error.message));
     };
+
     fetchProfile();
     return onDatabaseChange(fetchProfile);
   }, [isEditing]);
@@ -178,12 +183,55 @@ export default function BasicInfo() {
 
   const handleSave = async () => {
     try {
-      const saved = await userApi.saveProfile(formData);
-      const normalized = normalizePatient(saved);
+      let payload;
+      if (photoFile) {
+        payload = new FormData();
+        payload.append('photo', photoFile);
+        Object.keys(formData).forEach(key => {
+          if (key === 'contact') {
+            Object.keys(formData.contact).forEach(ckey => {
+              payload.append(`contact[${ckey}]`, formData.contact[ckey]);
+            });
+          } else if (typeof formData[key] === 'object' && formData[key] !== null) {
+            payload.append(key, JSON.stringify(formData[key]));
+          } else if (formData[key] !== undefined && formData[key] !== null) {
+            payload.append(key, formData[key]);
+          }
+        });
+      } else {
+        payload = formData;
+      }
+
+      const saved = await userApi.saveProfile(payload);
+      const normalized = normalizePatient({ ...saved, photoUrl: saved.photoUrl || photoPreview || patient.photoUrl });
       setPatient(normalized);
       setFormData(normalized);
+      setPhotoFile(null);
+      setPhotoPreview(null);
       setIsEditing(false);
-      showNotification('Patient basic information saved permanently.');
+
+      const storedProfile = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      const updatedStored = {
+        ...storedProfile,
+        fullName: normalized.name,
+        name: normalized.name,
+        phone: normalized.contact.phone,
+        mobile: normalized.contact.phone,
+        email: normalized.contact.email,
+        address: normalized.contact.address,
+        city: normalized.contact.address,
+        gender: normalized.gender,
+        dateOfBirth: normalized.dob,
+        dob: normalized.dob,
+        bloodGroup: normalized.bloodGroup,
+        emergencyContactName: normalized.contact.emergencyContactName,
+        emergencyContactRelation: normalized.contact.emergencyContactRelation,
+        emergencyContactPhone: normalized.contact.emergencyContactPhone,
+        photoUrl: normalized.photoUrl,
+      };
+      localStorage.setItem('user_profile', JSON.stringify(updatedStored));
+
+      showNotification('Patient basic information & profile picture saved successfully.');
     } catch (error) {
       showNotification(error.message);
     }
@@ -191,8 +239,11 @@ export default function BasicInfo() {
 
   const handleCancel = () => {
     setFormData({ ...patient });
+    setPhotoFile(null);
+    setPhotoPreview(null);
     setIsEditing(false);
   };
+
 
   const handlePrint = () => {
     window.print();
@@ -244,7 +295,13 @@ export default function BasicInfo() {
             <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
-                <div className="sih-profile-avatar">RK</div>
+                <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                  {(photoPreview || patient.photoUrl) ? (
+                    <img src={photoPreview || patient.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                  )}
+                </div>
                 <span className="sih-profile-name">{patient.name || 'Profile'}</span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
@@ -332,9 +389,33 @@ export default function BasicInfo() {
 
               <div style={{ padding: '1.25rem' }}>
                 <div style={{ marginTop: '-2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                  <div style={{ width: '80px', height: '80px', borderRadius: 'var(--radius-md)', backgroundColor: '#EAF3FF', border: '3px solid white', boxShadow: 'var(--shadow-md)', display: 'flex', alignItems: 'center', justifyCenter: 'center', fontSize: '2rem', fontWeight: 900, color: 'var(--primary-navy)' }}>
-                    {(patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')}
+                  <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: 'var(--radius-md)', backgroundColor: '#EAF3FF', border: '3px solid white', boxShadow: 'var(--shadow-md)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 900, color: 'var(--primary-navy)' }}>
+                    {(photoPreview || patient.photoUrl) ? (
+                      <img src={photoPreview || patient.photoUrl} alt="Profile DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                      (patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                    )}
+                    {isEditing && (
+                      <label htmlFor="avatar-file-input" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer' }}>
+                        📷 Change DP
+                      </label>
+                    )}
                   </div>
+                  {isEditing && (
+                    <input
+                      id="avatar-file-input"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setPhotoFile(file);
+                          setPhotoPreview(URL.createObjectURL(file));
+                        }
+                      }}
+                      style={{ display: 'none' }}
+                    />
+                  )}
 
                   <div className="sih-badge sih-badge-teal">
                     Blood Group: {isEditing ? (
