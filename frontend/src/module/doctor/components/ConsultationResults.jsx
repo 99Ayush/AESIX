@@ -1,4 +1,13 @@
 import React from 'react';
+import {
+  AlertTriangle,
+  Zap,
+  Info,
+  CalendarDays,
+  Bot,
+  Sparkles,
+  Brain
+} from "lucide-react";
 
 export const ConsultationResults = ({ consultations = [] }) => {
   return (
@@ -15,7 +24,8 @@ export const ConsultationResults = ({ consultations = [] }) => {
           consultations.map((item) => (
             <div key={item.id} className="doc-consult-item">
               <div className="doc-consult-top">
-                <span className="doc-consult-date">📅 {item.date}</span>
+                <span className="doc-consult-date">  <CalendarDays size={16} />
+                  {item.date}</span>
                 <span className="doc-consult-doc">{item.doctorName}</span>
               </div>
 
@@ -51,7 +61,7 @@ export const ConsultationResults = ({ consultations = [] }) => {
 
                 {item.aiSummary && (
                   <div className="doc-ai-summary-box">
-                    <span className="doc-ai-badge">🤖 GenAI Triage Note:</span> {item.aiSummary}
+                    <span className="doc-ai-badge"><Brain size={16} /> GenAI Triage Note:</span> {item.aiSummary}
                   </div>
                 )}
 

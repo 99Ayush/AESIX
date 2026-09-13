@@ -1,4 +1,7 @@
 import React from 'react';
+import { Pill } from "lucide-react";
+import { FilePlus2 } from "lucide-react";
+import { Cross } from "lucide-react";
 
 export const QuickActions = ({ onSelectAction, language = 'en' }) => {
   const isHindi = language === 'hi';
@@ -16,7 +19,8 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-        🚨 Medical Emergency
+
+        <span>Medical Emergency</span>
       </button>
       <button
         type="button"
@@ -29,7 +33,8 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-        🩺 Symptom Consultation
+        <FilePlus2 size={18} />
+        <span>Symptom Consultation</span>
       </button>
       <button
         type="button"
@@ -42,7 +47,8 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-        💊 Daily Med Talk
+        <Cross size={18} />
+        <span>Daily Med Talk</span>
       </button>
     </div>
   );
