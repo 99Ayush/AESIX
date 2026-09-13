@@ -31,12 +31,21 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfileData = () => {
-      Promise.all([userApi.profile(), userApi.abha()]).then(([profile, abha]) => {
+      const storedProfile = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      const profilePromise = storedProfile.id ? userApi.getUserById(storedProfile.id) : userApi.profile();
+      Promise.all([profilePromise, userApi.abha().catch(() => ({}))]).then(([profile, abha]) => {
         setPatientProfile({
-          name: profile.name, abhaNumber: abha.number, phrAddress: abha.phrAddress, dob: profile.dob,
-          gender: profile.gender, bloodGroup: profile.bloodGroup, mobile: profile.contact?.phone,
-          email: profile.contact?.email, emergencyContact: profile.contact?.emergencyContactName,
-          address: profile.contact?.address, abhaStatus: abha.verificationStatus,
+          name: profile.fullName || profile.name,
+          abhaNumber: abha.number || profile.abhaNumber || 'N/A',
+          phrAddress: abha.phrAddress || profile.phrAddress || 'N/A',
+          dob: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString('en-IN') : (profile.dob || 'N/A'),
+          gender: profile.gender || 'N/A',
+          bloodGroup: profile.bloodGroup || 'N/A',
+          mobile: profile.phone || profile.contact?.phone || 'N/A',
+          email: profile.email || profile.contact?.email || 'N/A',
+          emergencyContact: profile.contact?.emergencyContactName || 'N/A',
+          address: profile.contact?.address || 'N/A',
+          abhaStatus: abha.verificationStatus || 'Verified',
         });
       }).catch((error) => showNotification(error.message));
     };
@@ -69,9 +78,6 @@ export default function ProfilePage() {
           </div>
 
           <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🏠</span> Dashboard
-            </button>
             <button onClick={() => navigate('/abha')} className="sih-nav-btn">
               <span className="sih-nav-icon">🛡</span> ABHA
             </button>

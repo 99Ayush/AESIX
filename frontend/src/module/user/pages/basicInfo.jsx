@@ -79,8 +79,36 @@ export default function BasicInfo() {
 
   useEffect(() => {
     const fetchProfile = () => {
-      userApi.profile().then((profile) => {
-        const normalized = normalizePatient(profile);
+      const storedProfile = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      const profilePromise = storedProfile.id ? userApi.getUserById(storedProfile.id) : userApi.profile();
+      Promise.all([profilePromise, userApi.abha().catch(() => ({}))]).then(([profile, abha]) => {
+        const mappedData = {
+          id: profile.id || storedProfile.id || 'N/A',
+          abhaId: abha.number || profile.abhaNumber || profile.ABHANumber || 'N/A',
+          name: profile.fullName || (profile.firstName ? `${profile.firstName} ${profile.lastName || ''}`.trim() : profile.name) || 'User',
+          age: profile.dateOfBirth ? Math.floor((new Date() - new Date(profile.dateOfBirth)) / 31557600000) : (profile.dob ? Math.floor((new Date() - new Date(profile.dob)) / 31557600000) : 'N/A'),
+          gender: profile.gender === 'M' ? 'Male' : (profile.gender === 'F' ? 'Female' : (profile.gender || 'N/A')),
+          dob: profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().split('T')[0] : (profile.dob || ''),
+          bloodGroup: profile.bloodGroup || 'N/A',
+          maritalStatus: profile.maritalStatus || 'N/A',
+          occupation: profile.occupation || 'N/A',
+          primaryLanguage: profile.primaryLanguage || 'English',
+          contact: {
+            phone: profile.phone || profile.mobile || profile.contact?.phone || '',
+            email: profile.email || profile.contact?.email || '',
+            address: profile.address || profile.contact?.address || 'N/A',
+            emergencyContactName: profile.contact?.emergencyContactName || 'N/A',
+            emergencyContactRelation: profile.contact?.emergencyContactRelation || 'N/A',
+            emergencyContactPhone: profile.contact?.emergencyContactPhone || 'N/A',
+          },
+          medications: Array.isArray(profile.medications) ? profile.medications : [],
+          allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
+          conditions: Array.isArray(profile.conditions) ? profile.conditions : [],
+          criticalAlerts: Array.isArray(profile.criticalAlerts) ? profile.criticalAlerts : [],
+          recentCheckups: Array.isArray(profile.recentCheckups) ? profile.recentCheckups : [],
+          vitalsSnapshot: profile.vitalsSnapshot || { bp: 'N/A', heartRate: 'N/A', spo2: 'N/A', temp: 'N/A', glucose: 'N/A' },
+        };
+        const normalized = normalizePatient(mappedData);
         setPatient(normalized);
         setFormData((prev) => (isEditing ? prev : normalized));
       }).catch((error) => showNotification(error.message));
@@ -195,9 +223,6 @@ export default function BasicInfo() {
           </div>
 
           <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🏠</span> Dashboard
-            </button>
             <button onClick={() => navigate('/abha')} className="sih-nav-btn">
               <span className="sih-nav-icon">🛡</span> ABHA
             </button>
@@ -809,6 +834,30 @@ export default function BasicInfo() {
                 No clinical note has been recorded yet.
               </p>
             </div>
+
+            {/* Clinical Directory (Kindle) Button */}
+            <button
+              onClick={() => navigate('/kindle')}
+              className="sih-btn sih-btn-primary"
+              style={{
+                width: '100%',
+                padding: '0.85rem 1.25rem',
+                borderRadius: 'var(--radius-xl)',
+                display: 'flex',
+                alignItems: 'center',
+                justify: 'space-between',
+                fontSize: '0.85rem',
+                fontWeight: 800,
+                boxShadow: 'var(--shadow-sm)',
+                cursor: 'pointer'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>📖</span>
+                <span>Clinical Directory (NAMASTE / ICD-11)</span>
+              </div>
+              <span style={{ fontSize: '1rem' }}>→</span>
+            </button>
 
           </div>
 

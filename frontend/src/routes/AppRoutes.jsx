@@ -12,6 +12,8 @@ import Login from '../module/auth/login';
 import Register from '../module/auth/register';
 
 import KindleMain from '../module/user/pages/kindleMain';
+import NamasteCode from '../module/user/pages/namasteCode';
+import ICDCode from '../module/user/pages/ICD-Code';
 
 export const AppRoutes = () => {
   return (
@@ -35,6 +37,10 @@ export const AppRoutes = () => {
         <Route path="/kindle" element={<KindleMain />} />
         <Route path="/kindlemain" element={<KindleMain />} />
         <Route path="/health-code" element={<KindleMain />} />
+
+        {/* NAMASTE & ICD-11 Code Search Pages */}
+        <Route path="/namaste-code" element={<NamasteCode />} />
+        <Route path="/icd-code" element={<ICDCode />} />
 
         <Route path="/genai" element={<GenAiBot />} />
 

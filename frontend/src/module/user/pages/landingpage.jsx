@@ -3,18 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import { useDashboardLanguage } from '../LanguageContext';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const profileRef = useRef(null);
+  const notifRef = useRef(null);
   const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -76,9 +82,6 @@ export default function LandingPage() {
           </div>
 
           <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn active">
-              <span className="sih-nav-icon">🏠</span> Dashboard
-            </button>
             <button onClick={() => navigate('/abha')} className="sih-nav-btn">
               <span className="sih-nav-icon">🛡</span> ABHA
             </button>
@@ -87,9 +90,6 @@ export default function LandingPage() {
             </button>
             <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
               <span className="sih-nav-icon">🔍</span> Basic Info
-            </button>
-            <button onClick={() => navigate('/kindle')} className="sih-nav-btn">
-              <span className="sih-nav-icon">📖</span> Directory
             </button>
           </nav>
 
@@ -100,10 +100,35 @@ export default function LandingPage() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell">
-              🔔
-              <span className="sih-notif-badge">3</span>
-            </button>
+            <div style={{ position: 'relative' }} ref={notifRef}>
+              <button className="sih-notif-bell" onClick={() => setNotifOpen(!notifOpen)}>
+                🔔
+                <span className="sih-notif-badge">0</span>
+              </button>
+              {notifOpen && (
+                <div style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 8px)',
+                  width: '280px',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid var(--border-light)',
+                  padding: '1.25rem 1rem',
+                  zIndex: 1000,
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '1.8rem', marginBottom: '0.4rem' }}>🔕</div>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.25rem' }}>
+                    No Notifications
+                  </h4>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4' }}>
+                    You're all caught up! New clinical updates & consent alerts will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">{initials}</div>
@@ -136,7 +161,6 @@ export default function LandingPage() {
         {/* Heading */}
         <div className="lp-heading-row">
           <div>
-            <p className="lp-label">My Health Dashboard</p>
             <h2 className="lp-welcome">Welcome back, {patientName} <span>👋</span></h2>
           </div>
           <div className="lp-date-badge">

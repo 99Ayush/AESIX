@@ -17,6 +17,7 @@ async function request(path, options = {}) {
 export const userApi = {
   dashboard: () => request('/users/dashboard'),
   profile: () => request('/users/profile'),
+  getUserById: (id) => request(`/users/${id}`),
   saveProfile: (data) => request('/users/profile', { method: 'PATCH', body: JSON.stringify(data) }),
   abha: () => request('/users/abha'),
   consents: () => request('/users/consents'),
