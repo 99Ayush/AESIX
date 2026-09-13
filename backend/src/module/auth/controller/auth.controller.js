@@ -15,11 +15,12 @@ import {
 import { logger } from '../../../shared/logger.js';
 import { User, UserSession, OtpTxn } from '../model/model.js';
 
-async function upsertUserFromProfile(profile, { mobile, loginMethod }) {
-  return User.findOneAndUpdate(
+async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod }) {
+  const user = await User.findOneAndUpdate(
     { abhaNumber: profile.ABHANumber },
     {
       $set: {
+        ...(aadhaar ? { aadhaar } : {}),
         firstName: profile.firstName,
         lastName: profile.lastName,
         mobile: mobile ?? profile.mobile,
@@ -34,6 +35,26 @@ async function upsertUserFromProfile(profile, { mobile, loginMethod }) {
     },
     { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
   );
+
+  // Sync / create matching MongoDB User in user module schema
+  try {
+    const { User: MongoUser } = await import('../../user/model/userModel.js');
+    const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'User';
+    await MongoUser.findByIdAndUpdate(
+      user._id,
+      {
+        fullName,
+        email: profile.email || `${user.userId}@example.com`,
+        phone: mobile ?? profile.mobile ?? '',
+        dateOfBirth: profile.dob ? new Date(profile.dob) : undefined,
+      },
+      { upsert: true }
+    );
+  } catch (err) {
+    logger.warn(`Failed to sync user module database record: ${err.message}`);
+  }
+
+  return user;
 }
 
 function sendServiceError(res, error) {
@@ -104,7 +125,10 @@ router.post('/login/verify',
       const profile = result.profile;
       const tokens = result.tokens;
 
-      const user = await upsertUserFromProfile(profile, { loginMethod: method });
+      const user = await upsertUserFromProfile(profile, {
+        aadhaar: method === 'aadhaar' ? txn.identifier : undefined,
+        loginMethod: method,
+      });
 
       await UserSession.create({
         userId: user.userId,
@@ -119,9 +143,17 @@ router.post('/login/verify',
       txn.verifiedAt = new Date();
       await txn.save();
 
+      const responseProfile = {
+        id: user._id.toString(),
+        userId: user.userId,
+        aadhaar: user.aadhaar,
+        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
+        ...profile,
+      };
+
       res.json({
         needsSelection: false,
-        profile,
+        profile: responseProfile,
         tokens,
         userId: user.userId,
       });
@@ -164,8 +196,16 @@ router.post('/login/verify-user',
       txn.verifiedAt = new Date();
       await txn.save();
 
+      const responseProfile = {
+        id: user._id.toString(),
+        userId: user.userId,
+        aadhaar: user.aadhaar,
+        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
+        ...profile,
+      };
+
       res.json({
-        profile,
+        profile: responseProfile,
         tokens,
         userId: user.userId,
       });
@@ -229,6 +269,7 @@ router.post('/register/enroll',
       const tokens = result.tokens;
 
       const user = await upsertUserFromProfile(profile, {
+        aadhaar: req.body.aadhaar || txn.identifier,
         mobile: req.body.mobile,
         loginMethod: 'register',
       });
@@ -245,8 +286,16 @@ router.post('/register/enroll',
       txn.verifiedAt = new Date();
       await txn.save();
 
+      const responseProfile = {
+        id: user._id.toString(),
+        userId: user.userId,
+        aadhaar: user.aadhaar,
+        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
+        ...profile,
+      };
+
       res.json({
-        profile,
+        profile: responseProfile,
         tokens,
         userId: user.userId,
       });

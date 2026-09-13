@@ -85,9 +85,6 @@ export default function AbhaID() {
           </div>
 
           <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🏠</span> Dashboard
-            </button>
             <button onClick={() => navigate('/abha')} className="sih-nav-btn active">
               <span className="sih-nav-icon">🛡</span> ABHA
             </button>

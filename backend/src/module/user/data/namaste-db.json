@@ -1,0 +1,411 @@
+[
+  {
+    "code": "EF-2.4.4",
+    "systemOfMedicine": "Ayurveda (NAMASTE)",
+    "ayurvedicTerm": "Madhumeha",
+    "transliteration": "Madhumeha",
+    "englishEquivalent": "Diabetes Mellitus",
+    "icd11PrimaryCode": "5A11",
+    "icd11EntityUri": "https://id.who.int/icd/entity/142052508",
+    "prognosis": {
+      "status": "Manageable chronic condition",
+      "riskLevel": "High if uncontrolled"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Kapha",
+        "Vata"
+      ],
+      "srotasInvolved": [
+        "Medovaha",
+        "Mutravaha"
+      ],
+      "phenotypeCheck": "Assess obesity, thirst, polyuria, fatigue and dhatu-kshaya features."
+    },
+    "clinicalOverview": {
+      "definition": "A prameha phenotype characterized by excessive, sweet urine and metabolic disturbance, cross-mapped here to diabetes mellitus.",
+      "cardinalSymptoms": [
+        "Frequent urination",
+        "Excessive thirst",
+        "Increased appetite",
+        "Fatigue",
+        "Unintentional weight change"
+      ],
+      "redFlags": [
+        "Confusion or dehydration",
+        "Vomiting with abdominal pain",
+        "Foot ulcer or infection",
+        "Vision loss",
+        "Symptoms of hypoglycaemia"
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Fasting plasma glucose",
+        "HbA1c",
+        "Urinalysis",
+        "Serum creatinine/eGFR",
+        "Lipid profile"
+      ],
+      "targets": {
+        "HbA1c": "Individualize; often <7% for non-pregnant adults",
+        "Fasting glucose": "Use local guideline targets",
+        "Blood pressure": "Assess cardiovascular risk"
+      }
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "Nidana parivarjana, kapha-medohara measures, agni support and individualized prameha management alongside evidence-based diabetes care.",
+      "classicalFormulations": [
+        "Nisha Amalaki",
+        "Gudmar-based preparations",
+        "Triphala"
+      ],
+      "pathya": [
+        "Regular physical activity",
+        "High-fibre balanced meals",
+        "Consistent monitoring",
+        "Adequate sleep"
+      ],
+      "apathya": [
+        "Refined sugars",
+        "Sedentary routine",
+        "Tobacco",
+        "Stopping prescribed medicines without clinician advice"
+      ]
+    }
+  },
+  {
+    "code": "EB-4",
+    "systemOfMedicine": "Ayurveda (NAMASTE)",
+    "ayurvedicTerm": "Amlapitta",
+    "transliteration": "Amlapitta",
+    "englishEquivalent": "Hyperacidity / Dyspepsia",
+    "icd11PrimaryCode": "DA42",
+    "icd11EntityUri": "https://id.who.int/icd/entity/1231435662",
+    "prognosis": {
+      "status": "Usually manageable after cause assessment",
+      "riskLevel": "Moderate; escalate for alarm symptoms"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Pitta",
+        "Vata"
+      ],
+      "srotasInvolved": [
+        "Annavaha",
+        "Rasavaha"
+      ],
+      "phenotypeCheck": "Characterize burning, sour belching, nausea, dietary triggers and bowel habit."
+    },
+    "clinicalOverview": {
+      "definition": "An upper gastrointestinal burning and sour-regurgitation syndrome, commonly considered alongside dyspepsia or reflux disorders.",
+      "cardinalSymptoms": [
+        "Epigastric burning",
+        "Sour belching",
+        "Nausea",
+        "Post-meal discomfort"
+      ],
+      "redFlags": [
+        "GI bleeding",
+        "Progressive dysphagia",
+        "Persistent vomiting",
+        "Unexplained weight loss",
+        "New symptoms at older age"
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "H. pylori testing where indicated",
+        "CBC if bleeding suspected",
+        "Upper endoscopy for alarm features",
+        "Liver tests when clinically indicated"
+      ],
+      "targets": {
+        "Symptom review": "Document trigger and treatment response",
+        "Weight": "Investigate unintentional loss"
+      }
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "Pitta-shamana, agni regulation, avoidance of aggravating foods and referral when alarm features are present.",
+      "classicalFormulations": [
+        "Avipattikara churna",
+        "Yashtimadhu",
+        "Amalaki"
+      ],
+      "pathya": [
+        "Smaller meals",
+        "Avoid late meals",
+        "Cooling non-irritating foods",
+        "Stress and sleep support"
+      ],
+      "apathya": [
+        "Alcohol",
+        "Tobacco",
+        "Very spicy or fatty meals",
+        "Frequent NSAID use without advice"
+      ]
+    }
+  },
+  {
+    "code": "EE-2",
+    "systemOfMedicine": "Ayurveda (NAMASTE)",
+    "ayurvedicTerm": "Arbuda",
+    "transliteration": "Arbuda",
+    "englishEquivalent": "Tumor / Neoplasm",
+    "icd11PrimaryCode": "2A00",
+    "icd11EntityUri": "https://id.who.int/icd/entity/1630407678",
+    "prognosis": {
+      "status": "Requires urgent diagnostic characterization",
+      "riskLevel": "High"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha"
+      ],
+      "srotasInvolved": [
+        "Mamsavaha",
+        "Raktavaha"
+      ],
+      "phenotypeCheck": "Document site, duration, growth rate, pain, fixation, bleeding and systemic symptoms."
+    },
+    "clinicalOverview": {
+      "definition": "A localized abnormal growth requiring biomedical evaluation to determine benign versus malignant neoplasm and tissue of origin.",
+      "cardinalSymptoms": [
+        "New or enlarging lump",
+        "Local pain or pressure",
+        "Change in bowel or bladder habits",
+        "Unexplained fatigue"
+      ],
+      "redFlags": [
+        "Rapid growth",
+        "Unexplained weight loss",
+        "Persistent bleeding",
+        "Neurological deficit",
+        "Airway compromise"
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Focused examination",
+        "Appropriate imaging",
+        "CBC and organ-specific tests",
+        "Histopathology / biopsy as directed by specialist"
+      ],
+      "targets": {
+        "Diagnosis": "Do not delay definitive imaging or tissue diagnosis",
+        "Staging": "Specialist-directed after confirmation"
+      }
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "Immediate referral for oncology/surgical assessment; Ayurvedic care, if used, must be integrated supportive care and must not delay diagnosis or cancer treatment.",
+      "classicalFormulations": [
+        "Only clinician-supervised supportive formulations"
+      ],
+      "pathya": [
+        "Prompt specialist assessment",
+        "Nutrition support",
+        "Symptom reporting",
+        "Shared decision-making"
+      ],
+      "apathya": [
+        "Unproven replacement of oncology care",
+        "Delaying biopsy or referral",
+        "Unsafely sourced supplements"
+      ]
+    }
+  },
+  {
+    "code": "AAC-12.4",
+    "systemOfMedicine": "Ayurveda (NAMASTE)",
+    "ayurvedicTerm": "Vibandha",
+    "transliteration": "Vibandha",
+    "englishEquivalent": "Simple Constipation",
+    "icd11PrimaryCode": "DD90",
+    "icd11EntityUri": "https://id.who.int/icd/entity/769974739",
+    "prognosis": {
+      "status": "Often self-limited or manageable",
+      "riskLevel": "Low unless alarm features"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Vata"
+      ],
+      "srotasInvolved": [
+        "Purishavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess stool frequency and form, straining, diet, fluids, medicines and duration."
+    },
+    "clinicalOverview": {
+      "definition": "Difficult, infrequent, or incomplete bowel evacuation without an immediately apparent secondary cause.",
+      "cardinalSymptoms": [
+        "Hard stools",
+        "Straining",
+        "Infrequent evacuation",
+        "Bloating",
+        "Incomplete evacuation"
+      ],
+      "redFlags": [
+        "Rectal bleeding",
+        "Iron-deficiency anaemia",
+        "Weight loss",
+        "Severe abdominal pain or vomiting",
+        "New onset with family history of colorectal cancer"
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Medication review",
+        "TSH or calcium when secondary cause suspected",
+        "CBC for alarm symptoms",
+        "Age-appropriate colorectal evaluation"
+      ],
+      "targets": {
+        "Bowel frequency": "Individualized comfortable regularity",
+        "Hydration": "Adjust for comorbidities"
+      }
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "Vatanulomana, regular routine, hydration, fibre and cause-directed management.",
+      "classicalFormulations": [
+        "Triphala",
+        "Isabgol where appropriate",
+        "Haritaki"
+      ],
+      "pathya": [
+        "Gradual dietary fibre",
+        "Adequate fluids",
+        "Regular toilet routine",
+        "Physical activity"
+      ],
+      "apathya": [
+        "Ignoring alarm symptoms",
+        "Chronic stimulant laxative self-use",
+        "Low-fibre highly processed diet"
+      ]
+    }
+  },
+  {
+    "code": "5A14",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "5A14",
+    "transliteration": "5A14",
+    "englishEquivalent": "5A14",
+    "icd11PrimaryCode": "5A14",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/1697306310",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Not classified"
+      ],
+      "srotasInvolved": [
+        "Not classified"
+      ],
+      "phenotypeCheck": "Use a qualified clinician's assessment; this is dynamically derived ICD-11 content."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Select tests based on clinical presentation and guideline."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
+      "classicalFormulations": [],
+      "pathya": [],
+      "apathya": []
+    }
+  },
+  {
+    "code": "5A11",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "5A11",
+    "transliteration": "5A11",
+    "englishEquivalent": "5A11",
+    "icd11PrimaryCode": "5A11",
+    "icd11EntityUri": "https://id.who.int/icd/release/11/2024-01/mms/119724091",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Not classified"
+      ],
+      "srotasInvolved": [
+        "Not classified"
+      ],
+      "phenotypeCheck": "Use a qualified clinician's assessment; this is dynamically derived ICD-11 content."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Select tests based on clinical presentation and guideline."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
+      "classicalFormulations": [],
+      "pathya": [],
+      "apathya": []
+    }
+  },
+  {
+    "code": "MD80",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "MD80",
+    "transliteration": "MD80",
+    "englishEquivalent": "MD80",
+    "icd11PrimaryCode": "MD80",
+    "icd11EntityUri": "https://id.who.int/icd/release/11/2024-01/mms/481399219",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Not classified"
+      ],
+      "srotasInvolved": [
+        "Not classified"
+      ],
+      "phenotypeCheck": "Use a qualified clinician's assessment; this is dynamically derived ICD-11 content."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Select tests based on clinical presentation and guideline."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
+      "classicalFormulations": [],
+      "pathya": [],
+      "apathya": []
+    }
+  }
+]

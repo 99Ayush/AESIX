@@ -8,13 +8,21 @@ import AbhaID from '../module/user/pages/AbhaID';
 import ProfilePage from '../module/user/pages/profilepage';
 import LandingPage from '../module/user/pages/landingpage';
 import DoctorDashboard from '../module/doctor';
+import Login from '../module/auth/login';
+import Register from '../module/auth/register';
 
 import KindleMain from '../module/user/pages/kindleMain';
+import NamasteCode from '../module/user/pages/namasteCode';
+import ICDCode from '../module/user/pages/ICD-Code';
 
 export const AppRoutes = () => {
   return (
     <Router>
       <Routes>
+        {/* Auth routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
         {/* Landing Page (shown after login) */}
         <Route path="/dashboard" element={<LandingPage />} />
 
@@ -29,6 +37,10 @@ export const AppRoutes = () => {
         <Route path="/kindle" element={<KindleMain />} />
         <Route path="/kindlemain" element={<KindleMain />} />
         <Route path="/health-code" element={<KindleMain />} />
+
+        {/* NAMASTE & ICD-11 Code Search Pages */}
+        <Route path="/namaste-code" element={<NamasteCode />} />
+        <Route path="/icd-code" element={<ICDCode />} />
 
         <Route path="/genai" element={<GenAiBot />} />
 

@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 // ─── USER (persistent identity mapping) ───────────────────────────────────────
 const userSchema = new mongoose.Schema({
   userId:       { type: String, required: true, unique: true, default: () => randomUUID() },
+  aadhaar:      { type: String, unique: true, sparse: true },
   abhaNumber:   { type: String, unique: true, sparse: true },      // "91-1234-5678-9012"
   abhaAddress:  { type: String },                                  // "rahul@sbx"
   firstName:    { type: String },

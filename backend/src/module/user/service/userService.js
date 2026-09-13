@@ -7,6 +7,12 @@ async function getDemoUser() {
   return user;
 }
 export async function getProfile() { return serializeUser(await getDemoUser()); }
+export async function getUserById(userId) {
+  if (!userId) throw new Error("User ID is required.");
+  const user = await User.findById(userId);
+  if (!user) throw new Error("User not found.");
+  return serializeUser(user);
+}
 export async function registerUser({ fullName, email, password, phone = "", dateOfBirth, bloodGroup = "", photoUrl = null, allergies = [] }) {
   if (!fullName?.trim() || !email?.trim() || !password) throw new Error("fullName, email, and password are required.");
   if (password.length < 8) throw new Error("Password must contain at least 8 characters.");
@@ -18,7 +24,7 @@ export async function registerUser({ fullName, email, password, phone = "", date
     // Password handling is intentionally not persisted until authentication is implemented.
     return serializeUser(user);
   } catch (error) {
-    if (error?.code === 11000) throw new Error("An account with this email already exists.");
+    if (error?.code === 11000) throw new Error("An account with this email already exists.", { cause: error });
     throw error;
   }
 }
@@ -66,7 +72,7 @@ export async function scheduleAppointment({ doctorId, date, time, reason = "" })
   const [user, doctor] = await Promise.all([getDemoUser(), Doctor.findById(doctorId).lean()]);
   if (!doctor) throw new Error("Doctor not found.");
   try { const appointment = await Appointment.create({ userId: user._id, doctorId, date, time, reason }); return { ...appointment.toObject(), doctor }; }
-  catch (error) { if (error?.code === 11000) throw new Error("This time slot is already booked."); throw error; }
+  catch (error) { if (error?.code === 11000) throw new Error("This time slot is already booked.", { cause: error }); throw error; }
 }
 export async function getAppointments() {
   const user = await getDemoUser();

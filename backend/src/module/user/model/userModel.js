@@ -4,7 +4,13 @@ let databaseReady = false;
 
 const userSchema = new mongoose.Schema({
   fullName: { type: String, required: true, trim: true },
-  email: { type: String, required: true, lowercase: true, trim: true, unique: true },
+  email:  {
+  type: String,
+  unique: true,
+  sparse: true, // Allows multiple documents to have missing/null email fields
+  trim: true,
+  lowercase: true,
+},
   phone: { type: String, default: "" },
   dateOfBirth: { type: Date },
   bloodGroup: { type: String, default: "" },

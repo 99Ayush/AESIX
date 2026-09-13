@@ -3,18 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import { useDashboardLanguage } from '../LanguageContext';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [profileOpen, setProfileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const profileRef = useRef(null);
+  const notifRef = useRef(null);
   const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
+      }
+      if (notifRef.current && !notifRef.current.contains(e.target)) {
+        setNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -28,8 +34,19 @@ export default function LandingPage() {
   }, []);
 
   const profile = dashboard?.profile;
-  const patientName = profile?.name || 'Loading profile…';
-  const initials = patientName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+  const storedUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user_profile') || '{}'); } catch { return {}; }
+  })();
+  const patientName = profile?.name?.trim() 
+    || (storedUser?.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '')
+    || dashboard?.abha?.name?.trim()
+    || (dashboard ? 'Patient' : 'Loading profile…');
+  const initials = (patientName.replace(/[^a-zA-Z\s]/g, '').trim() || 'PT')
+    .split(/\s+/)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   // Patient information data
   const patientInfo = [
@@ -50,14 +67,6 @@ export default function LandingPage() {
     text, icon: '✦', bg: ['#FDE8EC', '#EFEAFF', '#FFF4D5'][index % 3], color: '#5278D0',
   }));
 
-  const dictTerms = [
-    { title: 'Metformin', category: 'Prescription Medication', desc: 'An oral anti-diabetic medication used to control high blood sugar levels in Type 2 Diabetes.', bg: '#F8FAFC', iconBg: '#E2E8F0', iconColor: '#0F172A', catBg: '#E2E8F0', catColor: '#1E293B' },
-    { title: 'HbA1c', category: 'Lab Marker', desc: 'Measures average blood sugar levels over the past 2 to 3 months.', bg: '#F0FDF4', iconBg: '#DCFCE7', iconColor: '#166534', catBg: '#DCFCE7', catColor: '#15803D' },
-    { title: 'Type 2 Diabetes', category: 'Chronic Condition', desc: 'A metabolic condition where the body does not use insulin properly.', bg: '#EFF6FF', iconBg: '#DBEAFE', iconColor: '#1E40AF', catBg: '#DBEAFE', catColor: '#1D4ED8' },
-    { title: 'SpO2', category: 'Vital Measurement', desc: 'Peripheral capillary oxygen saturation level, indicating blood oxygen levels.', bg: '#FAF5FF', iconBg: '#F3E8FF', iconColor: '#6B21A8', catBg: '#F3E8FF', catColor: '#7E22CE' },
-    { title: 'ABDM PHR', category: 'Health Account', desc: 'Personal Health Record address assigned under the Ayushman Bharat Digital Mission.', bg: '#FFFBEB', iconBg: '#FEF3C7', iconColor: '#92400E', catBg: '#FEF3C7', catColor: '#B45309' },
-  ];
-
   return (
     <div className="sih-page-wrapper">
 
@@ -73,9 +82,6 @@ export default function LandingPage() {
           </div>
 
           <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn active">
-              <span className="sih-nav-icon">🏠</span> Dashboard
-            </button>
             <button onClick={() => navigate('/abha')} className="sih-nav-btn">
               <span className="sih-nav-icon">🛡</span> ABHA
             </button>
@@ -94,10 +100,35 @@ export default function LandingPage() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell">
-              🔔
-              <span className="sih-notif-badge">3</span>
-            </button>
+            <div style={{ position: 'relative' }} ref={notifRef}>
+              <button className="sih-notif-bell" onClick={() => setNotifOpen(!notifOpen)}>
+                🔔
+                <span className="sih-notif-badge">0</span>
+              </button>
+              {notifOpen && (
+                <div style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 'calc(100% + 8px)',
+                  width: '280px',
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid var(--border-light)',
+                  padding: '1.25rem 1rem',
+                  zIndex: 1000,
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '1.8rem', marginBottom: '0.4rem' }}>🔕</div>
+                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.25rem' }}>
+                    No Notifications
+                  </h4>
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.4' }}>
+                    You're all caught up! New clinical updates & consent alerts will appear here.
+                  </p>
+                </div>
+              )}
+            </div>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">{initials}</div>
@@ -109,7 +140,12 @@ export default function LandingPage() {
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
                     <span className="dd-icon">👤</span> Profile
                   </button>
-                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user_profile');
+                    setProfileOpen(false);
+                    navigate('/login');
+                  }}>
                     <span className="dd-icon">🚪</span> Sign Out
                   </button>
                 </div>
@@ -125,20 +161,19 @@ export default function LandingPage() {
         {/* Heading */}
         <div className="lp-heading-row">
           <div>
-            <p className="lp-label">My Health Dashboard</p>
             <h2 className="lp-welcome">Welcome back, {patientName} <span>👋</span></h2>
           </div>
           <div className="lp-date-badge">
             <span>📅</span>
             <div>
-              <span style={{ fontWeight: 700 }}>Thursday, 11 September 2026</span>
+              <span style={{ fontWeight: 700 }}>{new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span>
               <span style={{ color: '#82999B', marginLeft: '0.5rem' }}>• Last synced 3 min ago</span>
             </div>
           </div>
         </div>
 
-        {/* Grid: Profile + Dictionary */}
-        <div className="lp-grid">
+        {/* Patient Profile Card (Full Width) */}
+        <div style={{ width: '100%' }}>
 
           {/* ===== PROFILE CARD ===== */}
           <section className="lp-profile-card">
@@ -154,7 +189,7 @@ export default function LandingPage() {
                   <span className="lp-active-dot" />
                   Active Patient
                 </span>
-                <button className="lp-edit-btn">
+                <button className="lp-edit-btn" onClick={() => navigate('/basicInfo')}>
                   ✏️ Edit Profile
                 </button>
               </div>
@@ -208,42 +243,6 @@ export default function LandingPage() {
             </div>
 
           </section>
-
-          {/* ===== MEDICAL DICTIONARY ===== */}
-          <aside className="lp-dictionary">
-            <div className="lp-dict-header">
-              <div className="lp-dict-icon-box">📖</div>
-              <div>
-                <h3 className="lp-dict-title">Medical Dictionary</h3>
-                <p className="lp-dict-subtitle">Understand your health terms</p>
-              </div>
-            </div>
-
-            <div className="lp-dict-search-wrap">
-              <span className="lp-dict-search-icon">🔍</span>
-              <input type="text" placeholder="Search terms..." className="lp-dict-search" />
-            </div>
-
-            <div className="lp-dict-list">
-              {dictTerms.map((term, i) => (
-                <div key={i} className="lp-dict-card" style={{ backgroundColor: term.bg }}>
-                  <div className="lp-dict-card-icon" style={{ backgroundColor: term.iconBg, color: term.iconColor }}>
-                    💊
-                  </div>
-                  <div className="lp-dict-card-body">
-                    <div className="lp-dict-card-top">
-                      <h4 className="lp-dict-card-title">{term.title}</h4>
-                      <span className="lp-dict-card-arrow">›</span>
-                    </div>
-                    <span className="lp-dict-card-cat" style={{ backgroundColor: term.catBg, color: term.catColor }}>
-                      {term.category}
-                    </span>
-                    <p className="lp-dict-card-desc">{term.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </aside>
 
         </div>
       </main>

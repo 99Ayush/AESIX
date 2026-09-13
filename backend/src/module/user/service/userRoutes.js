@@ -3,7 +3,7 @@ import multer from "multer";
 import { extname, join } from "node:path";
 import { mkdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { addAllergy, findDoctors, getAllergies, getAppointments, getNotifications, getProfile, markNotificationRead, registerUser, removeAllergy, scheduleAppointment, updateProfile, uploadProfilePhoto } from "./controller/userController.js";
+import { addAllergy, findDoctors, getAllergies, getAppointments, getNotifications, getProfile, getUserById, markNotificationRead, registerUser, removeAllergy, scheduleAppointment, updateProfile, uploadProfilePhoto } from "../controller/userController.js";
 
 const userRouter = Router();
 const uploadsDirectory = join(fileURLToPath(new URL(".", import.meta.url)), "uploads");
@@ -22,6 +22,7 @@ const upload = multer({
 
 userRouter.post("/register", registerUser);
 userRouter.get("/profile", getProfile);
+userRouter.get("/:id", getUserById);
 userRouter.patch("/profile", updateProfile);
 userRouter.post("/profile/photo", upload.single("photo"), uploadProfilePhoto);
 userRouter.get("/allergies", getAllergies);

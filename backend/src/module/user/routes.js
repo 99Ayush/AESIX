@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { MongoClient } from 'mongodb';
 import { notifyDatabaseChange } from '../../shared/realtime.js';
+import { searchNamasteCodes, getOrFetchDiseaseRecord } from './services/namasteService.js';
+import { searchICDAPI, lookupICDCode, fetchICDEntityDetails } from './services/icdService.js';
 
 const router = Router();
 const dataFile = path.join(path.dirname(fileURLToPath(import.meta.url)), 'user.json');
@@ -98,5 +100,45 @@ router.get('/documents', async (req, res, next) => { try { const { documents } =
 router.post('/documents', async (req, res, next) => { try { const { title, type, fileName, mimeType, size, content } = req.body; if (!title || !fileName || !content || !['disease', 'prescription', 'discharge summary'].includes(type)) return fail(res, 'title, type, fileName, and content are required'); const data = await read(); const item = { id: randomUUID(), title: title.trim(), type, fileName, mimeType: mimeType || 'application/octet-stream', size: Number(size) || 0, content, createdAt: new Date().toISOString() }; data.documents.push(item); await write(data); const { content: _, ...saved } = item; respond(res, saved, 201); } catch (e) { next(e); } });
 router.get('/documents/:id/download', async (req, res, next) => { try { const item = (await read()).documents.find((doc) => doc.id === req.params.id); if (!item) return fail(res, 'Document not found', 404); res.type(item.mimeType).attachment(item.fileName).send(Buffer.from(item.content, 'base64')); } catch (e) { next(e); } });
 router.delete('/documents/:id', async (req, res, next) => { try { const data = await read(); const index = data.documents.findIndex((doc) => doc.id === req.params.id); if (index < 0) return fail(res, 'Document not found', 404); data.documents.splice(index, 1); await write(data); res.status(204).end(); } catch (e) { next(e); } });
+
+// CDSS / Health Codes (NAMASTE & WHO ICD-11)
+router.get('/cdss/search/namaste', (req, res) => {
+  try {
+    res.json({ success: true, results: searchNamasteCodes(req.query.q || '') });
+  } catch (e) {
+    fail(res, e.message, 500);
+  }
+});
+
+router.get('/cdss/search/icd11', async (req, res, next) => {
+  try {
+    const query = String(req.query.q || '').trim();
+    if (/^[A-Za-z0-9][A-Za-z0-9./&-]*$/.test(query)) {
+      const exactMatch = await lookupICDCode(query.toUpperCase());
+      if (exactMatch) return res.json({ success: true, destinationEntities: [exactMatch], source: 'WHO ICD-11 codeinfo' });
+    }
+    const data = await searchICDAPI(query);
+    res.json({ success: true, ...data });
+  } catch (error) {
+    fail(res, error.message, 502);
+  }
+});
+
+router.get('/cdss/disease/:code', async (req, res, next) => {
+  try {
+    const record = await getOrFetchDiseaseRecord(req.params.code, req.query.entityUri);
+    let icd11Details = null;
+    if (record.icd11EntityUri) {
+      try {
+        icd11Details = await fetchICDEntityDetails(record.icd11EntityUri);
+      } catch (error) {
+        icd11Details = { unavailable: true, message: error.message };
+      }
+    }
+    res.json({ success: true, ...record, icd11Details });
+  } catch (error) {
+    fail(res, error.message, 502);
+  }
+});
 
 export default router;
