@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  AlertTriangle,
+  Zap,
+  Info,
+  CalendarDays,
+  Bot
+} from "lucide-react";
 
 export const AlertsSection = ({ alerts = [] }) => {
   return (
@@ -18,7 +25,7 @@ export const AlertsSection = ({ alerts = [] }) => {
               className={`doc-alert-item doc-alert-severity-${(alert.severity || 'INFO').toLowerCase()}`}
             >
               <div className="doc-alert-icon">
-                {alert.severity === 'CRITICAL' ? '⚠️' : alert.severity === 'WARNING' ? '⚡' : 'ℹ️'}
+                {alert.severity === 'CRITICAL' ? <AlertTriangle size={24} /> : alert.severity === 'WARNING' ? <Zap size={24} /> : <Info size={24} />}
               </div>
               <div className="doc-alert-content">
                 <div className="doc-alert-top">

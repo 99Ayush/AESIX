@@ -9,6 +9,13 @@ import AlertsSection from '../components/AlertsSection';
 import PatientDirectoryView from '../components/PatientDirectoryView';
 import { doctorApi } from '../services/doctorApi';
 import './DoctorDashboard.css';
+import {
+  BarChart3,
+  UserRound,
+  FileText,
+  TriangleAlert,
+  ClipboardList
+} from "lucide-react";
 
 export const DoctorDashboard = ({ activeTabDefault }) => {
   const location = useLocation();
@@ -103,31 +110,31 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
               className={`doc-view-pill ${activeTab === 'overview' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('overview')}
             >
-              📊 Complete Overview
+              <BarChart3 size={17} /> Complete Overview
             </button>
             <button
               className={`doc-view-pill ${activeTab === 'patient-data' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('patient-data')}
             >
-              👤 Patient Data View
+              <UserRound size={17} /> Patient Data View
             </button>
             <button
               className={`doc-view-pill ${activeTab === 'consultations' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('consultations')}
             >
-              📄 Consultation Results
+              <FileText size={17} /> Consultation Results
             </button>
             <button
               className={`doc-view-pill ${activeTab === 'alerts' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('alerts')}
             >
-              ⚠️ Medical Alerts ({patientData?.alerts?.length || 0})
+              <TriangleAlert size={17} /> Medical Alerts ({patientData?.alerts?.length || 0})
             </button>
             <button
               className={`doc-view-pill ${activeTab === 'directory' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('directory')}
             >
-              📋 Patient Directory
+              <ClipboardList size={17} /> Patient Directory
             </button>
           </div>
 

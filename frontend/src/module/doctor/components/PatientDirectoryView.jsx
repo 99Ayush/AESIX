@@ -1,4 +1,11 @@
 import React from 'react';
+import {
+  BarChart3,
+  UserRound,
+  FileText,
+  TriangleAlert,
+  ClipboardList
+} from "lucide-react";
 
 export const PatientDirectoryView = ({ searchResults = [], onSelectPatient }) => {
   const defaultPatients = [
@@ -106,13 +113,13 @@ export const PatientDirectoryView = ({ searchResults = [], onSelectPatient }) =>
                 className="doc-dir-action-btn primary"
                 onClick={() => onSelectPatient && onSelectPatient(pt.id, 'patient-data')}
               >
-                👤 View Patient Data
+                <UserRound size={17} /> View Patient Data
               </button>
               <button
                 className="doc-dir-action-btn secondary"
                 onClick={() => onSelectPatient && onSelectPatient(pt.id, 'consultations')}
               >
-                📄 View Consultations
+                <FileText size={17} /> View Consultations
               </button>
             </div>
           </div>
