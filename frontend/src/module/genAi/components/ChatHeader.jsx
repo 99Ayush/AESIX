@@ -48,14 +48,14 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
               className={`lang-segment-btn ${!isHindi ? 'active' : ''}`}
               onClick={() => handleSelectLang('en')}
             >
-              🇬🇧 English
+              EN English
             </button>
             <button
               type="button"
               className={`lang-segment-btn ${isHindi ? 'active' : ''}`}
               onClick={() => handleSelectLang('hi')}
             >
-              🇮🇳 हिन्दी
+              IN हिन्दी
             </button>
           </div>
         </div>

@@ -274,7 +274,7 @@ export const GenAiBot = () => {
     setMessages((prev) => [...prev, userMsg]);
 
     try {
-      const historyPayload = messages.concat(userMsg).map((m) => ({
+      const historyPayload = messages.map((m) => ({
         role: m.sender === 'user' ? 'user' : 'assistant',
         content: m.text,
       }));
