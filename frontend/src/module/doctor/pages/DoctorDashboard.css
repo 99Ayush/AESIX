@@ -982,3 +982,448 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ------------------------------------------
+   8. SOCRATES FORMS & DETAIL MODAL
+   ------------------------------------------ */
+.doc-socrates-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem;
+}
+
+.doc-socrates-header {
+  margin-bottom: 0.5rem;
+}
+
+.doc-socrates-title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--primary-navy, #12304A);
+  margin: 0 0 0.25rem 0;
+}
+
+.doc-socrates-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted, #64748B);
+  margin: 0;
+}
+
+.doc-socrates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.25rem;
+}
+
+.doc-socrates-card {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg, 16px);
+  border: 1px solid var(--border-light, #E2E8F0);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.doc-socrates-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.doc-socrates-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.doc-socrates-site {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--primary-navy, #12304A);
+}
+
+.doc-socrates-date {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+  margin-top: 0.15rem;
+}
+
+.doc-severity-pill {
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.doc-socrates-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-main, #183B56);
+}
+
+.doc-socrates-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #F1F5F9;
+  padding-bottom: 0.35rem;
+}
+
+.doc-socrates-label {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+  font-weight: 600;
+}
+
+.doc-socrates-val {
+  font-weight: 700;
+}
+
+.doc-socrates-btn {
+  width: 100%;
+  padding: 0.65rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.doc-socrates-btn.request {
+  background: var(--navy-dark, #084766);
+  color: #FFFFFF;
+}
+
+.doc-socrates-btn.request:hover {
+  background: var(--teal-primary, #2F8F83);
+}
+
+.doc-socrates-btn.pending {
+  background: #FEF3C7;
+  color: #D97706;
+  cursor: default;
+}
+
+.doc-socrates-btn.view {
+  background: var(--teal-primary, #2F8F83);
+  color: #FFFFFF;
+}
+
+.doc-socrates-btn.view:hover {
+  background: #107065;
+}
+
+/* Modal Backdrop & Overlay */
+.doc-modal-backdrop,
+.doc-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(12, 36, 56, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1.25rem;
+}
+
+.doc-modal-card.doc-form-detail-modal {
+  background: #FFFFFF;
+  border-radius: 20px;
+  max-width: 720px;
+  width: 100%;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(8, 71, 102, 0.35);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: docModalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes docModalSlideUp {
+  from {
+    transform: translateY(24px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.doc-modal-header {
+  padding: 1.25rem 1.75rem;
+  background: linear-gradient(135deg, #084766 0%, #12304A 100%);
+  color: #FFFFFF;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.doc-modal-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.doc-modal-header-top {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.doc-modal-badge {
+  background: rgba(12, 154, 154, 0.3);
+  color: #38BDF8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.doc-modal-date {
+  font-size: 0.78rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.doc-modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  margin: 0;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+}
+
+.doc-form-detail-patient {
+  font-size: 0.85rem;
+  color: #CBD5E1;
+  margin-top: 0.1rem;
+}
+
+.doc-modal-close {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.doc-modal-close:hover {
+  background: rgba(239, 68, 68, 0.8);
+  border-color: transparent;
+  transform: rotate(90deg);
+}
+
+.doc-modal-body {
+  padding: 1.5rem 1.75rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: #FAFCFC;
+}
+
+/* Severity Gauge Section */
+.doc-severity-section {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+
+.doc-severity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.doc-severity-status-pill {
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.doc-severity-bar-track {
+  height: 10px;
+  width: 100%;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.doc-severity-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+
+/* SOCRATES Grid */
+.doc-form-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.doc-form-detail-field {
+  background: #FFFFFF;
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.doc-form-detail-field-wide,
+.doc-form-detail-section {
+  grid-column: 1 / -1;
+  background: #FFFFFF;
+  padding: 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.doc-form-detail-label {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #0C9A9A;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.doc-form-detail-icon {
+  font-size: 0.9rem;
+}
+
+.doc-form-detail-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #084766;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* Documents List */
+.doc-form-docs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.doc-form-doc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  background: #F0FAF8;
+  border-radius: 10px;
+  border: 1px solid rgba(12, 154, 154, 0.2);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.doc-form-doc-item:hover {
+  background: #0C9A9A;
+  border-color: #0C9A9A;
+}
+
+.doc-form-doc-item:hover .doc-form-doc-name,
+.doc-form-doc-item:hover .doc-form-doc-sub,
+.doc-form-doc-item:hover .doc-form-doc-arrow {
+  color: #FFFFFF !important;
+}
+
+.doc-form-doc-icon {
+  font-size: 1.25rem;
+}
+
+.doc-form-doc-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.doc-form-doc-name {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #084766;
+}
+
+.doc-form-doc-sub {
+  font-size: 0.75rem;
+  color: #64748B;
+}
+
+.doc-form-doc-arrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #0C9A9A;
+}
+
+/* Modal Footer */
+.doc-modal-footer {
+  padding: 1rem 1.75rem;
+  background: #FFFFFF;
+  border-top: 1px solid #E2E8F0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.doc-modal-close-btn {
+  background: #084766;
+  color: #FFFFFF;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.doc-modal-close-btn:hover {
+  background: #0C9A9A;
+}
+
+

@@ -5,7 +5,7 @@ import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 
 // Formatting Utilities
-export const formatDate = (dateString) => {
+const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   try {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -15,7 +15,7 @@ export const formatDate = (dateString) => {
   }
 };
 
-export const formatPhone = (phone) => {
+const formatPhone = (phone) => {
   if (!phone) return 'N/A';
   const cleaned = ('' + phone).replace(/\D/g, '');
   if (cleaned.length === 10) {
@@ -101,9 +101,9 @@ export default function BasicInfo() {
             phone: profile.phone || profile.mobile || profile.contact?.phone || storedProfile.mobile || storedProfile.phone || '',
             email: profile.email || profile.contact?.email || storedProfile.email || '',
             address: profile.address || profile.contact?.address || storedProfile.city || storedProfile.address || 'N/A',
-            emergencyContactName: profile.contact?.emergencyContactName || storedProfile.emergencyContactName || 'Family Member',
-            emergencyContactRelation: profile.contact?.emergencyContactRelation || storedProfile.emergencyContactRelation || 'Relative',
-            emergencyContactPhone: profile.contact?.emergencyContactPhone || storedProfile.emergencyContactPhone || storedProfile.mobile || storedProfile.phone || 'N/A',
+            emergencyContactName: profile.contact?.emergencyContactName || profile.emergencyContactName || storedProfile.emergencyContactName || '',
+            emergencyContactRelation: profile.contact?.emergencyContactRelation || profile.emergencyContactRelation || storedProfile.emergencyContactRelation || '',
+            emergencyContactPhone: profile.contact?.emergencyContactPhone || profile.emergencyContactPhone || storedProfile.emergencyContactPhone || '',
           },
           medications: Array.isArray(profile.medications) ? profile.medications : [],
           allergies: Array.isArray(profile.allergies) ? profile.allergies : [],
@@ -666,18 +666,24 @@ export default function BasicInfo() {
                   </h3>
 
                   {!isEditing ? (
-                    <div style={{ backgroundColor: '#FEE2E2', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid #FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ backgroundColor: '#FEE2E2', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid #FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
                       <div>
-                        <p style={{ fontWeight: 900, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: 0 }}>{patient.contact.emergencyContactName}</p>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700, margin: '0.2rem 0 0 0' }}>Relation: {patient.contact.emergencyContactRelation}</p>
+                        <p style={{ fontWeight: 900, color: 'var(--primary-navy)', fontSize: '0.95rem', margin: 0 }}>
+                          {patient.contact.emergencyContactName || 'Not Specified'}
+                        </p>
+                        <p style={{ fontSize: '0.75rem', color: '#991B1B', fontWeight: 700, margin: '0.2rem 0 0 0' }}>
+                          Relation: {patient.contact.emergencyContactRelation || 'N/A'}
+                        </p>
                       </div>
-                      <a
-                        href={`tel:${patient.contact.emergencyContactPhone}`}
-                        className="sih-btn sih-btn-danger"
-                        style={{ fontSize: '0.75rem' }}
-                      >
-                        {formatPhone(patient.contact.emergencyContactPhone)}
-                      </a>
+                      {patient.contact.emergencyContactPhone && patient.contact.emergencyContactPhone !== 'N/A' && (
+                        <a
+                          href={`tel:${patient.contact.emergencyContactPhone}`}
+                          className="sih-btn sih-btn-danger"
+                          style={{ fontSize: '0.75rem' }}
+                        >
+                          📞 {formatPhone(patient.contact.emergencyContactPhone)}
+                        </a>
+                      )}
                     </div>
                   ) : (
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
