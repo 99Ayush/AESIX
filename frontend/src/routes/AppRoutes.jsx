@@ -57,8 +57,8 @@ export const AppRoutes = () => {
         <Route path="/doctor/patient/:id?" element={<DoctorDashboard activeTabDefault="patient-data" />} />
 
         {/* Default: redirect to dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
