@@ -5,7 +5,7 @@ import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 
 // Formatting Utilities
-export const formatDate = (dateString) => {
+const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
   try {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -15,7 +15,7 @@ export const formatDate = (dateString) => {
   }
 };
 
-export const formatPhone = (phone) => {
+const formatPhone = (phone) => {
   if (!phone) return 'N/A';
   const cleaned = ('' + phone).replace(/\D/g, '');
   if (cleaned.length === 10) {
