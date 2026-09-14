@@ -50,6 +50,7 @@ export const AppRoutes = () => {
         {/* Doctor routes & segregated sub-pages */}
         <Route path="/doctor" element={<DoctorDashboard activeTabDefault="overview" />} />
         <Route path="/doctor/patient-data" element={<DoctorDashboard activeTabDefault="patient-data" />} />
+        <Route path="/doctor/socrates-forms" element={<DoctorDashboard activeTabDefault="socrates-forms" />} />
         <Route path="/doctor/consultations" element={<DoctorDashboard activeTabDefault="consultations" />} />
         <Route path="/doctor/alerts" element={<DoctorDashboard activeTabDefault="alerts" />} />
         <Route path="/doctor/directory" element={<DoctorDashboard activeTabDefault="directory" />} />

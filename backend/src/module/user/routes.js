@@ -12,6 +12,7 @@ import { User, UserSession } from '../auth/model/model.js';
 import multer from 'multer';
 import { uploadBufferToCloudinary } from '../../shared/cloudinary.js';
 import SocratesAssessment from './model/socratesModel.js';
+import ConsentRequest from '../doctor/model/consentRequestModel.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -113,12 +114,12 @@ const mergeUserWithData = (data, authUser) => {
       gender: authUser.gender === 'M' ? 'Male' : (authUser.gender === 'F' ? 'Female' : (authUser.gender || data.profile.gender)),
       contact: {
         ...data.profile.contact,
-        phone: authUser.mobile || authUser.phone || data.profile.contact.phone,
-        email: authUser.email || data.profile.contact.email,
-        address: authUser.city || authUser.address || data.profile.contact.address,
-        emergencyContactName: authUser.emergencyContactName || data.profile.contact.emergencyContactName || 'Family Member',
-        emergencyContactRelation: authUser.emergencyContactRelation || data.profile.contact.emergencyContactRelation || 'Relative',
-        emergencyContactPhone: authUser.emergencyContactPhone || authUser.mobile || authUser.phone || data.profile.contact.emergencyContactPhone,
+        phone: authUser.mobile || authUser.phone || data.profile.contact?.phone,
+        email: authUser.email || data.profile.contact?.email,
+        address: authUser.city || authUser.address || data.profile.contact?.address,
+        emergencyContactName: authUser.emergencyContactName || data.profile.contact?.emergencyContactName || '',
+        emergencyContactRelation: authUser.emergencyContactRelation || data.profile.contact?.emergencyContactRelation || '',
+        emergencyContactPhone: authUser.emergencyContactPhone || data.profile.contact?.emergencyContactPhone || '',
       },
     },
     abha: {
@@ -207,6 +208,15 @@ router.route('/profile')
       const bodyData = { ...req.body };
       if (photoUrl) bodyData.photoUrl = photoUrl;
 
+      if (!bodyData.contact) bodyData.contact = {};
+      if (typeof bodyData.contact === 'string') {
+        try { bodyData.contact = JSON.parse(bodyData.contact); } catch (_) {}
+      }
+      ['emergencyContactName', 'emergencyContactRelation', 'emergencyContactPhone', 'phone', 'email', 'address'].forEach((key) => {
+        if (req.body[`contact[${key}]`]) bodyData.contact[key] = req.body[`contact[${key}]`];
+        if (req.body[key] && key.startsWith('emergency')) bodyData.contact[key] = req.body[key];
+      });
+
       Object.assign(data.profile, bodyData);
       if (bodyData.contact) {
         data.profile.contact = { ...data.profile.contact, ...bodyData.contact };
@@ -238,9 +248,9 @@ router.route('/profile')
           ...(bodyData.dob || bodyData.dateOfBirth ? { dob: bodyData.dob || bodyData.dateOfBirth } : {}),
           ...(bodyData.contact?.address || bodyData.address || bodyData.city ? { city: bodyData.contact?.address || bodyData.address || bodyData.city } : {}),
           ...(bodyData.bloodGroup ? { bloodGroup: bodyData.bloodGroup } : {}),
-          ...(bodyData.contact?.emergencyContactName ? { emergencyContactName: bodyData.contact.emergencyContactName } : {}),
-          ...(bodyData.contact?.emergencyContactRelation ? { emergencyContactRelation: bodyData.contact.emergencyContactRelation } : {}),
-          ...(bodyData.contact?.emergencyContactPhone ? { emergencyContactPhone: bodyData.contact.emergencyContactPhone } : {}),
+          ...(bodyData.contact?.emergencyContactName !== undefined ? { emergencyContactName: bodyData.contact.emergencyContactName } : {}),
+          ...(bodyData.contact?.emergencyContactRelation !== undefined ? { emergencyContactRelation: bodyData.contact.emergencyContactRelation } : {}),
+          ...(bodyData.contact?.emergencyContactPhone !== undefined ? { emergencyContactPhone: bodyData.contact.emergencyContactPhone } : {}),
           ...(photoUrl ? { photoUrl } : {}),
         };
 
@@ -388,6 +398,50 @@ router.get('/socrates/patient/:userId', async (req, res, next) => {
     res.json({ success: true, assessments });
   } catch (error) {
     next(error);
+  }
+});
+
+// ─── Doctor Access Requests (Patient side) ────────────────────────────────────
+router.get('/access-requests', async (req, res, next) => {
+  try {
+    const authUser = await resolveAuthUser(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Not authenticated' });
+    const patientId = authUser._id.toString();
+    const requests = await ConsentRequest.find({ patientId }).sort({ requestedAt: -1 }).lean();
+    // Enrich with form info
+    const enriched = await Promise.all(requests.map(async (r) => {
+      let formInfo = null;
+      try {
+        const form = await SocratesAssessment.findById(r.formId).lean();
+        if (form) {
+          formInfo = { site: form.site, severity: form.severity, createdAt: form.createdAt };
+        }
+      } catch (_) {}
+      return { ...r, _id: r._id.toString(), formInfo };
+    }));
+    res.json({ success: true, data: enriched });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.patch('/access-requests/:id', async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'status must be accepted or rejected' });
+    }
+    const authUser = await resolveAuthUser(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Not authenticated' });
+    const patientId = authUser._id.toString();
+    const request = await ConsentRequest.findOne({ _id: req.params.id, patientId });
+    if (!request) return res.status(404).json({ success: false, error: 'Request not found' });
+    request.status = status;
+    request.respondedAt = new Date();
+    await request.save();
+    res.json({ success: true, data: request });
+  } catch (e) {
+    next(e);
   }
 });
 

@@ -1,109 +1,198 @@
-import { formatPatientSummary, MOCK_PATIENT_LIST } from '../model/doctorModel.js';
+import { User } from '../../auth/model/model.js';
+import SocratesAssessment from '../../user/model/socratesModel.js';
+import ConsentRequest from '../model/consentRequestModel.js';
 
 /**
- * Doctor Service Layer
+ * Doctor Service Layer — Real MongoDB queries
  */
-export async function getPatientDetailsForDoctor(patientId = 'user-1') {
-  // Mock consultation history records
-  const consultationResults = [
-    {
-      id: 'c-101',
-      date: '2026-08-20',
-      doctorName: 'Dr. Meera Iyer (General Physician)',
-      chiefComplaint: 'Persistent dry cough and mild breathlessness during exercise.',
-      diagnosis: 'Acute Bronchitis with Mild Allergic Asthma',
-      vitalSigns: { bp: '120/80 mmHg', heartRate: '76 bpm', temp: '98.6°F', spo2: '98%' },
-      prescriptions: [
-        { medicine: 'Inhaler Budecort 200', dosage: '2 puffs twice daily', duration: '14 days' },
-        { medicine: 'Tab Montair-LC', dosage: '1 tablet daily at night', duration: '10 days' },
-      ],
-      aiSummary: 'GenAI triage identified mild respiratory distress. Vital signs stable.',
-      doctorNotes: 'Advised to avoid cold food, dust exposure, and track peak flow meter values daily.',
-    },
-    {
-      id: 'c-100',
-      date: '2026-05-14',
-      doctorName: 'Dr. Kabir Singh (Cardiologist)',
-      chiefComplaint: 'Routine annual cardiovascular screening.',
-      diagnosis: 'Normal Cardiac Function',
-      vitalSigns: { bp: '118/78 mmHg', heartRate: '72 bpm', temp: '98.4°F', spo2: '99%' },
-      prescriptions: [
-        { medicine: 'Multivitamin Supplements', dosage: '1 tablet daily post breakfast', duration: '30 days' },
-      ],
-      aiSummary: 'ECG and lipid profile within normal parameters.',
-      doctorNotes: 'Continue 30-min daily moderate cardio exercise.',
-    },
-  ];
 
-  const patientBase = MOCK_PATIENT_LIST.find((p) => p.id === patientId) || MOCK_PATIENT_LIST[0];
+/**
+ * Search patients by ABHA ID (partial match)
+ */
+export async function searchByAbha(abhaId = '') {
+  const q = abhaId.trim();
+  if (!q) return [];
 
-  const profileData = formatPatientSummary(
-    {
-      id: patientBase.id,
-      name: patientBase.fullName,
-      dob: '1998-04-18',
-      gender: patientBase.gender,
-      bloodGroup: patientBase.bloodGroup,
-      contact: {
-        phone: patientBase.phone,
-        email: patientBase.email,
-        address: '402 Green Park, Sector 15, Gurgaon, Haryana',
-        emergencyContactName: 'Sunita Sharma',
-        emergencyContactRelation: 'Mother',
-        emergencyContactPhone: '+91 98111 22334',
-      },
-    },
-    [
-      { id: 'doc-1', title: 'Chest X-Ray Report', type: 'disease', date: '2026-08-20', fileName: 'XRay_Aug2026.pdf' },
-      { id: 'doc-2', title: 'Blood Count & Lipid Panel', type: 'prescription', date: '2026-05-14', fileName: 'LabReport_May2026.pdf' },
-    ],
-    []
-  );
+  const users = await User.find({
+    abhaNumber: { $regex: q, $options: 'i' },
+  }).limit(20).lean();
+
+  return users.map((u) => ({
+    id: u._id.toString(),
+    fullName: `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown',
+    dob: u.dob || '',
+    gender: u.gender === 'M' ? 'Male' : u.gender === 'F' ? 'Female' : (u.gender || ''),
+    bloodGroup: u.bloodGroup || '',
+    phone: u.mobile || '',
+    email: u.email || '',
+    abhaId: u.abhaNumber || '',
+    photoUrl: u.photoUrl || null,
+    city: u.city || '',
+  }));
+}
+
+/**
+ * Get full patient profile from Auth User collection
+ */
+export async function getPatientProfile(userId) {
+  const u = await User.findById(userId).lean();
+  if (!u) return null;
+
+  const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
+  const birthYear = u.dob ? new Date(u.dob).getFullYear() : null;
+  const currentYear = new Date().getFullYear();
 
   return {
-    patient: {
-      ...profileData,
-      photoUrl: patientBase.photoUrl,
-    },
-    consultationResults,
-    alerts: [
-      {
-        id: 'alt-1',
-        severity: 'CRITICAL',
-        type: 'ALLERGY',
-        title: 'Severe Anaphylactic Risk: Penicillin',
-        description: 'Patient experiences severe hives and throat swelling with Beta-lactam antibiotics.',
-        addedDate: '2026-01-10',
-      },
-      {
-        id: 'alt-2',
-        severity: 'WARNING',
-        type: 'CONDITION',
-        title: 'Asthma Trigger Alert: Cold Weather',
-        description: 'Requires prophylactic inhaler use before outdoor activities in winter.',
-        addedDate: '2026-02-15',
-      },
-      {
-        id: 'alt-3',
-        severity: 'INFO',
-        type: 'LAB_DUE',
-        title: 'Follow-up Spirometry Test Due',
-        description: 'Scheduled lung function check due within 30 days.',
-        addedDate: '2026-08-21',
-      },
-    ],
+    id: u._id.toString(),
+    fullName,
+    dob: u.dob || '',
+    age: birthYear ? currentYear - birthYear : null,
+    gender: u.gender === 'M' ? 'Male' : u.gender === 'F' ? 'Female' : (u.gender || ''),
+    bloodGroup: u.bloodGroup || '',
+    phone: u.mobile || '',
+    email: u.email || '',
+    abhaId: u.abhaNumber || '',
+    photoUrl: u.photoUrl || null,
+    city: u.city || '',
+    emergencyContactName: u.emergencyContactName || '',
+    emergencyContactRelation: u.emergencyContactRelation || '',
+    emergencyContactPhone: u.emergencyContactPhone || '',
   };
 }
 
-export async function searchPatientsForDoctor(query = '') {
-  const q = query.toLowerCase().trim();
-  if (!q) return MOCK_PATIENT_LIST;
+/**
+ * Get SOCRATES forms for a patient (metadata only — no document URLs)
+ * Also attaches the consent status for each form relative to the requesting doctor.
+ */
+export async function getPatientForms(patientId, doctorId = '') {
+  const assessments = await SocratesAssessment.find({ userId: patientId })
+    .sort({ createdAt: -1 })
+    .lean();
 
-  return MOCK_PATIENT_LIST.filter(
-    (p) =>
-      p.fullName.toLowerCase().includes(q) ||
-      p.email.toLowerCase().includes(q) ||
-      p.phone.includes(q) ||
-      p.abhaId.includes(q)
-  );
+  // Fetch all consent requests from this doctor for this patient's forms
+  let consentMap = {};
+  if (doctorId) {
+    const consents = await ConsentRequest.find({
+      doctorId,
+      patientId,
+    }).lean();
+    for (const c of consents) {
+      consentMap[c.formId] = c.status;
+    }
+  }
+
+  return assessments.map((a) => ({
+    id: a._id.toString(),
+    site: a.site,
+    onset: a.onset,
+    character: a.character,
+    severity: a.severity,
+    timeCourse: a.timeCourse,
+    createdAt: a.createdAt,
+    userName: a.userName || '',
+    documentCount: a.documents?.length || 0,
+    consentStatus: consentMap[a._id.toString()] || 'none',
+  }));
+}
+
+/**
+ * Create a consent request from a doctor for a specific SOCRATES form
+ */
+export async function requestFormAccess({ doctorId, doctorName, patientId, patientAbha, formId, formSite }) {
+  // Check if a request already exists
+  const existing = await ConsentRequest.findOne({ doctorId, formId });
+  if (existing) {
+    if (existing.status === 'rejected') {
+      // Allow re-request after rejection
+      existing.status = 'pending';
+      existing.requestedAt = new Date();
+      existing.respondedAt = null;
+      await existing.save();
+      return existing;
+    }
+    return existing; // already pending or accepted
+  }
+
+  const request = new ConsentRequest({
+    doctorId,
+    doctorName: doctorName || 'Doctor',
+    patientId,
+    patientAbha: patientAbha || '',
+    formId,
+    formSite: formSite || '',
+  });
+  await request.save();
+  return request;
+}
+
+/**
+ * Get all consent requests made by a doctor
+ */
+export async function getDoctorRequests(doctorId) {
+  return ConsentRequest.find({ doctorId }).sort({ requestedAt: -1 }).lean();
+}
+
+/**
+ * Get full SOCRATES form data — ONLY if consent is accepted
+ */
+export async function getFormWithConsent(doctorId, formId) {
+  const consent = await ConsentRequest.findOne({ doctorId, formId });
+  if (!consent || consent.status !== 'accepted') {
+    return { authorized: false, reason: consent ? `Request is ${consent.status}` : 'No access request found' };
+  }
+
+  const form = await SocratesAssessment.findById(formId).lean();
+  if (!form) {
+    return { authorized: false, reason: 'Form not found' };
+  }
+
+  return {
+    authorized: true,
+    form: {
+      id: form._id.toString(),
+      userId: form.userId,
+      userName: form.userName,
+      site: form.site,
+      onset: form.onset,
+      character: form.character,
+      radiation: form.radiation,
+      associations: form.associations,
+      timeCourse: form.timeCourse,
+      exacerbatingFactors: form.exacerbatingFactors,
+      severity: form.severity,
+      priorHistory: form.priorHistory,
+      additionalNotes: form.additionalNotes,
+      documents: form.documents || [],
+      createdAt: form.createdAt,
+      updatedAt: form.updatedAt,
+    },
+  };
+}
+
+/**
+ * Get all consent requests for a patient (for user-side display)
+ */
+export async function getPatientAccessRequests(patientId) {
+  return ConsentRequest.find({ patientId }).sort({ requestedAt: -1 }).lean();
+}
+
+/**
+ * Patient responds to a consent request (accept/reject)
+ */
+export async function respondToAccessRequest(requestId, patientId, status) {
+  const request = await ConsentRequest.findOne({ _id: requestId, patientId });
+  if (!request) return null;
+
+  request.status = status;
+  request.respondedAt = new Date();
+  await request.save();
+  return request;
+}
+
+// Keep legacy exports for backward compatibility
+export { searchByAbha as searchPatientsForDoctor };
+export async function getPatientDetailsForDoctor(patientId) {
+  const profile = await getPatientProfile(patientId);
+  if (!profile) return null;
+  return { patient: profile, consultationResults: [], alerts: [] };
 }

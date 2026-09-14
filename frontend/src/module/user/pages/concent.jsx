@@ -46,14 +46,42 @@ export default function Consent() {
   };
 
   useEffect(() => {
-    const fetchConsents = () => {
-      userApi.consents().then((items) => setConsents(items.map((item) => ({
-        ...item,
-        title: item.purpose,
-        date: item.requestedAt,
-        expiry: item.respondedAt || 'N/A',
-        scope: [item.purpose],
-      })))).catch((error) => showNotification(error.message));
+    const fetchConsents = async () => {
+      try {
+        const [genericConsents, docRequests] = await Promise.all([
+          userApi.consents().catch(() => []),
+          userApi.getAccessRequests().catch(() => []),
+        ]);
+
+        const mappedGeneric = (genericConsents || []).map((item) => ({
+          ...item,
+          title: item.purpose,
+          date: item.requestedAt,
+          expiry: item.respondedAt || 'N/A',
+          scope: [item.purpose],
+        }));
+
+        const mappedDocRequests = (docRequests || []).map((item) => ({
+          id: item._id,
+          isDoctorRequest: true,
+          requester: item.doctorName || 'Doctor',
+          purpose: `SOCRATES Form Access (${item.formInfo?.site || 'Pain Assessment'})`,
+          status: item.status,
+          requestedAt: item.requestedAt,
+          respondedAt: item.respondedAt || 'N/A',
+          title: `SOCRATES Form Access (${item.formInfo?.site || 'Pain Assessment'})`,
+          date: item.requestedAt,
+          expiry: item.respondedAt || 'N/A',
+          scope: [
+            `SOCRATES Assessment: ${item.formInfo?.site || 'Pain'}`,
+            `Pain Severity: ${item.formInfo?.severity ?? 'N/A'}/10`,
+          ],
+        }));
+
+        setConsents([...mappedDocRequests, ...mappedGeneric]);
+      } catch (error) {
+        showNotification(error.message);
+      }
     };
     fetchConsents();
     return onDatabaseChange(fetchConsents);
@@ -62,10 +90,19 @@ export default function Consent() {
   // Status Action Handlers
   const handleUpdateStatus = async (id, newStatus) => {
     try {
-      const saved = await userApi.setConsentStatus(id, newStatus);
-      setConsents((previous) => previous.map((consent) => consent.id === id ? { ...consent, ...saved } : consent));
+      const target = consents.find((c) => c.id === id);
+      if (target?.isDoctorRequest) {
+        await userApi.respondAccessRequest(id, newStatus);
+      } else {
+        await userApi.setConsentStatus(id, newStatus);
+      }
+      setConsents((previous) =>
+        previous.map((consent) =>
+          consent.id === id ? { ...consent, status: newStatus } : consent
+        )
+      );
       setSelectedConsent(null);
-      showNotification(`Consent status saved as ${newStatus.toUpperCase()}.`);
+      showNotification(`Consent request ${newStatus.toUpperCase()} successfully.`);
     } catch (error) {
       showNotification(error.message);
     }

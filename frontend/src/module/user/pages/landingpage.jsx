@@ -215,6 +215,31 @@ export default function LandingPage() {
     return onDatabaseChange(loadDashboard);
   }, []);
 
+  const [accessRequests, setAccessRequests] = useState([]);
+  const pendingRequests = accessRequests.filter((r) => r.status === 'pending');
+
+  const loadAccessRequests = () => {
+    userApi
+      .getAccessRequests()
+      .then((res) => setAccessRequests(res || []))
+      .catch(() => setAccessRequests([]));
+  };
+
+  useEffect(() => {
+    loadAccessRequests();
+    const interval = setInterval(loadAccessRequests, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleRespond = async (id, status) => {
+    try {
+      await userApi.respondAccessRequest(id, status);
+      loadAccessRequests();
+    } catch (err) {
+      console.error('Failed to respond to consent request:', err);
+    }
+  };
+
   const profile = dashboard?.profile;
   const storedUser = (() => {
     try {
@@ -297,10 +322,13 @@ export default function LandingPage() {
     },
     {
       title: "Emergency",
-      value: getVal(
-        profile?.contact?.emergencyContactName,
-        storedUser?.emergencyContactName,
-      ),
+      value: (() => {
+        const name = profile?.contact?.emergencyContactName || profile?.emergencyContactName || storedUser?.emergencyContactName || '';
+        const rel = profile?.contact?.emergencyContactRelation || profile?.emergencyContactRelation || storedUser?.emergencyContactRelation || '';
+        const phone = profile?.contact?.emergencyContactPhone || profile?.emergencyContactPhone || storedUser?.emergencyContactPhone || '';
+        if (!name && !phone) return '—';
+        return `${name || 'Contact'}${rel ? ` (${rel})` : ''}${phone ? ` • ${phone}` : ''}`;
+      })(),
     },
     {
       title: "Status",
@@ -710,7 +738,7 @@ export default function LandingPage() {
                 onClick={() => setNotifOpen(!notifOpen)}
               >
                 🔔
-                <span className="sih-notif-badge">0</span>
+                <span className="sih-notif-badge">{pendingRequests.length}</span>
               </button>
               {notifOpen && (
                 <div
@@ -718,41 +746,98 @@ export default function LandingPage() {
                     position: "absolute",
                     right: 0,
                     top: "calc(100% + 8px)",
-                    width: "280px",
+                    width: "320px",
                     backgroundColor: "#FFFFFF",
                     borderRadius: "12px",
                     boxShadow:
                       "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
                     border: "1px solid var(--border-light)",
-                    padding: "1.25rem 1rem",
+                    padding: "1rem",
                     zIndex: 1000,
-                    textAlign: "center",
+                    textAlign: "left",
                   }}
                 >
-                  <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem" }}>
-                    🔕
-                  </div>
                   <h4
                     style={{
-                      fontSize: "0.9rem",
+                      fontSize: "0.85rem",
                       fontWeight: 800,
                       color: "#084766",
-                      margin: "0 0 0.25rem",
+                      margin: "0 0 0.75rem 0",
+                      paddingBottom: "0.5rem",
+                      borderBottom: "1px solid #E2E8F0",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    No Notifications
+                    <span>Doctor Access Requests</span>
+                    <span style={{ fontSize: "0.75rem", color: "#0C9A9A", fontWeight: 700 }}>
+                      {pendingRequests.length} Pending
+                    </span>
                   </h4>
-                  <p
-                    style={{
-                      fontSize: "0.75rem",
-                      color: "#6B9190",
-                      margin: 0,
-                      lineHeight: "1.4",
-                    }}
-                  >
-                    You're all caught up! New clinical updates & consent alerts
-                    will appear here.
-                  </p>
+                  {pendingRequests.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "0.5rem 0" }}>
+                      <div style={{ fontSize: "1.5rem", marginBottom: "0.2rem" }}>🔕</div>
+                      <p style={{ fontSize: "0.75rem", color: "#6B9190", margin: 0 }}>
+                        No pending requests from doctors.
+                      </p>
+                    </div>
+                  ) : (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", maxHeight: "300px", overflowY: "auto" }}>
+                      {pendingRequests.map((req) => (
+                        <div
+                          key={req._id}
+                          style={{
+                            padding: "0.65rem",
+                            borderRadius: "8px",
+                            background: "#F8FAFC",
+                            border: "1px solid #E2E8F0",
+                          }}
+                        >
+                          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1E293B" }}>
+                            {req.doctorName}
+                          </div>
+                          <div style={{ fontSize: "0.75rem", color: "#64748B", margin: "0.2rem 0 0.5rem" }}>
+                            Form: <strong>{req.formInfo?.site || "Pain Assessment"}</strong> (Severity: {req.formInfo?.severity ?? "N/A"}/10)
+                          </div>
+                          <div style={{ display: "flex", gap: "0.4rem" }}>
+                            <button
+                              onClick={() => handleRespond(req._id, "accepted")}
+                              style={{
+                                flex: 1,
+                                background: "#16B889",
+                                color: "#FFF",
+                                border: "none",
+                                borderRadius: "6px",
+                                padding: "0.3rem",
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={() => handleRespond(req._id, "rejected")}
+                              style={{
+                                flex: 1,
+                                background: "#EF4444",
+                                color: "#FFF",
+                                border: "none",
+                                borderRadius: "6px",
+                                padding: "0.3rem",
+                                fontSize: "0.75rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -826,6 +911,122 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+
+        {/* ===== PENDING ACCESS REQUESTS BANNER ===== */}
+        {pendingRequests.length > 0 && (
+          <div
+            style={{
+              background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+              border: "1px solid #FCD34D",
+              borderRadius: "16px",
+              padding: "1.25rem 1.5rem",
+              marginBottom: "1.5rem",
+              boxShadow: "0 4px 14px rgba(245,158,11,0.08)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginBottom: "0.85rem",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                <span style={{ fontSize: "1.3rem" }}>🩺</span>
+                <div>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontSize: "1rem",
+                      fontWeight: 800,
+                      color: "#92400E",
+                    }}
+                  >
+                    Pending Doctor Access Requests ({pendingRequests.length})
+                  </h3>
+                  <p
+                    style={{
+                      margin: "0.15rem 0 0",
+                      fontSize: "0.78rem",
+                      color: "#B45309",
+                    }}
+                  >
+                    A doctor is requesting consent to view your clinical SOCRATES assessment forms.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {pendingRequests.map((req) => (
+                <div
+                  key={req._id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    background: "#FFFFFF",
+                    borderRadius: "12px",
+                    padding: "0.85rem 1.25rem",
+                    border: "1px solid #FDE68A",
+                    flexWrap: "wrap",
+                    gap: "0.75rem",
+                  }}
+                >
+                  <div>
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        color: "#1E293B",
+                        fontSize: "0.92rem",
+                      }}
+                    >
+                      {req.doctorName}
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "#64748B", marginTop: "0.2rem" }}>
+                      Requested access to: <strong>SOCRATES Form — {req.formInfo?.site || "Pain Assessment"}</strong> (Pain Severity: {req.formInfo?.severity ?? "N/A"}/10)
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: "0.5rem" }}>
+                    <button
+                      onClick={() => handleRespond(req._id, "accepted")}
+                      style={{
+                        background: "#10B981",
+                        color: "#FFFFFF",
+                        border: "none",
+                        padding: "0.5rem 1.25rem",
+                        borderRadius: "8px",
+                        fontWeight: 700,
+                        fontSize: "0.82rem",
+                        cursor: "pointer",
+                        boxShadow: "0 2px 6px rgba(16,185,129,0.2)",
+                      }}
+                    >
+                      ✓ Grant Access
+                    </button>
+                    <button
+                      onClick={() => handleRespond(req._id, "rejected")}
+                      style={{
+                        background: "#EF4444",
+                        color: "#FFFFFF",
+                        border: "none",
+                        padding: "0.5rem 1.25rem",
+                        borderRadius: "8px",
+                        fontWeight: 700,
+                        fontSize: "0.82rem",
+                        cursor: "pointer",
+                        boxShadow: "0 2px 6px rgba(239,68,68,0.2)",
+                      }}
+                    >
+                      ✕ Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* ===== PATIENT PROFILE CONTAINER ===== */}
         <div style={s.profileContainer}>

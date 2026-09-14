@@ -67,6 +67,8 @@ export const userApi = {
     if (!response.ok) throw new Error(body.error || 'Failed to fetch SOCRATES history');
     return body;
   },
+  getAccessRequests: () => request('/users/access-requests'),
+  respondAccessRequest: (id, status) => request(`/users/access-requests/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
 };
 
 
