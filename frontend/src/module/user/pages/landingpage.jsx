@@ -1,35 +1,124 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import '../userPages.css';
-import { userApi } from '../services/userApi';
-import { onDatabaseChange } from '../services/realtime';
-import { useDashboardLanguage } from '../LanguageContext';
-import { Camera, CalendarDays, Search, FileText, Globe, Hand } from "lucide-react";
-
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "../userPages.css";
+import { userApi } from "../services/userApi";
+import { onDatabaseChange } from "../services/realtime";
+import { useDashboardLanguage } from "../LanguageContext";
+import {
+  Camera,
+  CalendarDays,
+  Search,
+  FileText,
+  Globe,
+  Hand,
+} from "lucide-react";
 
 /* ─── Inline SVG icons ─── */
 const ShieldIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
 );
 const BookIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+  </svg>
 );
 const ChevronRight = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
 );
 const PlugIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v6" /><path d="M6 8h12" /><path d="M8 8v4a4 4 0 0 0 8 0V8" /><path d="M12 16v6" /></svg>
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 2v6" />
+    <path d="M6 8h12" />
+    <path d="M8 8v4a4 4 0 0 0 8 0V8" />
+    <path d="M12 16v6" />
+  </svg>
 );
 const AllergyIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 8v4" />
+    <path d="M12 16h.01" />
+  </svg>
 );
 const SyringeIcon = () => (
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m18 2 4 4" /><path d="m17 7 3-3" /><path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5" /><path d="m9 11 4 4" /><path d="m5 19-3 3" /><path d="m14 4 6 6" /></svg>
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m18 2 4 4" />
+    <path d="m17 7 3-3" />
+    <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5" />
+    <path d="m9 11 4 4" />
+    <path d="m5 19-3 3" />
+    <path d="m14 4 6 6" />
+  </svg>
 );
 
 /* ─── Chatbot Robot SVG (inline, no external image) ─── */
 const ChatbotRobot = () => (
-  <svg width="160" height="180" viewBox="0 0 160 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg
+    width="160"
+    height="180"
+    viewBox="0 0 160 180"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
     {/* Speech bubble */}
     <rect x="85" y="8" width="60" height="34" rx="14" fill="#0C9A9A" />
     <polygon points="95,42 102,42 92,52" fill="#0C9A9A" />
@@ -37,7 +126,15 @@ const ChatbotRobot = () => (
     <circle cx="115" cy="24" r="3" fill="#fff" />
     <circle cx="127" cy="24" r="3" fill="#fff" />
     {/* Antenna */}
-    <line x1="80" y1="55" x2="80" y2="40" stroke="#0C9A9A" strokeWidth="3" strokeLinecap="round" />
+    <line
+      x1="80"
+      y1="55"
+      x2="80"
+      y2="40"
+      stroke="#0C9A9A"
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
     <circle cx="80" cy="37" r="5" fill="#0C9A9A" />
     {/* Head */}
     <rect x="45" y="55" width="70" height="60" rx="18" fill="#277F88" />
@@ -50,12 +147,32 @@ const ChatbotRobot = () => (
     <circle cx="67" cy="81" r="1.5" fill="#fff" />
     <circle cx="97" cy="81" r="1.5" fill="#fff" />
     {/* Smile */}
-    <path d="M68 96 Q80 106 92 96" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+    <path
+      d="M68 96 Q80 106 92 96"
+      stroke="#fff"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      fill="none"
+    />
     {/* Body */}
     <rect x="55" y="118" width="50" height="35" rx="12" fill="#0C9A9A" />
     {/* Body detail */}
-    <rect x="70" y="126" width="20" height="6" rx="3" fill="rgba(255,255,255,0.3)" />
-    <rect x="74" y="136" width="12" height="4" rx="2" fill="rgba(255,255,255,0.2)" />
+    <rect
+      x="70"
+      y="126"
+      width="20"
+      height="6"
+      rx="3"
+      fill="rgba(255,255,255,0.3)"
+    />
+    <rect
+      x="74"
+      y="136"
+      width="12"
+      height="4"
+      rx="2"
+      fill="rgba(255,255,255,0.2)"
+    />
     {/* Left arm */}
     <rect x="32" y="122" width="22" height="14" rx="7" fill="#277F88" />
     {/* Right arm */}
@@ -84,268 +201,460 @@ export default function LandingPage() {
         setNotifOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
-    const loadDashboard = () => userApi.dashboard().then(setDashboard).catch(() => setDashboard(null));
+    const loadDashboard = () =>
+      userApi
+        .dashboard()
+        .then(setDashboard)
+        .catch(() => setDashboard(null));
     loadDashboard();
     return onDatabaseChange(loadDashboard);
   }, []);
 
   const profile = dashboard?.profile;
   const storedUser = (() => {
-    try { return JSON.parse(localStorage.getItem('user_profile') || '{}'); } catch { return {}; }
+    try {
+      return JSON.parse(localStorage.getItem("user_profile") || "{}");
+    } catch {
+      return {};
+    }
   })();
-  const patientName = profile?.name?.trim()
-    || (storedUser?.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '')
-    || dashboard?.abha?.name?.trim()
-    || (dashboard ? 'Patient' : 'Loading profile…');
-  const initials = (patientName.replace(/[^a-zA-Z\s]/g, '').trim() || 'PT')
+  const patientName =
+    profile?.name?.trim() ||
+    (storedUser?.firstName
+      ? `${storedUser.firstName} ${storedUser.lastName || ""}`.trim()
+      : "") ||
+    dashboard?.abha?.name?.trim() ||
+    (dashboard ? "Patient" : "Loading profile…");
+  const initials = (patientName.replace(/[^a-zA-Z\s]/g, "").trim() || "PT")
     .split(/\s+/)
     .map((part) => part[0])
-    .join('')
+    .join("")
     .slice(0, 2)
     .toUpperCase();
 
   const getVal = (primary, ...fallbacks) => {
-    if (primary && String(primary).trim() && String(primary).trim() !== '—') return String(primary).trim();
+    if (primary && String(primary).trim() && String(primary).trim() !== "—")
+      return String(primary).trim();
     for (const fb of fallbacks) {
-      if (fb && String(fb).trim() && String(fb).trim() !== '—') return String(fb).trim();
+      if (fb && String(fb).trim() && String(fb).trim() !== "—")
+        return String(fb).trim();
     }
-    return '—';
+    return "—";
   };
 
   // Patient information data
   const patientInfoLeft = [
-    { title: 'Patient ID', value: getVal(profile?.id, storedUser?.id, storedUser?.userId) },
-    { title: 'Gender', value: getVal(profile?.gender, storedUser?.gender) },
-    { title: 'Contact', value: getVal(profile?.contact?.phone, storedUser?.mobile, storedUser?.phone), icon: '📞' },
-    { title: 'Address', value: getVal(profile?.contact?.address, storedUser?.city, storedUser?.address), icon: '📍' },
-    { title: 'ABHA Number', value: getVal(dashboard?.abha?.number, storedUser?.abhaNumber, storedUser?.ABHANumber) },
+    {
+      title: "Patient ID",
+      value: getVal(profile?.id, storedUser?.id, storedUser?.userId),
+    },
+    { title: "Gender", value: getVal(profile?.gender, storedUser?.gender) },
+    {
+      title: "Contact",
+      value: getVal(
+        profile?.contact?.phone,
+        storedUser?.mobile,
+        storedUser?.phone,
+      ),
+      icon: "📞",
+    },
+    {
+      title: "Address",
+      value: getVal(
+        profile?.contact?.address,
+        storedUser?.city,
+        storedUser?.address,
+      ),
+      icon: "📍",
+    },
+    {
+      title: "ABHA Number",
+      value: getVal(
+        dashboard?.abha?.number,
+        storedUser?.abhaNumber,
+        storedUser?.ABHANumber,
+      ),
+    },
   ];
   const patientInfoRight = [
-    { title: 'Date of Birth', value: getVal(profile?.dob, storedUser?.dob, storedUser?.dateOfBirth) },
-    { title: 'Blood Type', value: getVal(profile?.bloodGroup, storedUser?.bloodGroup) },
-    { title: 'Email', value: getVal(profile?.contact?.email, storedUser?.email), icon: '✉️' },
-    { title: 'Emergency', value: getVal(profile?.contact?.emergencyContactName, storedUser?.emergencyContactName) },
-    { title: 'Status', value: getVal(dashboard?.abha?.verificationStatus, storedUser?.abhaStatus, 'Verified') },
+    {
+      title: "Date of Birth",
+      value: getVal(profile?.dob, storedUser?.dob, storedUser?.dateOfBirth),
+    },
+    {
+      title: "Blood Type",
+      value: getVal(profile?.bloodGroup, storedUser?.bloodGroup),
+    },
+    {
+      title: "Email",
+      value: getVal(profile?.contact?.email, storedUser?.email),
+      icon: "✉️",
+    },
+    {
+      title: "Emergency",
+      value: getVal(
+        profile?.contact?.emergencyContactName,
+        storedUser?.emergencyContactName,
+      ),
+    },
+    {
+      title: "Status",
+      value: getVal(
+        dashboard?.abha?.verificationStatus,
+        storedUser?.abhaStatus,
+        "Verified",
+      ),
+    },
   ];
 
   // Known allergies
   const allergies = (profile?.allergies || []).map((text, index) => ({
-    text, icon: '✦', bg: ['#FDE3EF', '#EFEAFF', '#FFF4D5'][index % 3], color: '#F52B91',
+    text,
+    icon: "✦",
+    bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
+    color: "#F52B91",
   }));
 
   /* ─── Inline styles ─── */
   const s = {
     pageWrapper: {
-      minHeight: '100vh',
-      background: '#EFF9F7',
+      minHeight: "100vh",
+      background: "#EFF9F7",
       fontFamily: "'Inter', 'Poppins', 'Nunito Sans', sans-serif",
     },
     main: {
-      padding: '1.5rem 2.5rem 3rem',
-      maxWidth: '1600px',
-      margin: '0 auto',
+      padding: "1.5rem 2.5rem 3rem",
+      maxWidth: "1600px",
+      margin: "0 auto",
     },
     headingRow: {
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: '1.5rem', flexWrap: 'wrap', marginBottom: '1.75rem',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "1.5rem",
+      flexWrap: "wrap",
+      marginBottom: "1.75rem",
     },
     welcome: {
-      fontSize: '2rem', fontWeight: 800, color: '#084766',
-      letterSpacing: '-0.02em',
+      fontSize: "2rem",
+      fontWeight: 800,
+      color: "#084766",
+      letterSpacing: "-0.02em",
     },
     dateBadge: {
-      display: 'flex', alignItems: 'center', gap: '0.65rem',
-      fontSize: '0.85rem', color: '#084766',
+      display: "flex",
+      alignItems: "center",
+      gap: "0.65rem",
+      fontSize: "0.85rem",
+      color: "#084766",
     },
     // Main profile container
     profileContainer: {
-      background: 'rgba(255,255,255,0.85)',
-      borderRadius: '18px',
-      border: '1px solid rgba(20,150,150,0.12)',
-      boxShadow: '0 2px 16px rgba(8,71,102,0.04)',
-      overflow: 'hidden',
+      background: "rgba(255,255,255,0.85)",
+      borderRadius: "18px",
+      border: "1px solid rgba(20,150,150,0.12)",
+      boxShadow: "0 2px 16px rgba(8,71,102,0.04)",
+      overflow: "hidden",
     },
     profileHeader: {
-      padding: '1.25rem 1.75rem',
-      borderBottom: '1px solid #E4ECEA',
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: '1rem', flexWrap: 'wrap',
+      padding: "1.25rem 1.75rem",
+      borderBottom: "1px solid #E4ECEA",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: "1rem",
+      flexWrap: "wrap",
     },
     profileLabel: {
-      fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
-      letterSpacing: '0.12em', color: '#0C9A9A',
+      fontSize: "0.68rem",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: "0.12em",
+      color: "#0C9A9A",
     },
     profileNameHeading: {
-      fontSize: '1.4rem', fontWeight: 800, color: '#084766', marginTop: '0.2rem',
+      fontSize: "1.4rem",
+      fontWeight: 800,
+      color: "#084766",
+      marginTop: "0.2rem",
     },
     activeBadge: {
-      display: 'flex', alignItems: 'center', gap: '0.5rem',
-      background: '#E2F6EE', color: '#16B889',
-      padding: '0.5rem 1rem', borderRadius: '999px',
-      fontSize: '0.82rem', fontWeight: 700,
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      background: "#E2F6EE",
+      color: "#16B889",
+      padding: "0.5rem 1rem",
+      borderRadius: "999px",
+      fontSize: "0.82rem",
+      fontWeight: 700,
     },
     activeDot: {
-      width: 10, height: 10, borderRadius: '50%', background: '#16B889',
+      width: 10,
+      height: 10,
+      borderRadius: "50%",
+      background: "#16B889",
     },
     editBtn: {
-      display: 'flex', alignItems: 'center', gap: '0.4rem',
-      background: '#F1F7F5', color: '#084766',
-      padding: '0.55rem 1.25rem', borderRadius: '999px',
-      fontSize: '0.82rem', fontWeight: 700,
-      border: 'none', cursor: 'pointer', transition: 'background 0.2s',
+      display: "flex",
+      alignItems: "center",
+      gap: "0.4rem",
+      background: "#F1F7F5",
+      color: "#084766",
+      padding: "0.55rem 1.25rem",
+      borderRadius: "999px",
+      fontSize: "0.82rem",
+      fontWeight: 700,
+      border: "none",
+      cursor: "pointer",
+      transition: "background 0.2s",
     },
     // 3-column body
     bodyGrid: {
-      padding: '1.5rem',
-      display: 'grid',
-      gridTemplateColumns: '210px 1fr 340px',
-      gap: '1.5rem',
+      padding: "1.5rem",
+      display: "grid",
+      gridTemplateColumns: "210px 1fr 340px",
+      gap: "1.5rem",
     },
     // Left - photo + allergies
     leftCol: {
-      display: 'flex', flexDirection: 'column', gap: '1.25rem',
+      display: "flex",
+      flexDirection: "column",
+      gap: "1.25rem",
     },
     photoBg: {
-      height: '210px', width: '100%', borderRadius: '16px',
-      background: 'linear-gradient(135deg, #DCEFEB, #EDF5F4)',
-      border: '8px solid #EDF7F4',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      position: 'relative',
+      height: "210px",
+      width: "100%",
+      borderRadius: "16px",
+      background: "linear-gradient(135deg, #DCEFEB, #EDF5F4)",
+      border: "8px solid #EDF7F4",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
     },
     photoCircle: {
-      width: 120, height: 120, borderRadius: '50%',
-      background: '#0C9A9A',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: '#fff', fontSize: '2.5rem', fontWeight: 800,
+      width: 120,
+      height: 120,
+      borderRadius: "50%",
+      background: "#0C9A9A",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#fff",
+      fontSize: "2.5rem",
+      fontWeight: 800,
     },
     cameraBtn: {
-      position: 'absolute', bottom: 8, right: 8,
-      width: 42, height: 42, borderRadius: '50%',
-      background: '#0C9A9A', border: '4px solid white',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      cursor: 'pointer', fontSize: '1.1rem', color: '#fff',
+      position: "absolute",
+      bottom: 8,
+      right: 8,
+      width: 42,
+      height: 42,
+      borderRadius: "50%",
+      background: "#0C9A9A",
+      border: "4px solid white",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      fontSize: "1.1rem",
+      color: "#fff",
     },
     allergiesTitle: {
-      fontWeight: 800, color: '#0C9A9A', letterSpacing: '0.05em',
-      fontSize: '0.82rem', marginBottom: '0.75rem',
+      fontWeight: 800,
+      color: "#0C9A9A",
+      letterSpacing: "0.05em",
+      fontSize: "0.82rem",
+      marginBottom: "0.75rem",
     },
     allergyTag: {
-      display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-      padding: '0.4rem 0.85rem', borderRadius: '999px',
-      fontSize: '0.78rem', fontWeight: 700, whiteSpace: 'nowrap',
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "0.35rem",
+      padding: "0.4rem 0.85rem",
+      borderRadius: "999px",
+      fontSize: "0.78rem",
+      fontWeight: 700,
+      whiteSpace: "nowrap",
     },
     // Center - Patient Information card
     infoPanel: {
-      border: '1px solid rgba(20,150,150,0.12)',
-      borderRadius: '14px', padding: '1.25rem',
-      background: 'rgba(255,255,255,0.9)',
+      border: "1px solid rgba(20,150,150,0.12)",
+      borderRadius: "14px",
+      padding: "1.25rem",
+      background: "rgba(255,255,255,0.9)",
     },
     infoTitle: {
-      fontSize: '0.78rem', fontWeight: 800, textTransform: 'uppercase',
-      letterSpacing: '0.1em', color: '#0C9A9A', marginBottom: '1.25rem',
+      fontSize: "0.78rem",
+      fontWeight: 800,
+      textTransform: "uppercase",
+      letterSpacing: "0.1em",
+      color: "#0C9A9A",
+      marginBottom: "1.25rem",
     },
     infoGrid: {
-      display: 'grid', gridTemplateColumns: '1fr 1fr',
-      gap: '1.25rem 2rem',
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "1.25rem 2rem",
     },
     infoLabel: {
-      fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase',
-      letterSpacing: '0.08em', color: '#0C9A9A', marginBottom: '0.3rem',
+      fontSize: "0.68rem",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: "0.08em",
+      color: "#0C9A9A",
+      marginBottom: "0.3rem",
     },
     infoValue: {
-      display: 'flex', alignItems: 'flex-start', gap: '0.35rem',
-      fontWeight: 700, color: '#084766', fontSize: '0.88rem', lineHeight: '1.5',
+      display: "flex",
+      alignItems: "flex-start",
+      gap: "0.35rem",
+      fontWeight: 700,
+      color: "#084766",
+      fontSize: "0.88rem",
+      lineHeight: "1.5",
     },
     infoIcon: {
-      marginTop: '0.1rem', color: '#0C9A9A',
+      marginTop: "0.1rem",
+      color: "#0C9A9A",
     },
     // Right utility column
     rightUtil: {
-      display: 'flex', flexDirection: 'column', gap: '0.75rem',
+      display: "flex",
+      flexDirection: "column",
+      gap: "0.75rem",
     },
     utilBtn: {
-      display: 'flex', alignItems: 'center', gap: '0.85rem',
-      padding: '0.85rem 1.1rem',
-      background: '#E8F7F4', borderRadius: '14px',
-      border: '1px solid rgba(20,150,150,0.12)',
-      cursor: 'pointer', transition: 'all 0.2s',
-      textDecoration: 'none', color: '#0C9A9A',
-      fontWeight: 700, fontSize: '0.92rem',
+      display: "flex",
+      alignItems: "center",
+      gap: "0.85rem",
+      padding: "0.85rem 1.1rem",
+      background: "#E8F7F4",
+      borderRadius: "14px",
+      border: "1px solid rgba(20,150,150,0.12)",
+      cursor: "pointer",
+      transition: "all 0.2s",
+      textDecoration: "none",
+      color: "#0C9A9A",
+      fontWeight: 700,
+      fontSize: "0.92rem",
     },
     utilBtnIcon: {
-      width: 42, height: 42, borderRadius: '50%',
-      background: '#D0F0E8', display: 'flex',
-      alignItems: 'center', justifyContent: 'center',
-      color: '#0C9A9A', flexShrink: 0,
+      width: 42,
+      height: 42,
+      borderRadius: "50%",
+      background: "#D0F0E8",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#0C9A9A",
+      flexShrink: 0,
     },
     utilBtnText: {
-      flex: 1, fontWeight: 700, color: '#084766', fontSize: '0.92rem',
+      flex: 1,
+      fontWeight: 700,
+      color: "#084766",
+      fontSize: "0.92rem",
     },
     utilBtnChevron: {
-      color: '#0C9A9A', opacity: 0.6,
+      color: "#0C9A9A",
+      opacity: 0.6,
     },
     // Chatbot panel
     chatbotPanel: {
-      flex: 1, minHeight: '220px',
-      background: 'linear-gradient(135deg, #F0FAF8 0%, #E8F7F4 50%, #FBFDFC 100%)',
-      borderRadius: '16px',
-      border: '1px solid rgba(20,150,150,0.12)',
-      position: 'relative', overflow: 'hidden',
-      cursor: 'pointer',
-      display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end',
-      padding: '1rem',
+      flex: 1,
+      minHeight: "220px",
+      background:
+        "linear-gradient(135deg, #F0FAF8 0%, #E8F7F4 50%, #FBFDFC 100%)",
+      borderRadius: "16px",
+      border: "1px solid rgba(20,150,150,0.12)",
+      position: "relative",
+      overflow: "hidden",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "flex-end",
+      justifyContent: "flex-end",
+      padding: "1rem",
     },
     chatbotLabel: {
-      position: 'absolute', top: '1rem', left: '1.25rem',
-      fontSize: '0.78rem', fontWeight: 700, color: '#0C9A9A',
-      textTransform: 'uppercase', letterSpacing: '0.06em',
+      position: "absolute",
+      top: "1rem",
+      left: "1.25rem",
+      fontSize: "0.78rem",
+      fontWeight: 700,
+      color: "#0C9A9A",
+      textTransform: "uppercase",
+      letterSpacing: "0.06em",
     },
     chatbotSubLabel: {
-      position: 'absolute', top: '2.2rem', left: '1.25rem',
-      fontSize: '0.72rem', color: '#6B9190', fontWeight: 500,
+      position: "absolute",
+      top: "2.2rem",
+      left: "1.25rem",
+      fontSize: "0.72rem",
+      color: "#6B9190",
+      fontWeight: 500,
     },
     // Bottom action cards
     bottomActions: {
-      display: 'grid', gridTemplateColumns: '1fr 1fr',
-      gap: '1rem', padding: '0 1.5rem 1.5rem',
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gap: "1rem",
+      padding: "0 1.5rem 1.5rem",
     },
     actionCard: {
-      display: 'flex', alignItems: 'center', gap: '1rem',
-      padding: '1rem 1.25rem',
-      background: '#E8F7F4', borderRadius: '14px',
-      border: '1px solid rgba(20,150,150,0.12)',
-      cursor: 'pointer', transition: 'all 0.2s',
+      display: "flex",
+      alignItems: "center",
+      gap: "1rem",
+      padding: "1rem 1.25rem",
+      background: "#E8F7F4",
+      borderRadius: "14px",
+      border: "1px solid rgba(20,150,150,0.12)",
+      cursor: "pointer",
+      transition: "all 0.2s",
     },
     actionCardIcon: {
-      width: 48, height: 48, borderRadius: '50%',
-      background: '#D0F0E8', display: 'flex',
-      alignItems: 'center', justifyContent: 'center',
-      color: '#0C9A9A', flexShrink: 0,
+      width: 48,
+      height: 48,
+      borderRadius: "50%",
+      background: "#D0F0E8",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "#0C9A9A",
+      flexShrink: 0,
     },
     actionCardTitle: {
-      fontWeight: 800, color: '#084766', fontSize: '0.95rem',
+      fontWeight: 800,
+      color: "#084766",
+      fontSize: "0.95rem",
     },
     actionCardDesc: {
-      fontSize: '0.78rem', color: '#6B9190', marginTop: '0.15rem',
+      fontSize: "0.78rem",
+      color: "#6B9190",
+      marginTop: "0.15rem",
     },
     actionCardChevron: {
-      marginLeft: 'auto', color: '#0C9A9A', opacity: 0.5,
+      marginLeft: "auto",
+      color: "#0C9A9A",
+      opacity: 0.5,
     },
   };
 
   return (
     <div style={s.pageWrapper} className="sih-page-wrapper">
-
       {/* ===== HEADER (reusing existing classes) ===== */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
-            <div className="sih-logo-badge"><ShieldIcon /></div>
+          <div className="sih-brand" onClick={() => navigate("/dashboard")}>
+            <div className="sih-logo-badge">
+              <ShieldIcon />
+            </div>
             <div>
               <h1 className="sih-brand-title">MedVault</h1>
               <p className="sih-brand-subtitle">Health Portal</p>
@@ -353,64 +662,133 @@ export default function LandingPage() {
           </div>
 
           <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
+            <button onClick={() => navigate("/abha")} className="sih-nav-btn">
               <span className="sih-nav-icon">🛡</span> ABHA
             </button>
-            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
-              <span className="sih-nav-icon"><FileText size={20} strokeWidth={2} /></span> Documents
+            <button
+              onClick={() => navigate("/uploadDoc")}
+              className="sih-nav-btn"
+            >
+              <span className="sih-nav-icon">
+                <FileText size={20} strokeWidth={2} />
+              </span>{" "}
+              Documents
             </button>
-            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
-              <span className="sih-nav-icon"><Search size={20} strokeWidth={2} /></span> Basic Info
+            <button
+              onClick={() => navigate("/basicInfo")}
+              className="sih-nav-btn"
+            >
+              <span className="sih-nav-icon">
+                <Search size={20} strokeWidth={2} />
+              </span>{" "}
+              Basic Info
             </button>
           </nav>
 
           <div className="sih-header-controls">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
-              <option value="English"><Globe size={18} strokeWidth={2} /> English</option>
-              <option value="Hindi"><Globe size={18} strokeWidth={2} /> हिंदी</option>
-              <option value="Bengali"><Globe size={18} strokeWidth={2} /> বাংলা</option>
-              <option value="Tamil"><Globe size={18} strokeWidth={2} /> தமிழ்</option>
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="sih-lang-select"
+            >
+              <option value="English">
+                <Globe size={18} strokeWidth={2} /> English
+              </option>
+              <option value="Hindi">
+                <Globe size={18} strokeWidth={2} /> हिंदी
+              </option>
+              <option value="Bengali">
+                <Globe size={18} strokeWidth={2} /> বাংলা
+              </option>
+              <option value="Tamil">
+                <Globe size={18} strokeWidth={2} /> தமிழ்
+              </option>
             </select>
-            <div style={{ position: 'relative' }} ref={notifRef}>
-              <button className="sih-notif-bell" onClick={() => setNotifOpen(!notifOpen)}>
+            <div style={{ position: "relative" }} ref={notifRef}>
+              <button
+                className="sih-notif-bell"
+                onClick={() => setNotifOpen(!notifOpen)}
+              >
                 🔔
                 <span className="sih-notif-badge">0</span>
               </button>
               {notifOpen && (
-                <div style={{
-                  position: 'absolute', right: 0, top: 'calc(100% + 8px)',
-                  width: '280px', backgroundColor: '#FFFFFF', borderRadius: '12px',
-                  boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)',
-                  border: '1px solid var(--border-light)', padding: '1.25rem 1rem',
-                  zIndex: 1000, textAlign: 'center'
-                }}>
-                  <div style={{ fontSize: '1.8rem', marginBottom: '0.4rem' }}>🔕</div>
-                  <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: '#084766', margin: '0 0 0.25rem' }}>
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "calc(100% + 8px)",
+                    width: "280px",
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: "12px",
+                    boxShadow:
+                      "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+                    border: "1px solid var(--border-light)",
+                    padding: "1.25rem 1rem",
+                    zIndex: 1000,
+                    textAlign: "center",
+                  }}
+                >
+                  <div style={{ fontSize: "1.8rem", marginBottom: "0.4rem" }}>
+                    🔕
+                  </div>
+                  <h4
+                    style={{
+                      fontSize: "0.9rem",
+                      fontWeight: 800,
+                      color: "#084766",
+                      margin: "0 0 0.25rem",
+                    }}
+                  >
                     No Notifications
                   </h4>
-                  <p style={{ fontSize: '0.75rem', color: '#6B9190', margin: 0, lineHeight: '1.4' }}>
-                    You're all caught up! New clinical updates & consent alerts will appear here.
+                  <p
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "#6B9190",
+                      margin: 0,
+                      lineHeight: "1.4",
+                    }}
+                  >
+                    You're all caught up! New clinical updates & consent alerts
+                    will appear here.
                   </p>
                 </div>
               )}
             </div>
             <div className="sih-profile-wrapper" ref={profileRef}>
-              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+              <button
+                className="sih-profile-trigger"
+                onClick={() => setProfileOpen(!profileOpen)}
+              >
                 <div className="sih-profile-avatar">{initials}</div>
                 <span className="sih-profile-name">{patientName}</span>
-                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+                <span
+                  className={`sih-profile-chevron ${profileOpen ? "open" : ""}`}
+                >
+                  ▾
+                </span>
               </button>
               {profileOpen && (
                 <div className="sih-profile-dropdown">
-                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                  <button
+                    className="sih-profile-dropdown-item"
+                    onClick={() => {
+                      navigate("/profile");
+                      setProfileOpen(false);
+                    }}
+                  >
                     <span className="dd-icon">👤</span> Profile
                   </button>
-                  <button className="sih-profile-dropdown-item danger" onClick={() => {
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user_profile');
-                    setProfileOpen(false);
-                    navigate('/login');
-                  }}>
+                  <button
+                    className="sih-profile-dropdown-item danger"
+                    onClick={() => {
+                      localStorage.removeItem("token");
+                      localStorage.removeItem("user_profile");
+                      setProfileOpen(false);
+                      navigate("/login");
+                    }}
+                  >
                     <span className="dd-icon">🚪</span> Sign Out
                   </button>
                 </div>
@@ -422,40 +800,56 @@ export default function LandingPage() {
 
       {/* ===== MAIN ===== */}
       <main style={s.main}>
-
         {/* Welcome Header */}
         <div style={s.headingRow}>
           <div>
-            <h2 style={s.welcome}>Welcome back, {patientName} <span>👋</span></h2>
+            <h2 style={s.welcome}>
+              Welcome back, {patientName} <span>👋</span>
+            </h2>
           </div>
           <div style={s.dateBadge}>
-            <span><CalendarDays size={18} /></span>
+            <span>
+              <CalendarDays size={18} />
+            </span>
             <div>
               <span style={{ fontWeight: 700 }}>
-                {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                {new Date().toLocaleDateString("en-IN", {
+                  weekday: "long",
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                })}
               </span>
-              <span style={{ color: '#6B9190', marginLeft: '0.5rem' }}>• Last synced 3 min ago</span>
+              <span style={{ color: "#6B9190", marginLeft: "0.5rem" }}>
+                • Last synced 3 min ago
+              </span>
             </div>
           </div>
         </div>
 
         {/* ===== PATIENT PROFILE CONTAINER ===== */}
         <div style={s.profileContainer}>
-
           {/* Profile Header */}
           <div style={s.profileHeader}>
             <div>
               <p style={s.profileLabel}>Patient Profile</p>
               <h3 style={s.profileNameHeading}>{patientName}</h3>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
               <span style={s.activeBadge}>
                 <span style={s.activeDot} />
                 Active Patient
               </span>
-              <button style={s.editBtn} onClick={() => navigate('/basicInfo')}
-                onMouseEnter={e => e.currentTarget.style.background = '#E2F6EE'}
-                onMouseLeave={e => e.currentTarget.style.background = '#F1F7F5'}>
+              <button
+                style={s.editBtn}
+                onClick={() => navigate("/basicInfo")}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#E2F6EE")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "#F1F7F5")
+                }
+              >
                 ✏️ Edit Profile
               </button>
             </div>
@@ -463,29 +857,42 @@ export default function LandingPage() {
 
           {/* 3-Column Body */}
           <div style={s.bodyGrid}>
-
             {/* LEFT — Photo + Allergies */}
             <div style={s.leftCol}>
-              <div style={{ position: 'relative' }}>
+              <div style={{ position: "relative" }}>
                 <div style={s.photoBg}>
-                  <div style={{ ...s.photoCircle, overflow: 'hidden' }}>
-                    {(profile?.photoUrl || profile?.photo || storedUser?.photoUrl || storedUser?.photo) ? (
+                  <div style={{ ...s.photoCircle, overflow: "hidden" }}>
+                    {profile?.photoUrl ||
+                    profile?.photo ||
+                    storedUser?.photoUrl ||
+                    storedUser?.photo ? (
                       <img
-                        src={profile?.photoUrl || profile?.photo || storedUser?.photoUrl || storedUser?.photo}
+                        src={
+                          profile?.photoUrl ||
+                          profile?.photo ||
+                          storedUser?.photoUrl ||
+                          storedUser?.photo
+                        }
                         alt="Profile DP"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                        }}
                       />
                     ) : (
                       initials
                     )}
                   </div>
                 </div>
-                <button style={s.cameraBtn} title="Change photo" onClick={() => navigate('/basicInfo')}>
+                <button
+                  style={s.cameraBtn}
+                  title="Change photo"
+                  onClick={() => navigate("/basicInfo")}
+                >
                   <Camera size={20} strokeWidth={2.5} />
                 </button>
               </div>
-
-
             </div>
 
             {/* CENTER — Patient Information */}
@@ -518,132 +925,179 @@ export default function LandingPage() {
             {/* RIGHT — Utility Section */}
             <div style={s.rightUtil}>
               {/* Medical Dictionary Button */}
-              <div style={s.utilBtn}
-                onClick={() => navigate('/health-codes')}
-                onMouseEnter={e => { e.currentTarget.style.background = '#D0F0E8'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(12,154,154,0.12)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#E8F7F4'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <div style={s.utilBtnIcon}><BookIcon /></div>
+              <div
+                style={s.utilBtn}
+                onClick={() => navigate("/health-codes")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#D0F0E8";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(12,154,154,0.12)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#E8F7F4";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div style={s.utilBtnIcon}>
+                  <BookIcon />
+                </div>
                 <span style={s.utilBtnText}>Medical Dictionary</span>
-                <span style={s.utilBtnChevron}><ChevronRight /></span>
+                <span style={s.utilBtnChevron}>
+                  <ChevronRight />
+                </span>
               </div>
 
               {/* Sockets Button */}
-              <div style={s.utilBtn}
-                onClick={() => navigate('/socrates')}
-                onMouseEnter={e => { e.currentTarget.style.background = '#D0F0E8'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(12,154,154,0.12)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#E8F7F4'; e.currentTarget.style.boxShadow = 'none'; }}>
-                <div style={s.utilBtnIcon}><PlugIcon /></div>
-                <span style={s.utilBtnText}>Sockets (SOCRATES)</span>
-                <span style={s.utilBtnChevron}><ChevronRight /></span>
+              <div
+                style={s.utilBtn}
+                onClick={() => navigate("/socrates")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#D0F0E8";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 12px rgba(12,154,154,0.12)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "#E8F7F4";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                <div style={s.utilBtnIcon}>
+                  <PlugIcon />
+                </div>
+                <span style={s.utilBtnText}>SOCRATES</span>
+                <span style={s.utilBtnChevron}>
+                  <ChevronRight />
+                </span>
               </div>
-
-
 
               {/* Chatbot Panel */}
               <div
-                onClick={() => navigate('/genai')}
+                onClick={() => navigate("/genai")}
                 style={{
-                  position: 'relative',
-                  width: '100%',
-                  height: '260px',
-                  cursor: 'pointer',
-                  overflow: 'visible',
+                  position: "relative",
+                  width: "100%",
+                  height: "260px",
+                  cursor: "pointer",
+                  overflow: "visible",
                 }}
               >
                 {/* Speech Bubble */}
                 <div
                   style={{
-                    position: 'absolute',
-                    top: '20px',
-                    left: '8%',
-                    background: '#0C9A9A',
-                    color: '#fff',
-                    padding: '12px 20px',
-                    borderRadius: '22px',
-                    fontSize: '16px',
+                    position: "absolute",
+                    top: "20px",
+                    left: "8%",
+                    background: "#0C9A9A",
+                    color: "#fff",
+                    padding: "12px 20px",
+                    borderRadius: "22px",
+                    fontSize: "16px",
                     fontWeight: 700,
-                    lineHeight: '1.35',
-                    textAlign: 'center',
-                    minWidth: '210px',
-                    bottom: '170px',
+                    lineHeight: "1.35",
+                    textAlign: "center",
+                    minWidth: "210px",
+                    bottom: "170px",
                     zIndex: 5,
                   }}
                 >
                   Hiee 👋
                   <br />
                   What can I do for you?
-
                   {/* Bubble tail */}
                   <div
                     style={{
-                      position: 'absolute',
-                      bottom: '-10px',
-                      right: '55px',
-                      width: '20px',
-                      height: '20px',
-                      background: '#0C9A9A',
-                      transform: 'rotate(45deg)',
-                      
+                      position: "absolute",
+                      bottom: "-10px",
+                      right: "55px",
+                      width: "20px",
+                      height: "20px",
+                      background: "#0C9A9A",
+                      transform: "rotate(45deg)",
                     }}
                   />
                 </div>
 
                 {/* Robot */}
-                <img 
+                <img
                   src="/chatbot.png"
                   alt="AI Health Assistant"
                   style={{
-                    position: 'absolute',
-                    width: '220px',
-                    height: '220px',
-                    objectFit: 'contain',
-                    left: '45%',
-                    bottom: '0',
-                    transform: 'translateX(-50%)',
+                    position: "absolute",
+                    width: "220px",
+                    height: "220px",
+                    objectFit: "contain",
+                    left: "45%",
+                    bottom: "0",
+                    transform: "translateX(-50%)",
                     zIndex: 3,
-                    background: 'transparent',
-                    border: 'none',
-                    boxShadow: 'none',
-                    animation: 'chatbotFloat 2.5s ease-in-out infinite',
+                    background: "transparent",
+                    border: "none",
+                    boxShadow: "none",
+                    animation: "chatbotFloat 2.5s ease-in-out infinite",
                   }}
                 />
- 
-              </div> 
-
-
+              </div>
             </div>
-
           </div>
 
           {/* Bottom Action Cards */}
           <div style={s.bottomActions}>
             {/* Known Allergies Card */}
-            <div style={s.actionCard}
-              onClick={() => navigate('/basicInfo')}
-              onMouseEnter={e => { e.currentTarget.style.background = '#D0F0E8'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(12,154,154,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#E8F7F4'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={s.actionCardIcon}><AllergyIcon /></div>
+            <div
+              style={s.actionCard}
+              onClick={() => navigate("/basicInfo")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#D0F0E8";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 12px rgba(12,154,154,0.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#E8F7F4";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <div style={s.actionCardIcon}>
+                <AllergyIcon />
+              </div>
               <div>
                 <div style={s.actionCardTitle}>Known Allergies</div>
-                <div style={s.actionCardDesc}>View and manage your allergies</div>
+                <div style={s.actionCardDesc}>
+                  View and manage your allergies
+                </div>
               </div>
-              <span style={s.actionCardChevron}><ChevronRight /></span>
+              <span style={s.actionCardChevron}>
+                <ChevronRight />
+              </span>
             </div>
 
             {/* Vaccination Card */}
-            <div style={s.actionCard}
-              onClick={() => navigate('/basicInfo')}
-              onMouseEnter={e => { e.currentTarget.style.background = '#D0F0E8'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(12,154,154,0.1)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = '#E8F7F4'; e.currentTarget.style.boxShadow = 'none'; }}>
-              <div style={s.actionCardIcon}><SyringeIcon /></div>
+            <div
+              style={s.actionCard}
+              onClick={() => navigate("/basicInfo")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "#D0F0E8";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 12px rgba(12,154,154,0.1)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "#E8F7F4";
+                e.currentTarget.style.boxShadow = "none";
+              }}
+            >
+              <div style={s.actionCardIcon}>
+                <SyringeIcon />
+              </div>
               <div>
                 <div style={s.actionCardTitle}>Vaccination</div>
-                <div style={s.actionCardDesc}>View your vaccination records</div>
+                <div style={s.actionCardDesc}>
+                  View your vaccination records
+                </div>
               </div>
-              <span style={s.actionCardChevron}><ChevronRight /></span>
+              <span style={s.actionCardChevron}>
+                <ChevronRight />
+              </span>
             </div>
           </div>
-
         </div>
       </main>
 
