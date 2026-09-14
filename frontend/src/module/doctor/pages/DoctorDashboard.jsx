@@ -161,12 +161,12 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
             >
               <FileText size={17} /> Consultation Results
             </button>
-            <button
+            {/* <button
               className={`doc-view-pill ${activeTab === 'alerts' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('alerts')}
             >
               <TriangleAlert size={17} /> Medical Alerts ({patientData?.alerts?.length || 0})
-            </button>
+            </button> */}
             <button
               className={`doc-view-pill ${activeTab === 'directory' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('directory')}
