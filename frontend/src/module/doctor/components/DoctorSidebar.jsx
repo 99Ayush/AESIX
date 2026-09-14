@@ -72,7 +72,7 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
           <span>SOCRATES Forms</span>
         </button>
 
-        <button
+        {/* <button
           className={`doc-sidebar-item ${activeTab === 'alerts' ? 'active' : ''}`}
           onClick={() => onTabChange && onTabChange('alerts')}
         >
@@ -82,7 +82,7 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
           <span>Medical Alerts</span>
-        </button>
+        </button> */}
 
         <button
           className={`doc-sidebar-item ${activeTab === 'directory' ? 'active' : ''}`}
