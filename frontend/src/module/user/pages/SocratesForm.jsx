@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import PatientSidebar from '../components/asidebar';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 const CHARACTER_OPTIONS = [
   'Sharp / Stabbing',
@@ -224,12 +226,16 @@ export default function SocratesForm() {
             >
               <span className="sih-nav-icon">📋</span> Assessment History
             </button>
-            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🏠</span> Dashboard
+            <button onClick={() => navigate('/profile')} className="sih-nav-btn">
+              <span className="sih-nav-icon">👤</span> Profile
             </button>
           </nav>
         </div>
       </header>
+
+      <div className="patient-main-container">
+        <PatientSidebar activePage="socrates" />
+        <div className="patient-content-area">
 
       {/* Main Content Area */}
       <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
@@ -645,7 +651,7 @@ export default function SocratesForm() {
               <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
                 <button
                   type="button"
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/profile')}
                   style={{
                     padding: '0.8rem 1.6rem',
                     borderRadius: '8px',
@@ -801,6 +807,10 @@ export default function SocratesForm() {
           </div>
         )}
       </main>
+        </div>
+      </div>
+
+      <ChatbotFAB />
     </div>
   );
 }

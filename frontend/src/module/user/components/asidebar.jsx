@@ -1,0 +1,132 @@
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  UserRound,
+  Shield,
+  FileText,
+  FileCheck,
+  ClipboardList,
+  BookOpen,
+  User,
+  Bot,
+  Sparkles,
+} from "lucide-react";
+
+const PatientSidebar = ({
+  profile,
+  storedUser,
+  patientName,
+  initials,
+  activePage,
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const pName =
+    patientName ||
+    (storedUser ? `${storedUser.firstName || ''} ${storedUser.lastName || ''}`.trim() : '') ||
+    profile?.fullName ||
+    profile?.name ||
+    "Patient";
+
+  const userInitials =
+    initials ||
+    (pName && pName !== "Patient"
+      ? pName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+      : "PT");
+
+  const photoUrl =
+    profile?.photoUrl ||
+    profile?.photo ||
+    storedUser?.photoUrl ||
+    storedUser?.photo;
+
+  const menuItems = [
+    { label: "DASHBOARD", path: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
+    { label: "BASIC INFO", path: "/basicInfo", icon: UserRound, key: "basicInfo" },
+    { label: "ABHA ID", path: "/abha", icon: Shield, key: "abha" },
+    { label: "DOCUMENTS", path: "/uploadDoc", icon: FileText, key: "uploadDoc" },
+    { label: "CONSENT", path: "/consent", icon: FileCheck, key: "consent" },
+    { label: "SOCRATES FORM", path: "/socrates", icon: ClipboardList, key: "socrates" },
+    { label: "CLINICAL DIRECTORY", path: "/kindle", icon: BookOpen, key: "kindle" },
+    { label: "PROFILE", path: "/profile", icon: User, key: "profile" },
+    { label: "GENAI BOT", path: "/genai", icon: Bot, key: "genai" },
+  ];
+
+  const isItemActive = (item) => {
+    if (activePage) return activePage === item.key;
+    if (currentPath === item.path) return true;
+    if (item.key === "abha" && currentPath === "/abhaId") return true;
+    if (item.key === "uploadDoc" && currentPath === "/docs") return true;
+    if (item.key === "kindle" && (currentPath === "/health-code" || currentPath === "/namaste-code" || currentPath === "/icd-code")) return true;
+    return false;
+  };
+
+  return (
+    <aside className="patient-sidebar">
+      {/* Merged Single Column Sidebar Card */}
+      <div className="patient-sidebar-block" style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+        {/* 1. Profile Header */}
+        <div>
+          <div className="patient-sidebar-label" style={{ marginBottom: '0.6rem' }}>Profile</div>
+          <div className="patient-profile-card">
+            <div className="patient-avatar-circle">
+              {photoUrl ? (
+                <img
+                  src={photoUrl}
+                  alt="Patient DP"
+                  className="patient-avatar-img"
+                />
+              ) : (
+                <span>{userInitials}</span>
+              )}
+            </div>
+
+            <div className="patient-sidebar-info">
+              <h4 className="patient-sidebar-name">{pName}</h4>
+
+              <p className="patient-sidebar-spec">
+                {storedUser?.gender || profile?.gender || "Patient"}
+                {profile?.bloodGroup ? ` • ${profile.bloodGroup}` : ""}
+              </p>
+
+              <span className="patient-status-online">
+                ● Active Patient
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', margin: '0' }} />
+
+        {/* 2. Menu Section */}
+        <div>
+          <div className="patient-sidebar-label" style={{ marginBottom: '0.6rem' }}>Menu</div>
+          <div className="patient-sidebar-nav">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const active = isItemActive(item);
+              return (
+                <button
+                  key={item.key}
+                  className={`patient-sidebar-item ${active ? "active" : ""}`}
+                  onClick={() => navigate(item.path)}
+                >
+                  <Icon className="patient-sidebar-icon" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        
+        
+      </div>
+    </aside>
+  );
+};
+
+export default PatientSidebar;

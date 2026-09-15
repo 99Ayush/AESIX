@@ -143,7 +143,49 @@ export function hasActiveMedicalHistory(history = []) {
   });
 }
 
+// ────────────────────────────────────────────────────────────────
+// 2.5 DIRECTION & NAVIGATION INTENT DETECTION (AppRoutes Directory)
+// ────────────────────────────────────────────────────────────────
+
+const DIRECTION_KEYWORDS = [
+  'navigate', 'navigation', 'direction', 'directions', 'where', 'where is', 'where can i',
+  'how to go', 'how to reach', 'how to access', 'how do i find', 'find page', 'show me',
+  'open page', 'rasta', 'kahan', 'kaha', 'kaise jaye', 'kaise khoje', 'kaise khojen',
+  'location of', 'take me to', 'link for', 'url for', 'go to', 'route', 'routes', 'page', 'pages', 'section'
+];
+
+const APP_FEATURE_KEYWORDS = [
+  'upload', 'document', 'documents', 'docs', 'lab report', 'prescription',
+  'basic info', 'basicinfo', 'profile', 'abha', 'abha id', 'consent',
+  'socrates', 'symptom form', 'namaste', 'namaste code', 'ayush',
+  'icd', 'icd code', 'icd-11', 'kindle', 'health code', 'doctor', 'doctor dashboard',
+  'patient data', 'consultation', 'consultations', 'alerts', 'directory', 'dashboard',
+  'login', 'register', 'app', 'platform'
+];
+
+export function hasDirectionIntent(text = '') {
+  if (!text || !text.trim()) return false;
+  const lower = text.toLowerCase();
+
+  // Direct URL path mention like /socrates, /uploadDoc, /namaste-code, /profile, /abha, etc.
+  if (/\/(dashboard|uploadDoc|docs|basicInfo|profile|abha|abhaId|consent|socrates|namaste-code|icd-code|kindle|kindlemain|health-code|doctor|login|register)/i.test(lower)) {
+    return true;
+  }
+
+  // Core app feature keywords
+  const FEATURE_REGEX = /\b(profile|account|upload|document|documents|docs|lab report|report|reports|prescription|file|basic info|basicinfo|personal info|abha|abha id|abha card|consent|privacy|permission|socrates|symptom form|symptom log|namaste|namaste code|ayush|ayurveda|icd|icd code|icd-11|kindle|health code|doctor|doctor dashboard|patient data|consultation|consultations|alerts|directory|dashboard|login|register)\b/i;
+
+  // Direction & navigation intent words
+  const DIRECTION_REGEX = /\b(navigate|navigation|direction|directions|guide|where|how|find|show|open|view|see|reach|access|location|link|url|route|routes|page|pages|section|tab|screen|rasta|kahan|kaha|kaise)\b/i;
+
+  if (FEATURE_REGEX.test(lower)) return true;
+  if (DIRECTION_REGEX.test(lower)) return true;
+
+  return false;
+}
+
 export function hasMedicalContext(userMessage = '', history = []) {
+  if (hasDirectionIntent(userMessage)) return true;
   if (hasMedicalIntent(userMessage)) return true;
   if (isGreeting(userMessage)) return true;
   if (hasActiveMedicalHistory(history) && !hasOffTopicRequest(userMessage)) return true;
@@ -157,8 +199,8 @@ export function hasMedicalContext(userMessage = '', history = []) {
 const OFF_TOPIC_PATTERNS = [
   /\bjava\b/i, /\bpython\b/i, /\bc\+\+\b/i, /\bc\s*code\b/i, /\bc#\b/i,
   /\bjavascript\b/i, /\btypescript\b/i, /\bhtml\b/i, /\bcss\b/i, /\bsql\b/i,
-  /\bcode\b/i, /\bcoding\b/i, /\bprogram(ming)?\b/i, /\balgorithm\b/i,
-  /\bscript\b/i, /\bfunction\b/i, /\bapi\b/i,
+  /\bcoding\b/i, /\bprogram(ming)?\b/i, /\balgorithm\b/i,
+  /\bscript\b/i, /\bfunction\b/i,
   /\bjoke\b/i, /\bpoem\b/i, /\bsong\b/i, /\bstory\b/i, /\bessay\b/i,
   /\bmath\b/i, /\bequation\b/i, /\bsolve\s.*=/i, /\bhomework\b/i,
   /\bfootball\b/i, /\bcricket\b/i, /\bmatch\s*score\b/i, /\bmovie\b/i,
@@ -168,18 +210,20 @@ const OFF_TOPIC_PATTERNS = [
 
 export function hasOffTopicRequest(text = '') {
   if (!text) return false;
+  // If it's a valid direction query within the app, don't flag as off-topic
+  if (hasDirectionIntent(text)) return false;
   return OFF_TOPIC_PATTERNS.some((re) => re.test(text));
 }
 
 // ────────────────────────────────────────────────────────────────
-// 4. CANNED REDIRECT MESSAGE (used when there's no medical concern at all)
+// 4. CANNED REDIRECT MESSAGE (used when there's no medical concern or direction query)
 // ────────────────────────────────────────────────────────────────
 
 function getRedirectMessage(language) {
   if (language === 'hi') {
-    return 'मैं इस बातचीत में medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms बताएं, ताकि मैं आपकी मदद कर सकूँ।';
+    return 'मैं आपकी चिकित्सा (Medical Concerns) और प्लेटफ़ॉर्म नेविगेशन / दिशा सहायता (App Direction & Navigation) के लिए यहाँ हूँ। कृपया अपने लक्षण बताएं या प्लेटफ़ॉर्म के किसी पेज के बारे में पूछें (जैसे: /uploadDoc, /socrates, /namaste-code, /abha)।';
   }
-  return "I'm here to help with medical and health-related concerns. Please tell me about any symptoms or medical concern you'd like help with.";
+  return "I'm here to help with medical concerns and platform direction assistance. Please describe your health symptoms or ask about finding pages/features on the platform (e.g., Upload Documents /uploadDoc, Socrates Form /socrates, NAMASTE Codes /namaste-code, ABHA ID /abha).";
 }
 
 // ────────────────────────────────────────────────────────────────
@@ -218,63 +262,89 @@ function looksLikeWrongLanguage(reply, expectedLanguage) {
 }
 
 // ────────────────────────────────────────────────────────────────
-// 6. SYSTEM PROMPT (kept largely as-is, still the first line of defense)
+// 6. SYSTEM PROMPT (with AppRoutes Platform Directory Knowledge)
 // ────────────────────────────────────────────────────────────────
 
 export const buildSystemPrompt = (language = 'en') => {
   const isHindi = language === 'hi';
 
   if (isHindi) {
-    return `आप एक अत्यधिक सहानुभूतिपूर्ण, शांत और विशेषज्ञ मेडिकल एआई असिस्टेंट हैं। आपका उद्देश्य मरीज की समस्या को ध्यान से समझना और चरणबद्ध (एक-एक करके) सवाल पूछना है। आप डॉक्टर का विकल्प नहीं हैं।
+    return `आप एक अत्यधिक सहानुभूतिपूर्ण, शांत और विशेषज्ञ मेडिकल एवं प्लेटफ़ॉर्म नेविगेशन एआई असिस्टेंट हैं। आपका उद्देश्य मरीज की समस्या समझना और प्लेटफ़ॉर्म पर दिशा सहायता (Direction Assistance) प्रदान करना है।
 
-सख्त नियम (CRITICAL RULES):
-1. **एक बार में केवल एक ही सवाल पूछें (ASK DETAILS ONE BY ONE)**:
-   - मरीज से एक ही संदेश में कभी भी कई सवाल न पूछें।
-   - एक बार में केवल एक (1) स्पष्ट प्रश्न ही पूछें। जब मरीज जवाब दे, तब अगला सवाल पूछें।
-   - एक ही उत्तर में बहुत सारे सवाल, सलाह और Triage checklist एक साथ न दें।
+प्लेटफ़ॉर्म नेविगेशन डायरेक्टरी (PLATFORM ROUTES DIRECTORY - FROM AppRoutes.jsx):
+1. **मुख्य डैशबोर्ड (User Dashboard)**: \`/dashboard\` -> मुख्य लैंडिंग पेज, स्वास्थ्य समरी और अलर्ट।
+2. **दस्तावेज़ अपलोड (Upload Documents)**: \`/uploadDoc\` (या \`/docs\`) -> लेब रिपोर्ट, डॉक्टर पर्चे और मेडिकल फाइलें अपलोड करें।
+3. **बुनियादी जानकारी (Basic Info)**: \`/basicInfo\` -> व्यक्तिगत स्वास्थ्य जानकारी दर्ज करें।
+4. **यूजर प्रोफाइल (User Profile)**: \`/profile\` -> प्रोफाइल विवरण एवं खाता सेटिंग्स।
+5. **आभा आईडी (ABHA ID Management)**: \`/abha\` (या \`/abhaId\`) -> ABHA कार्ड निर्माण, सत्यापन और स्थिति।
+6. **डेटा सहमति (Consent Management)**: \`/consent\` -> मेडिकल डेटा साझा करने की अनुमति प्रबंधित करें।
+7. **सुकरात लक्षण फॉर्म (Socrates Symptom Form)**: \`/socrates\` -> विस्तृत लक्षण (SOCRATES framework) दर्ज करने का क्लिनिकल फॉर्म।
+8. **नमस्ते कोड खोज (NAMASTE Code Search)**: \`/namaste-code\` -> आयुष (आयुर्वेद, सिद्ध, यूनानी) स्वास्थ्य शब्दावली एवं कोड खोज।
+9. **ICD-11 कोड खोज (ICD-11 Code Search)**: \`/icd-code\` -> अंतरराष्ट्रीय बीमारी वर्गीकरण कोड खोज।
+10. **हेल्थ कोड / किंडल (Health Code Portal)**: \`/kindle\` (या \`/kindlemain\`, \`/health-code\`) -> एकीकृत मेडिकल कोड पोर्टल।
+11. **एआई असिस्टेंट (AI Assistant)**: \`/genai\` -> यह एआई चैटबॉट।
+12. **डॉक्टर पोर्टल और डैशबोर्ड (Doctor Portal)**: \`/doctor\`
+    - रोगी विवरण: \`/doctor/patient-data\`
+    - सुकरात फॉर्म: \`/doctor/socrates-forms\`
+    - परामर्श: \`/doctor/consultations\`
+    - आपातकालीन अलर्ट: \`/doctor/alerts\`
+    - डॉक्टर निर्देशिका: \`/doctor/directory\`
 
-2. **चरणबद्ध बातचीत (STEP-BY-STEP FLOW)**:
-   - कदम 1 (शुरुआती लक्षण): मरीज की बात स्वाभाविक रूप से acknowledge करें और केवल पहला सवाल पूछें: "यह समस्या कब शुरू हुई?"
-   - कदम 2 (समय बताने पर): केवल अगला सवाल पूछें: "1 से 10 के पैमाने पर दर्द की तीव्रता कितनी है?"
-   - कदम 3 (दर्द का स्तर बताने पर): केवल अगला सवाल पूछें: "क्या इसके साथ बुखार, उल्टी या चक्कर जैसे अन्य लक्षण भी हैं?"
-   - कदम 4 (जानकारी मिलने के बाद): अब संक्षेप में उचित सलाह, self-care और आवश्यक हो तो डॉक्टर परामर्श की सलाह दें।
+दिशा सहायता (DIRECTION ASSISTANCE) के नियम:
+- यदि उपयोगकर्ता पूछे कि किसी पेज या सुविधा तक कैसे पहुँचें या कहाँ जाएँ:
+  1. स्पष्ट और सरल हिंदी में कदम-दर-कदम रास्ता बताएं।
+  2. exact URL / Route path जैसे \`/uploadDoc\`, \`/socrates\`, \`/namaste-code\` का उल्लेख करें।
+  3. क्लिक करने योग्य लिंक दें: \`[पेज का नाम](/route)\` (उदाहरण: \`[Upload Documents Page](/uploadDoc)\`)।
 
-3. **अन्य सीमाएँ**:
-   - हिंदी संदेश का उत्तर हिंदी में दें। अंग्रेजी/अन्य का उत्तर अंग्रेजी में दें।
-   - दर्द की जगह (location/position) कभी न पूछें।
-   - केवल मेडिकल प्रश्नों का उत्तर दें।
-   - उत्तर संक्षेप में (1-2 वाक्य) रखें।`;
+चिकित्सा परामर्श (MEDICAL TRIAGE) के नियम:
+1. लक्षण पूछने पर एक समय में केवल 1 प्रश्न ही पूछें।
+2. हिंदी भाषा में उत्तर दें।
+3. दर्द की जगह (location) न पूछें।`;
   }
 
-  return `You are an empathetic, calm, and knowledgeable Medical AI Assistant. Your goal is to gather symptom details progressively BY ASKING ONLY ONE QUESTION AT A TIME in a step-by-step conversation. You are NOT a replacement for a doctor.
+  return `You are an empathetic, calm, and knowledgeable Medical & Platform Navigation AI Assistant. Your goal is to provide symptom guidance and directional navigation assistance for the platform based on AppRoutes.
 
-CRITICAL RULES:
-1. **ASK FOR DETAILS ONE BY ONE (STRICT SINGLE QUESTION RULE)**:
-   - NEVER ask multiple questions in a single response.
-   - NEVER dump a long checklist of questions (onset, pain scale, fever, nausea, vision changes, self-care advice, triage) all at once.
-   - Ask exactly ONE clear question per response turn. Wait for the user's answer before asking the next question.
+PLATFORM NAVIGATION DIRECTORY (EXACT ROUTES FROM AppRoutes.jsx):
+1. **User Dashboard / Home**: \`/dashboard\` -> Main landing page showing user health summary, quick stats, active alerts, and recent records.
+2. **Upload Medical Documents**: \`/uploadDoc\` (or \`/docs\`) -> Page to upload lab reports, prescriptions, and medical scans.
+3. **Basic Information**: \`/basicInfo\` -> Form to record and update personal, demographic, and baseline health details.
+4. **User Profile**: \`/profile\` -> View and edit account information, user settings, and profile details.
+5. **ABHA ID Management**: \`/abha\` (or \`/abhaId\`) -> Create, link, verify, and view ABHA (Ayushman Bharat Health Account) card & ID status.
+6. **Consent Management**: \`/consent\` -> Manage data access permissions for sharing health records with doctors.
+7. **Socrates Symptom Form**: \`/socrates\` -> Detailed clinical symptom assessment form following the SOCRATES framework.
+8. **NAMASTE Code Search**: \`/namaste-code\` -> Ayush (Ayurveda, Siddha, Unani) terminology and standardized health code lookup.
+9. **ICD-11 Code Search**: \`/icd-code\` -> International Classification of Diseases (ICD-11) search & dual coding tool.
+10. **Kindle / Health Code Portal**: \`/kindle\` (or \`/kindlemain\`, \`/health-code\`) -> Unified medical coding search interface.
+11. **AI Assistant Chatbot**: \`/genai\` -> Interactive AI health assistant (current page).
+12. **Doctor Portal & Dashboard**: \`/doctor\`
+    - Patient Data: \`/doctor/patient-data\`
+    - Socrates Forms: \`/doctor/socrates-forms\`
+    - Consultations: \`/doctor/consultations\`
+    - Emergency Alerts: \`/doctor/alerts\`
+    - Doctor Directory: \`/doctor/directory\`
 
-2. **STEP-BY-STEP CONVERSATIONAL FLOW**:
-   - Step 1 (Initial Symptom): Empathetically acknowledge the symptom and ask ONLY the first question: "When did your [symptom] start?" (Do NOT ask for pain scale, fever, nausea, or give medical advice yet).
-   - Step 2 (User gives duration): Acknowledge and ask ONLY the next question: "On a scale of 1 to 10, how severe is the pain?"
-   - Step 3 (User gives pain scale): Acknowledge and ask ONLY the next question: "Are you experiencing any other symptoms, such as fever, nausea, dizziness, or vision changes?"
-   - Step 4 (Complete Details Received): Provide a concise, comforting summary with tailored self-care guidance and doctor triage based on their answers.
+DIRECTION ASSISTANCE RULES:
+- When the user asks how to find, navigate to, or open any feature or page on the platform:
+  1. Provide clear step-by-step navigation instructions.
+  2. Always state the exact URL route path (e.g., \`/uploadDoc\`, \`/socrates\`, \`/namaste-code\`, \`/abha\`).
+  3. Include clickable markdown links in the format \`[Page Name](/route)\` (e.g. \`[Upload Documents Page](/uploadDoc)\`).
+  4. Briefly describe what features are available on that page.
 
-3. **OTHER MANDATORY CONSTRAINTS**:
-   - Response Language: English for English/other inputs; Hindi ONLY for Hindi inputs.
-   - Never Ask for Location/Position: Do NOT ask where the pain is located or which side hurts.
-   - Medical-Only Focus: Answer only medical/health queries. Refuse coding, math, jokes, or non-medical tasks.
-   - Response Style: Keep each question turn extremely short (1-2 sentences), warm, and focused.`;
+MEDICAL SYMPTOM RULES:
+1. ASK FOR DETAILS ONE BY ONE (STRICT SINGLE QUESTION RULE per response turn).
+2. Empathetic, short, and clear guidance.
+3. Never ask for pain location/position.`;
 };
 
 // ────────────────────────────────────────────────────────────────
-// 7. MAIN ENTRY POINT — now with code-level guardrails
+// 7. MAIN ENTRY POINT — now with direction assistance & guardrails
 // ────────────────────────────────────────────────────────────────
 
 export const analyzeWithAi = async (userMessage, history = [], language = 'en') => {
-  // ---- GUARDRAIL 1: detect input language, greetings, history & medical context
+  // ---- GUARDRAIL 1: detect input language, greetings, history, direction intent & medical context
   const detectedLang = detectInputLanguage(userMessage);
   const medicalIntent = hasMedicalIntent(userMessage);
+  const directionIntent = hasDirectionIntent(userMessage);
   const greeting = isGreeting(userMessage);
   const activeHistory = hasActiveMedicalHistory(history);
   const medicalContext = hasMedicalContext(userMessage, history);
@@ -284,16 +354,17 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
     userMessage,
     detectedLang,
     medicalIntent,
+    directionIntent,
     greeting,
     activeHistory,
     medicalContext,
     offTopic,
   });
 
-  // ---- GUARDRAIL 2: hard block — if there is NO medical context at all,
+  // ---- GUARDRAIL 2: hard block — if there is NO medical context or direction intent at all,
   // never call the LLM for purely off-topic requests (e.g. "give me java code").
-  if (!medicalContext) {
-    console.log('[medicalGenAiService] BLOCKED — no medical context or intent, LLM not called');
+  if (!medicalContext && !directionIntent) {
+    console.log('[medicalGenAiService] BLOCKED — no medical context or direction intent, LLM not called');
     const replyLanguage = language === 'hi' && detectedLang === 'hi' ? 'hi' : 'en';
     return getRedirectMessage(replyLanguage);
   }
@@ -333,6 +404,12 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
   } else if (activeHistory && !medicalIntent && !offTopic) {
     reminderParts.push(
       'REMINDER: The user is answering your previous question about their symptoms. Continue the ongoing medical consultation and triage naturally.'
+    );
+  }
+
+  if (directionIntent) {
+    reminderParts.push(
+      'REMINDER: The user is asking for platform navigation or direction assistance. Provide exact route names (e.g., /uploadDoc, /socrates, /namaste-code, /abha, /doctor), clear step-by-step navigation instructions, and clickable markdown links like [Page Name](/route).'
     );
   }
 

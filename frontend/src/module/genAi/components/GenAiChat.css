@@ -25,14 +25,14 @@
 .medical-genai-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-width: 1100px;
-  margin: 0 auto;
+  height: calc(100vh - 125px);
+  min-height: 650px;
+  width: 100%;
   background-color: var(--mint-bg, #F5FAF8);
   color: var(--text-main, #183B56);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  border-left: 1px solid var(--border-light, #E2E8F0);
-  border-right: 1px solid var(--border-light, #E2E8F0);
+  border: 1px solid var(--border-light, #E2E8F0);
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-md, 0 4px 12px rgba(18, 48, 74, 0.08));
@@ -265,6 +265,20 @@
   transform: translateY(-1px);
 }
 
+.action-chip.direction {
+  border-color: #A7F3D0;
+  background: #ECFDF5;
+  color: #047857;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.action-chip.direction:hover {
+  background: #D1FAE5;
+  border-color: #10B981;
+}
+
 .action-chip.emergency {
   border-color: #FCA5A5;
   background: #FEF2F2;
@@ -285,6 +299,40 @@
   border-color: #DDD6FE;
   background: #F5F3FF;
   color: #6D28D9;
+}
+
+/* Chat Inline Navigation Links */
+.chat-inline-link {
+  color: var(--teal-primary, #2F8F83);
+  font-weight: 700;
+  text-decoration: underline;
+  padding: 2px 8px;
+  background: var(--mint-light, #E4F5EF);
+  border: 1px solid rgba(47, 143, 131, 0.2);
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 3px;
+  transition: all 0.2s ease;
+}
+
+.chat-inline-link:hover {
+  background: var(--teal-primary, #2F8F83);
+  color: #FFFFFF;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(47, 143, 131, 0.25);
+}
+
+.message-row.user .chat-inline-link {
+  background: rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.message-row.user .chat-inline-link:hover {
+  background: #FFFFFF;
+  color: var(--primary-navy, #12304A);
 }
 
 /* Chat Messages Area */

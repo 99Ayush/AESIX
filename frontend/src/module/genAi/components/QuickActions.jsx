@@ -1,13 +1,25 @@
 import React from 'react';
-import { Pill } from "lucide-react";
-import { FilePlus2 } from "lucide-react";
-import { Cross } from "lucide-react";
+import { Pill, FilePlus2, Cross, MapPin } from "lucide-react";
 
 export const QuickActions = ({ onSelectAction, language = 'en' }) => {
   const isHindi = language === 'hi';
 
   return (
     <div className="quick-actions-bar">
+      <button
+        type="button"
+        className="action-chip direction"
+        onClick={() =>
+          onSelectAction(
+            isHindi
+              ? 'मुझे प्लेटफ़ॉर्म नेविगेशन और दिशा सहायता चाहिए: दस्तावेज़ अपलोड, सुकरात फॉर्म, आभा आईडी और कोड सर्च कहाँ मिलेंगे?'
+              : 'Where can I find Document Upload, Socrates Form, ABHA ID, and Code Search pages on this platform?'
+          )
+        }
+      >
+        <MapPin size={18} />
+        <span>{isHindi ? 'दिशा सहायता (Directions)' : 'App Direction Help'}</span>
+      </button>
       <button
         type="button"
         className="action-chip emergency"
@@ -19,8 +31,7 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
           )
         }
       >
-
-        <span>Medical Emergency</span>
+        <span>{isHindi ? 'आपातकालीन (Emergency)' : 'Medical Emergency'}</span>
       </button>
       <button
         type="button"
@@ -34,7 +45,7 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
         }
       >
         <FilePlus2 size={18} />
-        <span>Symptom Consultation</span>
+        <span>{isHindi ? 'लक्षण परामर्श' : 'Symptom Consultation'}</span>
       </button>
       <button
         type="button"
@@ -48,7 +59,7 @@ export const QuickActions = ({ onSelectAction, language = 'en' }) => {
         }
       >
         <Cross size={18} />
-        <span>Daily Med Talk</span>
+        <span>{isHindi ? 'स्वास्थ्य टिप्स' : 'Daily Med Talk'}</span>
       </button>
     </div>
   );
