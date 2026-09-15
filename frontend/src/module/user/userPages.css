@@ -2150,3 +2150,380 @@
   color: #789097;
   margin-top: 0.4rem;
 }
+
+/* ------------------------------------------
+   NAMASTE CODE SEARCH - ENHANCED STYLES
+   ------------------------------------------ */
+
+.namaste-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.namaste-breadcrumb-item {
+  background: none;
+  border: none;
+  padding: 0.15rem 0.35rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--teal-primary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.namaste-breadcrumb-item:hover {
+  background: var(--mint-light);
+  text-decoration: underline;
+}
+
+.namaste-breadcrumb-sep {
+  color: #CBD5E1;
+  font-size: 0.7rem;
+  user-select: none;
+}
+
+.namaste-breadcrumb-current {
+  font-weight: 700;
+  color: var(--primary-navy);
+  font-size: 0.75rem;
+}
+
+.namaste-mapping-panel {
+  padding: 1rem 1.1rem;
+  border-radius: 10px;
+  border: 1.5px solid;
+}
+
+.namaste-mapping-panel.mapped {
+  background-color: #F0FDF4;
+  border-color: #BBF7D0;
+}
+
+.namaste-mapping-panel.unmapped {
+  background-color: #FFFBEB;
+  border-color: #FDE68A;
+}
+
+.namaste-mapping-panel.pending {
+  background-color: #F8FAFC;
+  border-color: var(--border-light);
+}
+
+.namaste-mapping-title {
+  font-size: 0.82rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.namaste-mapping-title.mapped { color: #166534; }
+.namaste-mapping-title.unmapped { color: #92400E; }
+.namaste-mapping-title.pending { color: var(--text-muted); }
+
+.namaste-mapping-row {
+  font-size: 0.78rem;
+  margin: 0.22rem 0;
+  line-height: 1.5;
+  color: var(--text-main);
+}
+
+.namaste-mapping-row strong { color: var(--primary-navy); }
+
+.namaste-mapping-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.5rem;
+  line-height: 1.5;
+}
+
+.namaste-equivalence-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  background-color: #DBEAFE;
+  color: #1E40AF;
+  border: 1px solid #93C5FD;
+}
+
+.namaste-completeness {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.namaste-completeness-bar-track {
+  flex: 1;
+  max-width: 120px;
+  height: 6px;
+  border-radius: 3px;
+  background-color: #E2E8F0;
+  overflow: hidden;
+}
+
+.namaste-completeness-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.namaste-completeness-bar-fill.high { background-color: #22C55E; }
+.namaste-completeness-bar-fill.medium { background-color: #F59E0B; }
+.namaste-completeness-bar-fill.low { background-color: #94A3B8; }
+
+.namaste-completeness-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.namaste-symptom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  margin-top: 0.5rem;
+}
+
+.namaste-symptom-table th {
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--primary-navy);
+  padding: 0.4rem 0.6rem;
+  border-bottom: 2px solid var(--border-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.namaste-symptom-table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid #F1F5F9;
+  color: var(--text-main);
+  vertical-align: top;
+  line-height: 1.45;
+}
+
+.namaste-symptom-table tr:last-child td { border-bottom: none; }
+.namaste-symptom-table tr:hover td { background-color: var(--mint-bg); }
+
+.namaste-symptom-iast {
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  color: var(--teal-primary);
+  font-weight: 600;
+}
+
+.namaste-biomedical-summary {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--text-main);
+  background: #F0F9FF;
+  border-left: 3px solid #0EA5E9;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0 6px 6px 0;
+  margin-top: 0.75rem;
+}
+
+.namaste-biomedical-summary strong { color: #0369A1; }
+
+.namaste-provenance {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-light);
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.namaste-provenance-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.namaste-provenance-label {
+  font-weight: 700;
+  color: var(--primary-navy);
+  min-width: 100px;
+}
+
+.namaste-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.namaste-action-btn {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border-light);
+  background: var(--white);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.namaste-action-btn:hover {
+  background: var(--mint-bg);
+  border-color: var(--teal-primary);
+  color: var(--teal-primary);
+}
+
+.namaste-action-btn.copied {
+  background: #DCFCE7;
+  border-color: #22C55E;
+  color: #166534;
+}
+
+.namaste-related-codes {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.namaste-related-pill {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-family: monospace;
+  border: 1px solid var(--border-light);
+  background: #F8FAFC;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.namaste-related-pill:hover {
+  background: var(--mint-light);
+  border-color: var(--teal-primary);
+  color: var(--teal-primary);
+}
+
+.namaste-highlight {
+  background-color: #FEF08A;
+  color: var(--text-main);
+  border-radius: 2px;
+  padding: 0 1px;
+  font-weight: inherit;
+}
+
+.namaste-system-filter {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+}
+
+.namaste-system-pill {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.namaste-system-pill:hover {
+  border-color: var(--teal-primary);
+  color: var(--teal-primary);
+}
+
+.namaste-system-pill.active {
+  background: var(--mint-light);
+  border-color: var(--teal-primary);
+  color: var(--teal-primary);
+  font-weight: 700;
+}
+
+.namaste-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.namaste-tooltip {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary-navy);
+  color: var(--white);
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  max-width: 280px;
+  white-space: normal;
+  text-align: center;
+  z-index: 50;
+  pointer-events: none;
+  transition: opacity 0.15s, visibility 0.15s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.namaste-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--primary-navy);
+}
+
+.namaste-tooltip-wrapper:hover .namaste-tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+@media print {
+  .sih-header, .sih-nav-menu, .namaste-actions, .namaste-system-filter {
+    display: none !important;
+  }
+  .sih-page-wrapper { min-height: auto !important; }
+  .sih-card { box-shadow: none !important; border: 1px solid #ccc !important; break-inside: avoid; }
+  .namaste-mapping-panel { break-inside: avoid; }
+  .namaste-symptom-table { break-inside: avoid; }
+}
+
+.namaste-empty-field {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 0.75rem;
+  background: #F8FAFC;
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  border: 1px dashed var(--border-light);
+}
+
+.namaste-empty-field-label {
+  font-weight: 600;
+  color: #94A3B8;
+}

@@ -104,7 +104,8 @@ router.delete('/documents/:id', async (req, res, next) => { try { const data = a
 // CDSS / Health Codes (NAMASTE & WHO ICD-11)
 router.get('/cdss/search/namaste', (req, res) => {
   try {
-    res.json({ success: true, results: searchNamasteCodes(req.query.q || '') });
+    const results = searchNamasteCodes(req.query.q || '', req.query.system || '');
+    respond(res, { results });
   } catch (e) {
     fail(res, e.message, 500);
   }
@@ -115,10 +116,10 @@ router.get('/cdss/search/icd11', async (req, res, next) => {
     const query = String(req.query.q || '').trim();
     if (/^[A-Za-z0-9][A-Za-z0-9./&-]*$/.test(query)) {
       const exactMatch = await lookupICDCode(query.toUpperCase());
-      if (exactMatch) return res.json({ success: true, destinationEntities: [exactMatch], source: 'WHO ICD-11 codeinfo' });
+      if (exactMatch) return respond(res, { destinationEntities: [exactMatch], source: 'WHO ICD-11 codeinfo' });
     }
-    const data = await searchICDAPI(query);
-    res.json({ success: true, ...data });
+    const icdData = await searchICDAPI(query);
+    respond(res, icdData);
   } catch (error) {
     fail(res, error.message, 502);
   }
@@ -135,7 +136,7 @@ router.get('/cdss/disease/:code', async (req, res, next) => {
         icd11Details = { unavailable: true, message: error.message };
       }
     }
-    res.json({ success: true, ...record, icd11Details });
+    respond(res, { ...record, icd11Details });
   } catch (error) {
     fail(res, error.message, 502);
   }
