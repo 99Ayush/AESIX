@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Eye, EyeOff, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Heart } from 'lucide-react';
 import { authApi } from './authApi';
+import { LanguageSelect } from '../user/LanguageContext';
 import './auth.css';
 
 export default function Login() {
@@ -234,6 +235,7 @@ export default function Login() {
       <div className="mv-auth-main">
         <div className="mv-auth-card">
           <div className="mv-auth-top-nav">
+            <LanguageSelect className="mv-lang-select" />
             <span>New to MedVault?</span>
             <Link to="/register" className="mv-btn-outline">Create Account</Link>
           </div>

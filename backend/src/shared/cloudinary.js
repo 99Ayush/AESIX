@@ -1,17 +1,33 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'djqnrksac';
-const apiKey = process.env.CLOUDINARY_API_KEY || '275659959229565';
-const apiSecret = process.env.CLOUDINARY_API_SECRET || '275659959229565';
+// Never hardcode secrets here — read from backend/.env only.
+// The previous fallback used the API *key* as the *secret*, which makes
+// Cloudinary reject every signed upload with:
+//   401 "Invalid Signature ... String to sign - 'folder=...&public_id=...&timestamp=...'"
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
+const apiKey = process.env.CLOUDINARY_API_KEY || '';
+const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
 
-cloudinary.config({
-  cloud_name: cloudName,
-  api_key: apiKey,
-  api_secret: apiSecret,
-  secure: true,
-});
+if (cloudName && apiKey && apiSecret) {
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true,
+  });
+}
+
+export const isCloudinaryConfigured = () =>
+  Boolean(cloudName && apiKey && apiSecret);
 
 export const uploadBufferToCloudinary = (buffer, filename, folder = 'aesix_socrates_docs') => {
+  if (!isCloudinaryConfigured()) {
+    return Promise.reject(
+      new Error(
+        'Cloudinary is not configured (CLOUDINARY_CLOUD_NAME / CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET missing in backend/.env). File kept as local fallback.'
+      )
+    );
+  }
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {

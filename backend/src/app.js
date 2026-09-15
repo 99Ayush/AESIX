@@ -2,15 +2,7 @@ import express from "express";
 import http from "node:http";
 import cors from "cors";
 import mongoose from "mongoose";
-import dns from "node:dns";
 import { Server } from "socket.io";
-
-try {
-  dns.setDefaultResultOrder("ipv4first");
-  dns.setServers(["8.8.8.8", "1.1.1.1"]);
-} catch (e) {
-  // Ignore DNS override errors
-}
 import { handleGenAiChat } from "./module/genAi/controller/controller.js";
 import authRouter from "./module/auth/controller/auth.controller.js";
 import userRoutes from "./module/user/routes.js";
@@ -59,63 +51,43 @@ app.use("/api/users", userRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use(errorLogger);
 
+function maskMongoUri(uri) {
+  if (!uri) return "<missing>";
+  try {
+    // mongodb+srv://user:password@host/... -> mongodb+srv://user:****@host/...
+    return uri.replace(/(\/\/[^:/\s]+:)([^@\s]+)(@)/, "$1****$3");
+  } catch {
+    return "<unparseable-uri>";
+  }
+}
+
 export async function startServer() {
   if (server) return server;
   if (!config.database.uri)
     throw new Error("MONGODB_URI is required. Configure backend/.env.");
-  console.log("Connecting to MongoDB...", config.database.uri);
+  console.log("Connecting to MongoDB...", maskMongoUri(config.database.uri));
   try {
     await mongoose.connect(config.database.uri, {
-      serverSelectionTimeoutMS: 8_000,
-      family: 4,
+      dbName: config.database.dbName,
+      serverSelectionTimeoutMS: 10_000,
     });
   } catch (error) {
-    if (config.database.uri.startsWith("mongodb+srv://")) {
-      console.warn("MongoDB SRV connection attempt failed. Executing DoH direct connection fallback...");
-      const match = config.database.uri.match(/^mongodb\+srv:\/\/([^:]+):([^@]+)@([^/?]+)(?:\/([^?]*))?(?:\?(.*))?$/);
-      if (match) {
-        const [, user, pass, host, db = "aesix"] = match;
-        const res = await fetch(`https://cloudflare-dns.com/dns-query?name=_mongodb._tcp.${host}&type=SRV`, {
-          headers: { accept: "application/dns-json" },
-        });
-        const data = await res.json();
-        if (data.Answer && data.Answer.length > 0) {
-          const hosts = data.Answer.map((a) => {
-            const parts = a.data.trim().split(/\s+/);
-            return { host: parts[3].replace(/\.$/, ""), port: parts[2] };
-          });
-          let connected = false;
-          for (const target of hosts) {
-            try {
-              const directUri = `mongodb://${user}:${pass}@${target.host}:${target.port}/${db || "aesix"}?ssl=true&authSource=admin&directConnection=true`;
-              const tempConn = await mongoose.connect(directUri, { serverSelectionTimeoutMS: 4_000, family: 4 });
-              const isMaster = await tempConn.connection.db.command({ isMaster: 1 });
-              if (isMaster.ismaster || isMaster.isWritablePrimary) {
-                console.log(`Connected to writable primary MongoDB node (${target.host}:${target.port})!`);
-                connected = true;
-                break;
-              } else {
-                await mongoose.disconnect();
-              }
-            } catch (hostErr) {
-              // Try next host candidate
-            }
-          }
-          if (!connected) {
-            const target = hosts[0];
-            const directUri = `mongodb://${user}:${pass}@${target.host}:${target.port}/${db || "aesix"}?ssl=true&authSource=admin&directConnection=true`;
-            await mongoose.connect(directUri, { serverSelectionTimeoutMS: 10_000, family: 4 });
-            console.log("Direct MongoDB connection established!");
-          }
-        } else {
-          throw error;
-        }
-      } else {
-        throw error;
-      }
-    } else {
-      throw error;
-    }
+    const reason = error?.reason?.message || error.message;
+    console.error(`MongoDB connection failed: ${reason}`);
+    console.error(
+      [
+        "",
+        "Atlas fix (most common cause = IP not whitelisted):",
+        "1. Atlas dashboard -> Network Access -> Add IP Address.",
+        `2. Add your current public IP, or 0.0.0.0/0 for local dev.`,
+        "3. Also check: Database Access (user exists), correct password,",
+        "   and that MONGODB_URI ends with /<dbName>?retryWrites=true.",
+        `   MONGODB_DB=${config.database.dbName}`,
+        "Docs: https://www.mongodb.com/docs/atlas/security-whitelist/",
+        "",
+      ].join("\n"),
+    );
+    throw error;
   }
   startRealtimeDatabaseEvents(io);
   server = await new Promise((resolve, reject) => {

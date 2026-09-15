@@ -306,7 +306,14 @@ router.delete('/documents/:id', async (req, res, next) => { try { const data = a
 router.post('/socrates', upload.array('documents', 5), async (req, res, next) => {
   try {
     const authUser = await resolveAuthUser(req);
-    const userId = authUser?._id?.toString() || authUser?.userId || req.body.userId || 'guest_user';
+    // Stable identity: prefer the app-level `userId` UUID (does not change),
+    // but always also persist the Mongo `_id` string + ABHA so doctor lookups
+    // succeed no matter which identifier the doctor panel passes back.
+    const userObjectId = authUser?._id?.toString() || '';
+    const userUuid = authUser?.userId || '';
+    const explicitUserId = typeof req.body?.userId === 'string' ? req.body.userId.trim() : '';
+    const userId = userUuid || userObjectId || explicitUserId || 'guest_user';
+    const patientAbha = authUser?.abhaNumber || req.body?.patientAbha || req.body?.abhaNumber || '';
     const userName = authUser ? `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() : (req.body.userName || 'Patient');
 
     const {
@@ -327,6 +334,7 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
     }
 
     const uploadedDocs = [];
+    const uploadWarnings = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         try {
@@ -339,19 +347,33 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
             uploadedAt: new Date()
           });
         } catch (uploadErr) {
-          console.error(`Failed to upload ${file.originalname} to Cloudinary:`, uploadErr);
-          uploadedDocs.push({
-            name: file.originalname,
-            url: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-            fileType: file.mimetype,
-            uploadedAt: new Date()
-          });
+          // Non-fatal: the SOCRATES form itself must still save to Mongo.
+          // Small files fall back to an inline data URI; large ones are
+          // skipped (a multi-MB base64 blob would blow the 16MB Mongo doc
+          // limit and fail the whole save).
+          console.error(`Failed to upload ${file.originalname} to Cloudinary:`, uploadErr?.message || uploadErr);
+          const SMALL_FILE_BYTES = 1.5 * 1024 * 1024;
+          if (file.buffer && file.buffer.length <= SMALL_FILE_BYTES) {
+            uploadedDocs.push({
+              name: file.originalname,
+              url: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+              fileType: file.mimetype,
+              uploadedAt: new Date()
+            });
+            uploadWarnings.push(`${file.originalname}: Cloudinary unavailable, stored inline`);
+          } else {
+            uploadWarnings.push(
+              `${file.originalname}: Cloudinary upload failed (${uploadErr?.message || 'upload error'}) — form saved without this file. Fix CLOUDINARY_API_SECRET in backend/.env, then re-upload.`
+            );
+          }
         }
       }
     }
 
     const assessment = new SocratesAssessment({
       userId,
+      userObjectId,
+      patientAbha,
       userName,
       site,
       onset,
@@ -371,7 +393,10 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
 
     res.status(201).json({
       success: true,
-      message: 'SOCRATES assessment saved successfully',
+      message: uploadWarnings.length
+        ? `SOCRATES assessment saved; ${uploadWarnings.length} file(s) not uploaded to Cloudinary`
+        : 'SOCRATES assessment saved successfully',
+      uploadWarnings,
       assessment
     });
   } catch (error) {
@@ -383,9 +408,17 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
 router.get('/socrates', async (req, res, next) => {
   try {
     const authUser = await resolveAuthUser(req);
-    const userId = authUser?._id?.toString() || authUser?.userId;
-    const query = userId ? { userId } : {};
-    const assessments = await SocratesAssessment.find(query).sort({ createdAt: -1 });
+    if (!authUser) return res.status(401).json({ success: false, error: 'Not authenticated' });
+    const userObjectId = authUser?._id?.toString() || '';
+    const userUuid = authUser?.userId || '';
+    const abha = authUser?.abhaNumber || '';
+    // Match records written with either identifier (old rows only have one).
+    const or = [];
+    if (userUuid) { or.push({ userId: userUuid }); or.push({ userObjectId: userUuid }); }
+    if (userObjectId) { or.push({ userId: userObjectId }); or.push({ userObjectId: userObjectId }); }
+    if (abha) or.push({ patientAbha: abha });
+    const query = or.length ? { $or: or } : { userId: '__none__' };
+    const assessments = await SocratesAssessment.find(query).sort({ createdAt: -1 }).lean();
     res.json({ success: true, assessments });
   } catch (error) {
     next(error);
@@ -394,7 +427,11 @@ router.get('/socrates', async (req, res, next) => {
 
 router.get('/socrates/patient/:userId', async (req, res, next) => {
   try {
-    const assessments = await SocratesAssessment.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    const pid = String(req.params.userId || '');
+    // Doctor may pass Mongo _id, app userId UUID, or ABHA — match any.
+    const assessments = await SocratesAssessment.find({
+      $or: [{ userId: pid }, { userObjectId: pid }, { patientAbha: pid }],
+    }).sort({ createdAt: -1 }).lean();
     res.json({ success: true, assessments });
   } catch (error) {
     next(error);
