@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -254,6 +255,7 @@ export default function ProfilePage() {
 
       </main>
 
+      <ChatbotFAB />
     </div>
   );
 }

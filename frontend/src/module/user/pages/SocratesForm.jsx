@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import PatientSidebar from '../components/asidebar';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 const CHARACTER_OPTIONS = [
   'Sharp / Stabbing',
@@ -809,6 +810,7 @@ export default function SocratesForm() {
         </div>
       </div>
 
+      <ChatbotFAB />
     </div>
   );
 }

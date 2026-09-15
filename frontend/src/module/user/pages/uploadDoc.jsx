@@ -4,6 +4,7 @@ import '../userPages.css';
 import { fileToBase64, userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import PatientSidebar from '../components/asidebar';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -517,6 +518,7 @@ export default function UploadDoc() {
         </div>
       </div>
 
+      <ChatbotFAB />
     </div>
   );
 }

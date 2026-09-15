@@ -4,7 +4,8 @@ import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import PatientSidebar from '../components/asidebar'
-
+import ChatbotFAB from '../components/ChatbotFAB';
+import { Pencil } from "lucide-react";
 // Formatting Utilities
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -332,7 +333,7 @@ export default function BasicInfo() {
                       onClick={() => setIsEditing(true)}
                       className="sih-btn sih-btn-primary"
                     >
-                      ✏️ Edit Profile
+                       <Pencil size={18} /> Edit Profile
                     </button>
 
                     <button
@@ -945,6 +946,7 @@ export default function BasicInfo() {
         </div>
       </div>
 
+      <ChatbotFAB />
     </div>
   );
 }
