@@ -5,6 +5,7 @@ import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -318,6 +319,7 @@ export default function AbhaID() {
         </div>
       </div>
 
+      <ChatbotFAB />
     </div>
   );
 }

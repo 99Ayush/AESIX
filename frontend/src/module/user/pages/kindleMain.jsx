@@ -4,6 +4,7 @@ import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 export default function KindleMain() {
   const navigate = useNavigate();
@@ -478,6 +479,7 @@ export default function KindleMain() {
         </div>
       </div>
 
+      <ChatbotFAB />
     </div>
   );
 }

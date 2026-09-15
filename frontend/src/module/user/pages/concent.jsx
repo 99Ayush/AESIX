@@ -5,6 +5,7 @@ import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -507,6 +508,7 @@ export default function Consent() {
         </div>
       </div>
 
+      <ChatbotFAB />
     </div>
   );
 }

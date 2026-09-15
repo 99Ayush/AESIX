@@ -44,15 +44,15 @@ const PatientSidebar = ({
     storedUser?.photo;
 
   const menuItems = [
-    { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
-    { label: "Basic Info", path: "/basicInfo", icon: UserRound, key: "basicInfo" },
+    { label: "DASHBOARD", path: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
+    { label: "BASIC INFO", path: "/basicInfo", icon: UserRound, key: "basicInfo" },
     { label: "ABHA ID", path: "/abha", icon: Shield, key: "abha" },
-    { label: "Documents", path: "/uploadDoc", icon: FileText, key: "uploadDoc" },
-    { label: "Consent", path: "/consent", icon: FileCheck, key: "consent" },
-    { label: "Socrates Form", path: "/socrates", icon: ClipboardList, key: "socrates" },
-    { label: "Clinical Directory", path: "/kindle", icon: BookOpen, key: "kindle" },
-    { label: "Profile", path: "/profile", icon: User, key: "profile" },
-    { label: "GenAI Bot", path: "/genai", icon: Bot, key: "genai" },
+    { label: "DOCUMENTS", path: "/uploadDoc", icon: FileText, key: "uploadDoc" },
+    { label: "CONSENT", path: "/consent", icon: FileCheck, key: "consent" },
+    { label: "SOCRATES FORM", path: "/socrates", icon: ClipboardList, key: "socrates" },
+    { label: "CLINICAL DIRECTORY", path: "/kindle", icon: BookOpen, key: "kindle" },
+    { label: "PROFILE", path: "/profile", icon: User, key: "profile" },
+    { label: "GENAI BOT", path: "/genai", icon: Bot, key: "genai" },
   ];
 
   const isItemActive = (item) => {
@@ -122,73 +122,8 @@ const PatientSidebar = ({
           </div>
         </div>
 
-        <hr style={{ border: 'none', borderTop: '1px solid #E2E8F0', margin: '0' }} />
-
-        {/* 3. GenAI Chatbot Feature Widget */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #F5FAF8 0%, #E4F5EF 100%)',
-            border: '1px solid #C3E7DC',
-            borderRadius: '12px',
-            padding: '1rem',
-            position: 'relative',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.5rem' }}>
-            <div
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
-                background: '#2F8F83',
-                color: '#FFFFFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.2rem',
-                flexShrink: 0,
-              }}
-            >
-              🤖
-            </div>
-            <div>
-              <h5 style={{ margin: 0, fontSize: '0.88rem', fontWeight: '800', color: '#12304A' }}>
-                MedVault AI Assistant
-              </h5>
-              <span style={{ fontSize: '0.7rem', color: '#0C9A9A', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <Sparkles size={12} /> Powered by Groq AI
-              </span>
-            </div>
-          </div>
-
-          <p style={{ fontSize: '0.76rem', color: '#475569', margin: '0 0 0.8rem 0', lineHeight: '1.4' }}>
-            Instant medical triage, symptom diagnosis, and soothing voice guidance 24/7.
-          </p>
-
-          <button
-            onClick={() => navigate('/genai')}
-            style={{
-              width: '100%',
-              padding: '0.55rem 0.85rem',
-              background: 'linear-gradient(135deg, #12304A 0%, #2F8F83 100%)',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: '700',
-              fontSize: '0.8rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.45rem',
-              boxShadow: '0 2px 6px rgba(47, 143, 131, 0.2)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <span>🤖 Launch AI Chatbot</span>
-          </button>
-        </div>
+        
+        
       </div>
     </aside>
   );

@@ -4,6 +4,7 @@ import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
+import ChatbotFAB from '../components/ChatbotFAB';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -255,6 +256,7 @@ export default function ProfilePage() {
 
       </main>
 
+      <ChatbotFAB />
     </div>
   );
 }
