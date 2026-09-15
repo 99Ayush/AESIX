@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import { LanguageSelect } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import BrandLogo from '../../../shared/BrandLogo';
 
 /* ─── Small reusable atoms ─────────────────────────────────────── */
 
@@ -448,8 +451,15 @@ export default function NamasteCode() {
 
   useEffect(() => {
     const trimmed = query.trim();
-    if (!trimmed) { setSuggestions([]); setSearchError(''); return; }
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!trimmed) {
+      debounceRef.current = setTimeout(() => {
+         
+        setSuggestions([]);
+        setSearchError('');
+      }, 0);
+      return;
+    }
     debounceRef.current = setTimeout(async () => {
       setIsSearching(true);
       setSearchError('');
@@ -483,13 +493,7 @@ export default function NamasteCode() {
 
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-            <div className="sih-logo-badge">🛡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Clinical Directory</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Clinical Directory" />
           <nav className="sih-nav-menu">
             <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
               <span className="sih-nav-icon">🏠</span> Dashboard
@@ -498,6 +502,8 @@ export default function NamasteCode() {
               <span className="sih-nav-icon">📖</span> Directory
             </button>
           </nav>
+          <DoctorActivityBell />
+          <LanguageSelect />
         </div>
       </header>
 

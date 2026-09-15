@@ -50,7 +50,7 @@ export const Notification = mongoose.models.Notification || mongoose.model("Noti
 export const Doctor = mongoose.models.Doctor || mongoose.model("Doctor", doctorSchema);
 export const Appointment = mongoose.models.Appointment || mongoose.model("Appointment", appointmentSchema);
 
-function buildMongoUri() {
+export function buildMongoUri() {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error("MONGODB_URI is missing. Add it to backend/.env.");
   // Atlas templates may contain placeholders; never log the completed URI.

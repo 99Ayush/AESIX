@@ -172,9 +172,9 @@ export default function Register() {
       <div className="mv-auth-hero">
         <div className="mv-logo-badge">
           <div className="mv-logo-icon">
-            <Heart size={24} fill="#1A8C7A" />
+            <img src="/mediksha.png" alt="MedIksha" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
           </div>
-          <span>MedVault</span>
+          <span>MedIksha</span>
         </div>
 
         <div className="mv-hero-content">
@@ -214,7 +214,7 @@ export default function Register() {
           </div>
 
           <div className="mv-card-header">
-            <h1>Register with MedVault</h1>
+            <h1>Register with MedIksha</h1>
             <p>Create your verified ABDM digital health account</p>
           </div>
 

@@ -5,7 +5,9 @@ import {
   requestFormAccess,
   getDoctorRequests,
   getFormWithConsent,
+  logDoctorAccess,
 } from '../service/doctorService.js';
+import { notifyDatabaseChange } from '../../../shared/realtime.js';
 
 const DOCTOR_ID = 'doctor-anirudh';
 const DOCTOR_NAME = 'Dr. Anirudh Kanwat';
@@ -36,6 +38,16 @@ export async function handleGetPatientProfile(req, res, next) {
     if (!profile) {
       return res.status(404).json({ success: false, error: 'Patient not found' });
     }
+    // Audit: notify the patient that their data was opened (fire-and-forget).
+    logDoctorAccess({
+      doctorId: DOCTOR_ID,
+      doctorName: DOCTOR_NAME,
+      patientId: profile.id,
+      patientAbha: profile.abhaId || '',
+      accessType: 'profile-view',
+    }).then(() => {
+      try { notifyDatabaseChange('update', 'doctor-access-log', profile.id); } catch { /* noop */ }
+    });
     return res.json({ success: true, data: profile });
   } catch (error) {
     return next(error);
@@ -49,6 +61,8 @@ export async function handleGetPatientForms(req, res, next) {
   try {
     const { userId } = req.params;
     const forms = await getPatientForms(userId, DOCTOR_ID);
+    // Listing forms is refreshed automatically by the UI. Do not create an
+    // access notification for every refresh; individual form access remains auditable.
     return res.json({ success: true, data: forms });
   } catch (error) {
     return next(error);
@@ -73,6 +87,7 @@ export async function handleRequestAccess(req, res, next) {
       formId,
       formSite,
     });
+    try { notifyDatabaseChange('update', 'users', String(patientId)); } catch { /* noop */ }
     return res.status(201).json({ success: true, data: request });
   } catch (error) {
     if (error.code === 11000) {

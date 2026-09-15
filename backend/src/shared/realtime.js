@@ -47,7 +47,7 @@ export async function stopRealtimeDatabaseEvents() {
   if (!changeStream) return;
   try {
     await changeStream.close();
-  } catch (error) {
+  } catch {
     // Ignore close errors
   }
   changeStream = undefined;

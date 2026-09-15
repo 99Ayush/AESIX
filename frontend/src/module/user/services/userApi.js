@@ -38,14 +38,17 @@ export const userApi = {
   setConsentStatus: (id, status) => request(`/users/consents/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   documents: () => request('/users/documents'),
   uploadDocument: (data) => request('/users/documents', { method: 'POST', body: JSON.stringify(data) }),
+  importCloudDocument: (source, url) => request('/users/documents/import-cloud', { method: 'POST', body: JSON.stringify({ source, url }) }),
   deleteDocument: (id) => request(`/users/documents/${id}`, { method: 'DELETE' }),
   downloadUrl: (id) => `${baseUrl}/users/documents/${id}/download`,
   searchNamaste: (q) => request(`/users/cdss/search/namaste?q=${encodeURIComponent(q || '')}`),
   searchICD11: (q) => request(`/users/cdss/search/icd11?q=${encodeURIComponent(q || '')}`),
   getDiseaseRecord: (code, entityUri) => request(`/users/cdss/disease/${encodeURIComponent(code)}${entityUri ? `?entityUri=${encodeURIComponent(entityUri)}` : ''}`),
+  getIcdToNamaste: (code, title) => request(`/users/cdss/mapping/icd/${encodeURIComponent(code)}${title ? `?title=${encodeURIComponent(title)}` : ''}`),
+  getNamasteToIcd: (code) => request(`/users/cdss/mapping/namaste/${encodeURIComponent(code)}`),
   submitSocratesForm: async (formData) => {
     const token = localStorage.getItem('token');
-    const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+    const storedUser = readLocalJSON('user_profile', {});
     const userId = storedUser?.userId || storedUser?.id || storedUser?._id;
     const abhaNumber = storedUser?.abhaNumber || storedUser?.abhaId;
 
@@ -64,7 +67,7 @@ export const userApi = {
   },
   getSocratesHistory: async () => {
     const token = localStorage.getItem('token');
-    const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+    const storedUser = readLocalJSON('user_profile', {});
     const userId = storedUser?.userId || storedUser?.id || storedUser?._id;
     const abhaNumber = storedUser?.abhaNumber || storedUser?.abhaId;
 
@@ -81,6 +84,7 @@ export const userApi = {
   },
   getAccessRequests: () => request('/users/access-requests'),
   respondAccessRequest: (id, status) => request(`/users/access-requests/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  getAccessLogs: () => request('/users/access-logs'),
 };
 
 
@@ -89,4 +93,16 @@ export async function fileToBase64(file) {
   let binary = '';
   buffer.forEach((byte) => { binary += String.fromCharCode(byte); });
   return btoa(binary);
+}
+
+// Poisoned localStorage (e.g. a half-written profile) must never white-screen
+// a page: every read goes through this guarded helper.
+export function readLocalJSON(key, fallback = {}) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
 }

@@ -51,3 +51,32 @@ export function fetchICDEntityDetails(entityUri) {
   // WHO search responses commonly return http entity identifiers; API calls require HTTPS.
   return whoFetch(entityUri.replace(/^http:\/\//i, "https://"));
 }
+
+const WHO_BROWSER_BASE = "https://icd.who.int/browse/2024-01/mms/en";
+
+// Build official WHO ICD-11 browser links so users can verify every record.
+// browserUrl deep-links to the exact entity when we know its URI, otherwise
+// falls back to a WHO search URL. Both point only at icd.who.int.
+export function buildWhoLinks(entityUri, code) {
+  const normalizedEntity = entityUri ? entityUri.replace(/^http:\/\//i, "https://") : null;
+  const searchUrl = code
+    ? `${WHO_BROWSER_BASE}?search=${encodeURIComponent(code)}`
+    : WHO_BROWSER_BASE;
+  const browserUrl = normalizedEntity
+    ? `${WHO_BROWSER_BASE}#${encodeURIComponent(normalizedEntity)}`
+    : searchUrl;
+  return { browserBase: WHO_BROWSER_BASE, browserUrl, searchUrl, entityUrl: normalizedEntity };
+}
+
+// Strip WHO HTML (titles/definitions often contain <em class="..."> tags)
+// into clean plain text for encyclopedia display.
+export function cleanWhoText(value) {
+  if (value == null) return "";
+  const raw = typeof value === "string" ? value : (value["@value"] ?? value.value ?? "");
+  return String(raw).replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
+export function cleanWhoList(list) {
+  if (!Array.isArray(list)) return [];
+  return list.map(cleanWhoText).filter(Boolean);
+}

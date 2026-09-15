@@ -7,13 +7,14 @@ import { fileURLToPath } from 'node:url';
 import { randomUUID } from 'node:crypto';
 import { MongoClient } from 'mongodb';
 import { notifyDatabaseChange } from '../../shared/realtime.js';
-import { searchNamasteCodes, getOrFetchDiseaseRecord } from './services/namasteService.js';
-import { searchICDAPI, lookupICDCode, fetchICDEntityDetails } from './services/icdService.js';
+import { searchNamasteCodes, getOrFetchDiseaseRecord, getIcdToNamasteMapping, getNamasteToIcdMapping } from './services/namasteService.js';
+import { searchICDAPI, lookupICDCode, fetchICDEntityDetails, buildWhoLinks, cleanWhoText, cleanWhoList } from './services/icdService.js';
 import { User, UserSession } from '../auth/model/model.js';
 import multer from 'multer';
 import { uploadBufferToCloudinary } from '../../shared/cloudinary.js';
 import SocratesAssessment from './model/socratesModel.js';
 import ConsentRequest from '../doctor/model/consentRequestModel.js';
+import DoctorAccessLog from '../doctor/model/doctorAccessLogModel.js';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -23,6 +24,29 @@ const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 let mongoCollection;
 let mongoConnecting;
 let mongoUnavailableUntil = 0;
+const MAX_DOCUMENT_IMPORT_BYTES = 15 * 1024 * 1024;
+
+function buildCloudDownloadUrl(source, rawUrl) {
+  let sharedUrl;
+  try { sharedUrl = new URL(rawUrl); } catch { throw new Error('Enter a valid shared file URL.'); }
+  if (source === 'gdrive') {
+    if (!['drive.google.com', 'docs.google.com'].includes(sharedUrl.hostname)) throw new Error('Enter a valid Google Drive shared-file link.');
+    const fileId = sharedUrl.pathname.match(/\/d\/([a-zA-Z0-9_-]+)/)?.[1] || sharedUrl.searchParams.get('id');
+    if (!fileId) throw new Error('That Google Drive link does not contain a file ID.');
+    return `https://drive.usercontent.google.com/download?id=${encodeURIComponent(fileId)}&export=download&confirm=t`;
+  }
+  if (source === 'dropbox') {
+    if (!['www.dropbox.com', 'dropbox.com', 'dl.dropboxusercontent.com'].includes(sharedUrl.hostname)) throw new Error('Enter a valid Dropbox shared-file link.');
+    sharedUrl.searchParams.set('dl', '1');
+    return sharedUrl.toString();
+  }
+  throw new Error('Choose Google Drive or Dropbox.');
+}
+
+function importedFileName(response, fallback) {
+  const attachmentName = response.headers.get('content-disposition')?.match(/filename\*?=(?:UTF-8''|\")?([^;\"]+)/i)?.[1];
+  return decodeURIComponent(attachmentName || fallback).replace(/[\\/:*?"<>|]/g, '_');
+}
 const seed = {
   profile: {
     id: 'user-1',
@@ -160,7 +184,8 @@ const read = async (req = null) => {
   } else {
     const stored = await collection.findOne({ _id: userId });
     if (stored) {
-      const { _id, ...rest } = stored;
+      const { _id: _, ...rest } = stored;
+      void _;
       data = rest;
     } else {
       data = copySeed();
@@ -236,7 +261,7 @@ router.route('/profile')
 
       if (!bodyData.contact) bodyData.contact = {};
       if (typeof bodyData.contact === 'string') {
-        try { bodyData.contact = JSON.parse(bodyData.contact); } catch (_) {}
+        try { bodyData.contact = JSON.parse(bodyData.contact); } catch { /* ignore JSON parse error */ }
       }
       ['emergencyContactName', 'emergencyContactRelation', 'emergencyContactPhone', 'phone', 'email', 'address'].forEach((key) => {
         if (req.body[`contact[${key}]`]) bodyData.contact[key] = req.body[`contact[${key}]`];
@@ -293,7 +318,7 @@ router.route('/profile')
             bloodGroup: data.profile.bloodGroup,
             ...(photoUrl ? { photoUrl } : {}),
           }, { upsert: true });
-        } catch (_) {}
+        } catch { /* ignore mongo user update error */ }
 
         const merged = mergeUserWithData(data, updatedUser || authUser);
         return respond(res, { ...merged.profile, photoUrl });
@@ -323,8 +348,25 @@ router.get('/abha', async (req, res, next) => {
 
 router.get('/consents', async (req, res, next) => { try { const data = await read(req); respond(res, data.consents.filter((item) => !req.query.status || item.status === req.query.status).sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))); } catch (e) { next(e); } });
 router.patch('/consents/:id', async (req, res, next) => { try { if (!['accepted', 'rejected'].includes(req.body.status)) return fail(res, 'status must be accepted or rejected'); const data = await read(req); const consent = data.consents.find((item) => item.id === req.params.id); if (!consent) return fail(res, 'Consent not found', 404); consent.status = req.body.status; consent.respondedAt = new Date().toISOString(); await write(data, req); respond(res, consent); } catch (e) { next(e); } });
-router.get('/documents', async (req, res, next) => { try { const { documents } = await read(req); const q = req.query.q?.toLowerCase(); const items = documents.filter((item) => (!req.query.type || item.type === req.query.type) && (!q || item.title.toLowerCase().includes(q) || item.fileName.toLowerCase().includes(q))).sort((a, b) => (req.query.order === 'oldest' ? 1 : -1) * a.createdAt.localeCompare(b.createdAt)).map(({ content, ...item }) => item); respond(res, items); } catch (e) { next(e); } });
-router.post('/documents', async (req, res, next) => { try { const { title, type, fileName, mimeType, size, content } = req.body; if (!title || !fileName || !content || !['disease', 'prescription', 'discharge summary'].includes(type)) return fail(res, 'title, type, fileName, and content are required'); const data = await read(req); const item = { id: randomUUID(), title: title.trim(), type, fileName, mimeType: mimeType || 'application/octet-stream', size: Number(size) || 0, content, createdAt: new Date().toISOString() }; data.documents.push(item); await write(data, req); const { content: _, ...saved } = item; respond(res, saved, 201); } catch (e) { next(e); } });
+router.get('/documents', async (req, res, next) => { try { const { documents } = await read(req); const q = req.query.q?.toLowerCase(); const items = documents.filter((item) => (!req.query.type || item.type === req.query.type) && (!q || item.title.toLowerCase().includes(q) || item.fileName.toLowerCase().includes(q))).sort((a, b) => (req.query.order === 'oldest' ? 1 : -1) * a.createdAt.localeCompare(b.createdAt)).map(({ content: _, ...item }) => { void _; return item; }); respond(res, items); } catch (e) { next(e); } });
+router.post('/documents', async (req, res, next) => { try { const { title, type, fileName, mimeType, size, content } = req.body; if (!title || !fileName || !content || !['disease', 'prescription', 'discharge summary', 'lab report'].includes(type)) return fail(res, 'title, type, fileName, and content are required'); const data = await read(req); const item = { id: randomUUID(), title: title.trim(), type, fileName, mimeType: mimeType || 'application/octet-stream', size: Number(size) || 0, content, createdAt: new Date().toISOString() }; data.documents.push(item); await write(data, req); const { content: _, ...saved } = item; void _; respond(res, saved, 201); } catch (e) { next(e); } });
+router.post('/documents/import-cloud', async (req, res, next) => {
+  try {
+    const downloadUrl = buildCloudDownloadUrl(req.body?.source, req.body?.url);
+    const response = await fetch(downloadUrl, { redirect: 'follow', signal: AbortSignal.timeout(20_000) });
+    if (!response.ok) return fail(res, 'The shared file could not be downloaded. Confirm that anyone with the link can view it.', 400);
+    if (Number(response.headers.get('content-length') || 0) > MAX_DOCUMENT_IMPORT_BYTES) return fail(res, 'The shared file is larger than the 15 MB upload limit.', 400);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    if (!buffer.length) return fail(res, 'The shared link did not return a file.', 400);
+    if (buffer.length > MAX_DOCUMENT_IMPORT_BYTES) return fail(res, 'The shared file is larger than the 15 MB upload limit.', 400);
+    const fallback = req.body.source === 'gdrive' ? 'google-drive-document' : 'dropbox-document';
+    respond(res, { fileName: importedFileName(response, fallback), mimeType: response.headers.get('content-type')?.split(';')[0] || 'application/octet-stream', content: buffer.toString('base64') });
+  } catch (error) {
+    if (error.name === 'TimeoutError') return fail(res, 'The shared file took too long to download.', 408);
+    if (/^(Enter a valid|That Google Drive link|Choose Google Drive)/.test(error.message || '')) return fail(res, error.message, 400);
+    next(error);
+  }
+});
 router.get('/documents/:id/download', async (req, res, next) => { try { const item = (await read(req)).documents.find((doc) => doc.id === req.params.id); if (!item) return fail(res, 'Document not found', 404); res.type(item.mimeType).attachment(item.fileName).send(Buffer.from(item.content, 'base64')); } catch (e) { next(e); } });
 router.delete('/documents/:id', async (req, res, next) => { try { const data = await read(req); const index = data.documents.findIndex((doc) => doc.id === req.params.id); if (index < 0) return fail(res, 'Document not found', 404); data.documents.splice(index, 1); await write(data, req); res.status(204).end(); } catch (e) { next(e); } });
 
@@ -454,7 +496,7 @@ router.get('/socrates/patient/:userId', async (req, res, next) => {
       return res.json({ success: true, assessments: [] });
     }
     let user = null;
-    try { user = await User.findById(pid).lean(); } catch (_) {}
+    try { user = await User.findById(pid).lean(); } catch { /* ignore user lookup error */ }
     if (!user) {
       user = await User.findOne({ $or: [{ userId: pid }, { abhaNumber: pid }] }).lean();
     }
@@ -489,7 +531,7 @@ router.get('/access-requests', async (req, res, next) => {
         if (form) {
           formInfo = { site: form.site, severity: form.severity, createdAt: form.createdAt };
         }
-      } catch (_) {}
+      } catch { /* ignore form info lookup error */ }
       return { ...r, _id: r._id.toString(), formInfo };
     }));
     res.json({ success: true, data: enriched });
@@ -518,6 +560,24 @@ router.patch('/access-requests/:id', async (req, res, next) => {
   }
 });
 
+// ─── Doctor Access Logs (Patient side: "who opened my data") ─────────────────
+router.get('/access-logs', async (req, res, next) => {
+  try {
+    const authUser = await resolveAuthUser(req);
+    if (!authUser) return res.status(401).json({ success: false, error: 'Not authenticated' });
+    const ids = new Set();
+    if (authUser._id) ids.add(authUser._id.toString());
+    if (authUser.userId) ids.add(String(authUser.userId));
+    if (authUser.abhaNumber) ids.add(String(authUser.abhaNumber));
+    const or = [{ patientId: { $in: [...ids] } }];
+    if (authUser.abhaNumber) or.push({ patientAbha: String(authUser.abhaNumber) });
+    const logs = await DoctorAccessLog.find({ $or: or }).sort({ createdAt: -1 }).limit(20).lean();
+    res.json({ success: true, data: logs.map((l) => ({ ...l, _id: l._id.toString() })) });
+  } catch (e) {
+    next(e);
+  }
+});
+
 router.get('/:id', async (req, res, next) => {
 
   try {
@@ -526,7 +586,7 @@ router.get('/:id', async (req, res, next) => {
     if (id && id !== 'user-1') {
       try {
         foundUser = await User.findById(id);
-      } catch (_) {}
+      } catch { /* ignore findById error */ }
       if (!foundUser) {
         foundUser = await User.findOne({ $or: [{ userId: id }, { aadhaar: id }, { abhaNumber: id }] });
       }
@@ -557,7 +617,7 @@ router.get('/cdss/search/namaste', (req, res) => {
   }
 });
 
-router.get('/cdss/search/icd11', async (req, res, next) => {
+router.get('/cdss/search/icd11', async (req, res) => {
   try {
     const query = String(req.query.q || '').trim();
     if (/^[A-Za-z0-9][A-Za-z0-9./&-]*$/.test(query)) {
@@ -571,20 +631,76 @@ router.get('/cdss/search/icd11', async (req, res, next) => {
   }
 });
 
-router.get('/cdss/disease/:code', async (req, res, next) => {
+router.get('/cdss/disease/:code', async (req, res) => {
   try {
     const record = await getOrFetchDiseaseRecord(req.params.code, req.query.entityUri);
     let icd11Details = null;
+    let icd11Encyclopedia = null;
     if (record.icd11EntityUri) {
       try {
         icd11Details = await fetchICDEntityDetails(record.icd11EntityUri);
+        // Clean WHO payload into encyclopedia-ready plain text + verification links.
+        const title = cleanWhoText(icd11Details.title) || cleanWhoText(icd11Details.code) || record.englishEquivalent;
+        icd11Encyclopedia = {
+          title,
+          code: icd11Details.code || record.icd11PrimaryCode || record.code,
+          definition: cleanWhoText(icd11Details.definition) || null,
+          synonyms: cleanWhoList(icd11Details.synonym),
+          inclusion: cleanWhoList(icd11Details.inclusion),
+          exclusion: cleanWhoList(icd11Details.exclusion),
+          ...buildWhoLinks(record.icd11EntityUri, record.icd11PrimaryCode || record.code),
+        };
       } catch (error) {
         icd11Details = { unavailable: true, message: error.message };
+        icd11Encyclopedia = {
+          title: record.englishEquivalent || record.code,
+          code: record.icd11PrimaryCode || record.code,
+          definition: null,
+          synonyms: [],
+          inclusion: [],
+          exclusion: [],
+          ...buildWhoLinks(record.icd11EntityUri, record.icd11PrimaryCode || record.code),
+        };
       }
+    } else if (record.icd11PrimaryCode) {
+      icd11Encyclopedia = {
+        title: record.englishEquivalent || record.code,
+        code: record.icd11PrimaryCode,
+        definition: null,
+        synonyms: [],
+        inclusion: [],
+        exclusion: [],
+        ...buildWhoLinks(null, record.icd11PrimaryCode),
+      };
     }
-    respond(res, { ...record, icd11Details });
+    respond(res, { ...record, icd11Details, icd11Encyclopedia });
   } catch (error) {
     fail(res, error.message, 502);
+  }
+});
+
+// Bidirectional mapping APIs used by the Kindle encyclopedia.
+// ICD -> NAMASTE (reverse lookup across curated DB + catalog)
+router.get('/cdss/mapping/icd/:code', (req, res) => {
+  try {
+    const mappings = getIcdToNamasteMapping(req.params.code, req.query.title || '');
+    respond(res, {
+      icdCode: req.params.code,
+      ...buildWhoLinks(null, req.params.code),
+      namasteMappings: mappings,
+    });
+  } catch (e) {
+    fail(res, e.message, 500);
+  }
+});
+
+// NAMASTE -> ICD (forward lookup)
+router.get('/cdss/mapping/namaste/:code', (req, res) => {
+  try {
+    const mappings = getNamasteToIcdMapping(req.params.code);
+    respond(res, { namasteCode: req.params.code, icdMappings: mappings });
+  } catch (e) {
+    fail(res, e.message, 500);
   }
 });
 

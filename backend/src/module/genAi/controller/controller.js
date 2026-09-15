@@ -4,7 +4,7 @@ import { logError } from '../../../shared/logger.js';
 /**
  * Controller to handle GenAI conversational chat requests
  */
-export const handleGenAiChat = async (req, res, next) => {
+export const handleGenAiChat = async (req, res) => {
   try {
     const { message, history, language = 'en' } = req.body;
 

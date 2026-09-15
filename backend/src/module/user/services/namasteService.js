@@ -1,6 +1,6 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { searchICDAPI } from "./icdService.js";
+import { searchICDAPI, buildWhoLinks } from "./icdService.js";
 import { enrichAyurvedicClinicalProfile } from "./ayurvedicClinicalEngine.js";
 
 const databasePath = fileURLToPath(new URL("../data/namaste-db.json", import.meta.url));
@@ -93,6 +93,94 @@ export function buildBreadcrumb(code) {
   return crumbs;
 }
 
+// --- Bidirectional ICD-11 <-> NAMASTE mapping helpers ---
+
+// NAMASTE -> ICD is stored on each record as icd11PrimaryCode.
+// ICD -> NAMASTE is derived by scanning curated DB + catalog matches.
+export function findNamasteForIcd(icdCode = "", icdTitle = "", limit = 8) {
+  const needle = String(icdCode || "").trim().toLowerCase();
+  const titleNeedle = String(icdTitle || "").trim().toLowerCase();
+  if (!needle && !titleNeedle) return [];
+  const scored = [];
+  const seen = new Set();
+
+  const pushRecord = (record, score, reason) => {
+    const key = String(record.code || "").toLowerCase();
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    scored.push({
+      code: record.code,
+      ayurvedicTerm: record.ayurvedicTerm || record.transliteration || record.code,
+      transliteration: record.transliteration || "",
+      englishEquivalent: record.englishEquivalent || "",
+      icd11PrimaryCode: record.icd11PrimaryCode || null,
+      icd11EquivalenceType: record.icd11EquivalenceType || null,
+      matchReason: reason,
+      _score: score,
+    });
+  };
+
+  // 1. Exact ICD code matches from curated DB first (strongest signal).
+  if (needle) {
+    for (const record of database) {
+      if (String(record.icd11PrimaryCode || "").toLowerCase() === needle) {
+        pushRecord(record, 100, "Curated ICD-11 cross-reference");
+      }
+    }
+    // 2. Same ICD code discovered on catalog-derived entries held in memory.
+    for (const record of profileByCode.values()) {
+      if (String(record.icd11PrimaryCode || "").toLowerCase() === needle) {
+        pushRecord(record, 90, "Mapped ICD-11 entity");
+      }
+    }
+  }
+
+  // 3. Fuzzy English-equivalent fallback so an ICD title like
+  // "Type 2 diabetes mellitus" still surfaces Madhumeha/Prameha entries.
+  if (scored.length < limit && titleNeedle) {
+    const titleWords = titleNeedle.split(/[^a-z0-9]+/).filter(w => w.length > 3 && !["with", "without", "other", "specified", "disease", "disorder", "chronic"].includes(w));
+    const candidates = [...database, ...namasteCatalog.slice(0, 4000)];
+    for (const record of candidates) {
+      if (scored.length >= limit) break;
+      const hay = `${record.englishEquivalent || ""} ${record.transliteration || ""}`.toLowerCase();
+      if (!hay) continue;
+      const hits = titleWords.filter(w => hay.includes(w)).length;
+      if (hits >= 2 || (titleWords.length === 1 && hits === 1)) {
+        pushRecord(record, 10 + hits, "Related clinical concept");
+      }
+    }
+  }
+
+  return scored.sort((a, b) => b._score - a._score).slice(0, limit)
+    .map((item) => {
+      const { _score, ...rest } = item;
+      void _score;
+      return rest;
+    });
+}
+
+// ICD -> NAMASTE entry point used by the mapping API + ICD-origin records.
+export function getIcdToNamasteMapping(icdCode, icdTitle = "") {
+  return findNamasteForIcd(icdCode, icdTitle, 8);
+}
+
+// NAMASTE -> ICD entry point: returns every known ICD entity for a code.
+export function getNamasteToIcdMapping(namasteCode) {
+  const normalized = String(namasteCode || "").toLowerCase();
+  const record = profileByCode.get(normalized) || catalogByCode.get(normalized);
+  if (!record) return [];
+  const local = profileByCode.get(normalized);
+  const primary = local?.icd11PrimaryCode || record.icd11PrimaryCode || null;
+  if (!primary) return [];
+  return [{
+    code: primary,
+    title: local?.englishEquivalent || record.englishEquivalent || primary,
+    entityUri: local?.icd11EntityUri || null,
+    equivalenceType: local?.icd11EquivalenceType || "clinical correlate",
+    ...buildWhoLinks(local?.icd11EntityUri || null, primary),
+  }];
+}
+
 // English synonym → Ayurvedic/transliteration lookup for common medical terms
 const ENGLISH_SYNONYMS = {
   "fever": ["jvara", "jwara"],
@@ -161,6 +249,36 @@ export function searchNamasteCodes(query = "", system = "") {
   });
 }
 
+function attachEncyclopediaMeta(rec) {
+  // Official WHO verification links (always present, even when unmapped).
+  rec.whoLinks = buildWhoLinks(rec.icd11EntityUri || null, rec.icd11PrimaryCode || rec.code);
+  // Bidirectional cross-walk:
+  // - icdMappings: NAMASTE -> ICD (forward)
+  // - namasteMappings: ICD -> NAMASTE (reverse)
+  const isIcdOrigin = String(rec.systemOfMedicine || "").includes("WHO ICD-11");
+  if (isIcdOrigin) {
+    rec.icdMappings = [{
+      code: rec.icd11PrimaryCode || rec.code,
+      title: rec.englishEquivalent || rec.code,
+      entityUri: rec.icd11EntityUri || null,
+      equivalenceType: rec.icd11EquivalenceType || "exact",
+      ...buildWhoLinks(rec.icd11EntityUri || null, rec.icd11PrimaryCode || rec.code),
+    }];
+    rec.namasteMappings = findNamasteForIcd(rec.icd11PrimaryCode || rec.code, rec.englishEquivalent || "");
+  } else {
+    rec.icdMappings = getNamasteToIcdMapping(rec.code);
+    // Reverse peers: other NAMASTE entries sharing the same ICD target.
+    if (rec.icd11PrimaryCode) {
+      rec.namasteMappings = findNamasteForIcd(rec.icd11PrimaryCode, rec.englishEquivalent || "")
+        .filter(m => String(m.code || "").toLowerCase() !== String(rec.code || "").toLowerCase())
+        .slice(0, 6);
+    } else {
+      rec.namasteMappings = [];
+    }
+  }
+  return rec;
+}
+
 function catalogRecord(record) {
   const base = {
     code: record.code,
@@ -183,11 +301,12 @@ function catalogRecord(record) {
     source: record.source,
     parentCode: record.parentCode
   };
-  return enrichAyurvedicClinicalProfile(base);
+  return attachEncyclopediaMeta(enrichAyurvedicClinicalProfile(base));
 }
 
 function dynamicRecord(queryCode, item = {}) {
-  const title = item.title || item.matchingPhrases?.[0]?.label || queryCode;
+  const rawTitle = item.title || item.matchingPhrases?.[0]?.label || queryCode;
+  const title = String(rawTitle).replace(/<[^>]*>/g, "").trim() || queryCode;
   const entityUri = item.id || item.entityId || item.theCodeAndTitle?.id || null;
   const code = item.theCodeAndTitle?.code || item.code || queryCode;
   const base = {
@@ -204,7 +323,7 @@ function dynamicRecord(queryCode, item = {}) {
     labCorrelations: { suggestedTests: ["Complete Blood Count (CBC)", "Routine urinalysis", "Clinical chemistry panel as indicated."], targets: {} },
     treatmentFramework: { chikitsaSutra: "", classicalFormulations: [], pathya: [], apathya: [] }
   };
-  return enrichAyurvedicClinicalProfile(base);
+  return attachEncyclopediaMeta(enrichAyurvedicClinicalProfile(base));
 }
 
 export async function getOrFetchDiseaseRecord(queryCode, entityUri = null) {
@@ -220,6 +339,7 @@ export async function getOrFetchDiseaseRecord(queryCode, entityUri = null) {
     }
     if (!local.breadcrumb) local.breadcrumb = buildBreadcrumb(local.code);
     local.completeness = computeCompleteness(local);
+    attachEncyclopediaMeta(local);
     return local;
   }
   const catalogEntry = catalogByCode.get(normalized);
@@ -228,7 +348,7 @@ export async function getOrFetchDiseaseRecord(queryCode, entityUri = null) {
     let rawQuery = rec.englishEquivalent && rec.englishEquivalent !== "No English equivalent supplied by source"
       ? rec.englishEquivalent : rec.transliteration;
     const searchQuery = rawQuery
-      ? rawQuery.replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '').split(/[\/;,\-]/)[0].trim()
+      ? rawQuery.replace(/\(.*?\)/g, '').replace(/\[.*?\]/g, '').split(/[/;,-]/)[0].trim()
       : null;
     if (searchQuery) {
       try {
@@ -278,6 +398,7 @@ export async function getOrFetchDiseaseRecord(queryCode, entityUri = null) {
     if (rec.parsedSymptoms) rec.biomedicalSummary = generateBiomedicalSummary(rec.parsedSymptoms);
     rec.breadcrumb = buildBreadcrumb(rec.code);
     rec.completeness = computeCompleteness(rec);
+    attachEncyclopediaMeta(rec);
     return rec;
   }
   if (entityUri) {
@@ -285,6 +406,7 @@ export async function getOrFetchDiseaseRecord(queryCode, entityUri = null) {
     enrichAyurvedicClinicalProfile(record);
     record.breadcrumb = buildBreadcrumb(record.code);
     record.completeness = computeCompleteness(record);
+    attachEncyclopediaMeta(record);
     database.push(record);
     profileByCode.set(record.code.toLowerCase(), record);
     await saveDatabase();
@@ -297,6 +419,7 @@ export async function getOrFetchDiseaseRecord(queryCode, entityUri = null) {
   enrichAyurvedicClinicalProfile(record);
   record.breadcrumb = buildBreadcrumb(record.code);
   record.completeness = computeCompleteness(record);
+  attachEncyclopediaMeta(record);
   database.push(record);
   profileByCode.set(record.code.toLowerCase(), record);
   await saveDatabase();

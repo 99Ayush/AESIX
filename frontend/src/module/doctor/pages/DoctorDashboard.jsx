@@ -4,8 +4,9 @@ import DoctorHeader from '../components/DoctorHeader';
 import DoctorSidebar from '../components/DoctorSidebar';
 import PatientSearchBar from '../components/PatientSearchBar';
 import PatientProfileCard from '../components/PatientProfileCard';
-import AlertsSection from '../components/AlertsSection';
+
 import PatientDirectoryView from '../components/PatientDirectoryView';
+import KindleMain from '../../user/pages/kindleMain';
 import SocratesFormsList from '../components/SocratesFormsList';
 import { doctorApi } from '../services/doctorApi';
 import { onDatabaseChange } from '../../user/services/realtime';
@@ -13,8 +14,6 @@ import './DoctorDashboard.css';
 import {
   BarChart3,
   UserRound,
-  FileText,
-  TriangleAlert,
   ClipboardList,
   Stethoscope
 } from "lucide-react";
@@ -29,9 +28,8 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
     const path = location.pathname;
     if (path.includes('/patient-data')) return 'patient-data';
     if (path.includes('/socrates-forms')) return 'socrates-forms';
-    // if (path.includes('/consultations')) return 'consultations';
-    if (path.includes('/alerts')) return 'alerts';
     if (path.includes('/directory')) return 'directory';
+    if (path.includes('/medical-directory')) return 'medical-directory';
     return 'patient-data';
   };
 
@@ -101,9 +99,8 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
     if (tabKey === 'overview') navigate('/doctor');
     else if (tabKey === 'patient-data') navigate('/doctor/patient-data');
     else if (tabKey === 'socrates-forms') navigate('/doctor/socrates-forms');
-    else if (tabKey === 'consultations') navigate('/doctor/consultations');
-    else if (tabKey === 'alerts') navigate('/doctor/alerts');
     else if (tabKey === 'directory') navigate('/doctor/directory');
+    else if (tabKey === 'medical-directory') navigate('/doctor/medical-directory');
   };
 
   const handleSearch = async (query) => {
@@ -207,7 +204,7 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
          
 
           {/* NO PATIENT SELECTED STATE */}
-          {!selectedPatientId && activeTab !== 'directory' ? (
+          {!selectedPatientId && activeTab !== 'directory' && activeTab !== 'medical-directory' ? (
             <div className="doc-card doc-no-patient-card">
               <div className="doc-no-patient-icon">🔍</div>
               <h3 className="doc-no-patient-title">Search for a Patient</h3>
@@ -233,8 +230,6 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
                       patientAbha={patientData?.patient?.abhaId}
                       onRefresh={fetchForms}
                     />
-                    <ConsultationResults consultations={patientData?.consultationResults} />
-                    <AlertsSection alerts={patientData?.alerts} />
                   </div>
                 </div>
               )}
@@ -264,27 +259,19 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
                 </div>
               )}
 
-              {/* VIEW 4: DEDICATED CONSULTATION RESULTS
-              {activeTab === 'consultations' && (
-                <div className="doc-single-view-full">
-                  <ConsultationResults consultations={patientData?.consultationResults} />
-                </div>
-              )} */}
-
-              {/* VIEW 5: DEDICATED MEDICAL ALERTS */}
-              {activeTab === 'alerts' && (
-                <div className="doc-single-view-full">
-                  <AlertsSection alerts={patientData?.alerts} />
-                </div>
-              )}
-
-              {/* VIEW 6: DEDICATED PATIENT DIRECTORY */}
+              {/* VIEW 4: DEDICATED PATIENT DIRECTORY */}
               {activeTab === 'directory' && (
                 <div className="doc-single-view-full">
                   <PatientDirectoryView
                     searchResults={searchResults}
                     onSelectPatient={handleSelectPatient}
                   />
+                </div>
+              )}
+
+              {activeTab === 'medical-directory' && (
+                <div className="doc-single-view-full">
+                  <KindleMain embedded />
                 </div>
               )}
             </div>

@@ -5,6 +5,8 @@ import { userApi } from '../services/userApi';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import BrandLogo from '../../../shared/BrandLogo';
 import {
   FileText,
    CircleUser,
@@ -32,7 +34,351 @@ FilePenLine,
   Globe
 } from "lucide-react";
 
-export default function KindleMain() {
+const FEATURED_NAMASTE_TERMS = ['Jvara', 'Madhumeha', 'Kasa', 'Atisara', 'Amlapitta', 'Shvasa'];
+
+/* ── Encyclopedia helpers: clean text, tags, sections ── */
+function stripHtml(value) {
+  if (value == null) return '';
+  const raw = typeof value === 'string' ? value : (value['@value'] ?? value.value ?? '');
+  return String(raw).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function EncyTag({ children, color = 'var(--teal-primary)', bg = 'var(--mint-light)' }) {
+  return (
+    <span style={{ display: 'inline-block', background: bg, color, borderRadius: '6px', padding: '0.15rem 0.55rem', fontSize: '0.72rem', fontWeight: 700, margin: '0.15rem 0.15rem 0 0', border: `1px solid ${color}22` }}>
+      {children}
+    </span>
+  );
+}
+
+function EncySection({ icon, title, children, accent = '#F8FAFC' }) {
+  return (
+    <div style={{ backgroundColor: accent, padding: '1rem 1.1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
+      <h4 style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <span>{icon}</span>{title}
+      </h4>
+      {children}
+    </div>
+  );
+}
+
+function FactCell({ label, value, mono = false }) {
+  if (!value) return null;
+  return (
+    <div style={{ backgroundColor: '#F8FAFC', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '0.55rem 0.7rem' }}>
+      <div style={{ fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--teal-primary)' }}>{label}</div>
+      <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--primary-navy)', marginTop: '0.15rem', fontFamily: mono ? 'monospace' : 'inherit', lineHeight: 1.45 }}>{value}</div>
+    </div>
+  );
+}
+
+function WhoVerifyCard({ record }) {
+  const enc = record.icd11Encyclopedia || {};
+  const links = record.whoLinks || {};
+  const browserUrl = enc.browserUrl || links.browserUrl || record.icd11Details?.browserUrl || 'https://icd.who.int/browse/2024-01/mms/en';
+  const searchUrl = enc.searchUrl || links.searchUrl || browserUrl;
+  const entityUrl = enc.entityUrl || links.entityUrl || record.icd11EntityUri;
+  const code = enc.code || record.icd11PrimaryCode || record.code;
+  return (
+    <EncySection icon="🛡️" title="Verify on official WHO ICD-11 browser" accent="#EFF6FF">
+      <p style={{ fontSize: '0.78rem', color: 'var(--text-main)', lineHeight: 1.55, margin: '0 0 0.6rem' }}>
+        Cross-check this {code} classification against the World Health Organization registry. Our definition, synonyms and hierarchy below mirror the WHO source.
+      </p>
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <a href={browserUrl} target="_blank" rel="noopener noreferrer" className="sih-btn sih-btn-primary" style={{ fontSize: '0.75rem', padding: '0.45rem 0.9rem', textDecoration: 'none' }}>
+          Open {code} on icd.who.int ↗
+        </a>
+        <a href={searchUrl} target="_blank" rel="noopener noreferrer" className="sih-btn sih-btn-outline" style={{ fontSize: '0.75rem', padding: '0.45rem 0.9rem', textDecoration: 'none' }}>
+          Search WHO browser ↗
+        </a>
+      </div>
+      {entityUrl && (
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.5rem', wordBreak: 'break-all' }}>
+          API entity: {entityUrl}
+        </div>
+      )}
+      {record.icd11MappingVersion && (
+        <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+          Mapping version: {record.icd11MappingVersion}
+        </div>
+      )}
+    </EncySection>
+  );
+}
+
+function MappingPanel({ record, onOpenNamaste, onOpenIcd }) {
+  const forward = record.icdMappings || (record.icd11PrimaryCode ? [{ code: record.icd11PrimaryCode, title: record.englishEquivalent, entityUri: record.icd11EntityUri, equivalenceType: record.icd11EquivalenceType, ...(record.whoLinks || {}) }] : []);
+  const reverse = record.namasteMappings || [];
+  const isIcdOrigin = String(record.systemOfMedicine || '').includes('WHO ICD-11');
+  return (
+    <EncySection icon="🔗" title="ICD-11 ↔ NAMASTE cross-walk (both directions)" accent="#F0FDF4">
+      {/* Forward: NAMASTE → ICD */}
+      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.4rem' }}>
+        {isIcdOrigin ? 'This ICD-11 entity corresponds to:' : 'NAMASTE → ICD-11 mapping'}
+      </div>
+      {forward.length > 0 ? forward.map((m, i) => (
+        <div key={i} style={{ backgroundColor: '#fff', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '0.6rem 0.75rem', marginBottom: '0.45rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <strong style={{ fontFamily: 'monospace', color: 'var(--primary-navy)', fontSize: '0.85rem' }}>{m.code}</strong>
+            {m.equivalenceType && <EncyTag color="#166534" bg="#DCFCE7">{m.equivalenceType}</EncyTag>}
+          </div>
+          {m.title && <div style={{ fontSize: '0.78rem', color: 'var(--text-main)', marginTop: '0.2rem' }}>{stripHtml(m.title)}</div>}
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.45rem', flexWrap: 'wrap' }}>
+            {(m.browserUrl || record.whoLinks?.browserUrl) && (
+              <a href={m.browserUrl || record.whoLinks.browserUrl} target="_blank" rel="noopener noreferrer" style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--teal-primary)' }}>
+                Verify on WHO ↗
+              </a>
+            )}
+            {!isIcdOrigin && onOpenIcd && (
+              <button onClick={() => onOpenIcd(m.code, m.entityUri, m.title)} style={{ fontSize: '0.72rem', fontWeight: 700, color: '#166534', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                View ICD record →
+              </button>
+            )}
+          </div>
+        </div>
+      )) : (
+        <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: '0 0 0.6rem' }}>
+          No confirmed ICD-11 cross-reference yet. Check the{' '}
+          <a href="https://icd.who.int/browse/2024-01/mms/en" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--teal-primary)', fontWeight: 700 }}>WHO browser</a>{' '}
+          manually (TM2 chapter often holds the equivalent).
+        </p>
+      )}
+
+      {/* Reverse: ICD → NAMASTE */}
+      <div style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0.7rem 0 0.4rem' }}>
+        {isIcdOrigin ? 'ICD-11 → NAMASTE matches (Ayurveda equivalents)' : 'Same ICD shared by (reverse peers)'} ({reverse.length})
+      </div>
+      {reverse.length > 0 ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          {reverse.map((m, i) => (
+            <button key={i} onClick={() => onOpenNamaste && onOpenNamaste(m.code)} style={{ textAlign: 'left', backgroundColor: '#fff', border: '1px solid var(--border-light)', borderRadius: '8px', padding: '0.55rem 0.7rem', cursor: onOpenNamaste ? 'pointer' : 'default' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem' }}>
+                <strong style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--primary-navy)' }}>{m.code}</strong>
+                <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>{m.matchReason}</span>
+              </div>
+              <div style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--teal-primary)', marginTop: '0.15rem' }}>{m.ayurvedicTerm}</div>
+              {m.englishEquivalent && <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{m.englishEquivalent}</div>}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p style={{ fontSize: '0.76rem', color: 'var(--text-muted)', margin: 0 }}>
+          No Ayurveda equivalent catalogued for this ICD entity yet.
+        </p>
+      )}
+    </EncySection>
+  );
+}
+
+function EncyclopediaDetail({ record, onOpenNamaste, onOpenIcd }) {
+  if (!record) return null;
+  const whoDef = stripHtml(record.icd11Encyclopedia?.definition || record.icd11Details?.definition?.['@value'] || record.icd11Details?.definition);
+  const ayurDef = stripHtml(record.clinicalOverview?.definition);
+  const synonyms = record.icd11Encyclopedia?.synonyms || [];
+  const inclusion = record.icd11Encyclopedia?.inclusion || [];
+  const exclusion = record.icd11Encyclopedia?.exclusion || [];
+  const completeness = record.completeness?.percentage;
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}>
+      {/* Header */}
+      <div style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.45rem' }}>
+          <span className="sih-badge sih-badge-teal" style={{ fontFamily: 'monospace' }}>{record.code}</span>
+          <span className="sih-badge sih-badge-green">{record.systemOfMedicine}</span>
+          {record.icd11PrimaryCode && <span className="sih-badge sih-badge-green">ICD-11: {record.icd11PrimaryCode}</span>}
+          {record.icd11EquivalenceType && <span className="sih-badge sih-badge-amber">{record.icd11EquivalenceType}</span>}
+          {typeof completeness === 'number' && <span className="sih-badge sih-badge-teal">{completeness}% complete</span>}
+        </div>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0' }}>
+          {stripHtml(record.englishEquivalent) !== 'No English equivalent supplied by source' ? stripHtml(record.englishEquivalent) : stripHtml(record.ayurvedicTerm)}
+        </h2>
+        <p style={{ fontSize: '1rem', color: 'var(--teal-primary)', fontWeight: 700, margin: '0.15rem 0' }}>{stripHtml(record.ayurvedicTerm)}</p>
+        {record.transliteration && record.transliteration !== record.ayurvedicTerm && (
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontStyle: 'italic', margin: 0 }}>{stripHtml(record.transliteration)}</p>
+        )}
+        {record.breadcrumb?.length > 0 && (
+          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>
+            {record.breadcrumb.map(b => b.code).join(' › ')}{record.breadcrumb.length > 0 ? ' › ' : ''}{record.code}
+          </div>
+        )}
+      </div>
+
+      {/* Quick facts */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.6rem' }}>
+        <FactCell label="Classification code" value={record.code} mono />
+        <FactCell label="ICD-11 code" value={record.icd11PrimaryCode || '—'} mono />
+        <FactCell label="Ayurvedic term" value={stripHtml(record.ayurvedicTerm)} />
+        <FactCell label="System" value={record.systemOfMedicine} />
+        <FactCell label="Equivalence" value={record.icd11EquivalenceType || record.icd11MappingStatus} />
+        <FactCell label="Last updated" value={record.lastUpdated || record.catalogVersion} />
+      </div>
+
+      {/* Definitions: clean encyclopedia */}
+      <EncySection icon="📖" title="Encyclopedia definition">
+        {ayurDef && !ayurDef.startsWith('No definition') && !ayurDef.startsWith('Dynamically fetched') && (
+          <p style={{ fontSize: '0.82rem', lineHeight: 1.65, color: 'var(--text-main)', margin: '0 0 0.6rem' }}>{ayurDef}</p>
+        )}
+        {whoDef ? (
+          <div style={{ backgroundColor: '#EFF6FF', borderLeft: '3px solid #2563EB', padding: '0.6rem 0.8rem', borderRadius: '0 8px 8px 0' }}>
+            <div style={{ fontSize: '0.68rem', fontWeight: 800, color: '#1D4ED8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.25rem' }}>WHO ICD-11 official definition</div>
+            <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: '#1E3A5F', margin: 0 }}>{whoDef}</p>
+          </div>
+        ) : (
+          (!ayurDef || ayurDef.startsWith('No definition') || ayurDef.startsWith('Dynamically fetched')) && (
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Definition pending WHO verification — use the WHO link below to view the live registry entry.</p>
+          )
+        )}
+        {synonyms.length > 0 && (
+          <div style={{ marginTop: '0.6rem' }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>Also known as</div>
+            <div>{synonyms.slice(0, 8).map((s, i) => <EncyTag key={i}>{s}</EncyTag>)}</div>
+          </div>
+        )}
+        {(inclusion.length > 0 || exclusion.length > 0) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.6rem' }}>
+            {inclusion.length > 0 && (
+              <div><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534' }}>Includes</div>
+                {inclusion.slice(0, 5).map((v, i) => <div key={i} style={{ fontSize: '0.73rem', color: 'var(--text-main)' }}>• {v}</div>)}
+              </div>
+            )}
+            {exclusion.length > 0 && (
+              <div><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#991B1B' }}>Excludes</div>
+                {exclusion.slice(0, 5).map((v, i) => <div key={i} style={{ fontSize: '0.73rem', color: 'var(--text-main)' }}>• {v}</div>)}
+              </div>
+            )}
+          </div>
+        )}
+      </EncySection>
+
+      {/* Symptoms encyclopedia table */}
+      {(record.parsedSymptoms?.length > 0 || record.clinicalOverview?.cardinalSymptoms?.length > 0) && (
+        <EncySection icon="🩺" title={`Symptoms encyclopedia (${record.parsedSymptoms?.length || record.clinicalOverview?.cardinalSymptoms?.length || 0})`}>
+          {record.parsedSymptoms?.length > 0 ? (
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.76rem' }}>
+              <thead>
+                <tr style={{ textAlign: 'left', color: 'var(--teal-primary)', fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  <th style={{ padding: '0.3rem 0.5rem', borderBottom: '1px solid var(--border-light)', width: '2rem' }}>#</th>
+                  <th style={{ padding: '0.3rem 0.5rem', borderBottom: '1px solid var(--border-light)' }}>Sanskrit term</th>
+                  <th style={{ padding: '0.3rem 0.5rem', borderBottom: '1px solid var(--border-light)' }}>Clinical meaning</th>
+                </tr>
+              </thead>
+              <tbody>
+                {record.parsedSymptoms.slice(0, 12).map((s, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                    <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-muted)' }}>{i + 1}</td>
+                    <td style={{ padding: '0.35rem 0.5rem', fontStyle: 'italic', color: 'var(--primary-navy)', fontWeight: 600 }}>{s.term}</td>
+                    <td style={{ padding: '0.35rem 0.5rem', color: 'var(--text-main)' }}>{s.gloss}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div>{record.clinicalOverview.cardinalSymptoms.slice(0, 8).map((s, i) => <EncyTag key={i}>{stripHtml(s)}</EncyTag>)}</div>
+          )}
+          {record.biomedicalSummary && (
+            <div style={{ marginTop: '0.6rem', backgroundColor: '#F0FDF4', borderRadius: '8px', padding: '0.55rem 0.75rem', fontSize: '0.76rem', color: '#14532D' }}>
+              <strong>Biomedical correlation: </strong>{record.biomedicalSummary}
+            </div>
+          )}
+        </EncySection>
+      )}
+
+      {/* Triage */}
+      {record.prognosis && (
+        <div style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #F59E0B', padding: '0.9rem 1rem', borderRadius: '6px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#92400E' }}>Triage: {record.prognosis.status}</span>
+            <span className="sih-badge sih-badge-amber" style={{ fontSize: '0.68rem' }}>Risk: {record.prognosis.riskLevel}</span>
+          </div>
+          {record.clinicalOverview?.redFlags?.length > 0 && (
+            <div style={{ marginTop: '0.5rem' }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#991B1B', marginBottom: '0.25rem' }}>🚩 Red flags</div>
+              <div>{record.clinicalOverview.redFlags.map((f, i) => <EncyTag key={i} color="#991B1B" bg="#FEF2F2">{f}</EncyTag>)}</div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Samprapti + Chikitsa */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0.9rem' }}>
+        {record.pathomechanism && (
+          <EncySection icon="🌿" title="Samprapti (pathomechanism)">
+            <div style={{ marginBottom: '0.45rem' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-navy)' }}>Dominant dosha</div>
+              <div>{record.pathomechanism.dominantDosha?.map((d, i) => <EncyTag key={i} color="#7C3AED" bg="#F5F3FF">{d}</EncyTag>)}</div>
+            </div>
+            <div style={{ marginBottom: '0.45rem' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-navy)' }}>Srotas involved</div>
+              <div>{record.pathomechanism.srotasInvolved?.map((s, i) => <EncyTag key={i} color="#0369A1" bg="#F0F9FF">{s}</EncyTag>)}</div>
+            </div>
+            {record.pathomechanism.phenotypeCheck && <p style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontStyle: 'italic', lineHeight: 1.5, margin: '0.4rem 0 0' }}>{record.pathomechanism.phenotypeCheck}</p>}
+          </EncySection>
+        )}
+        {record.treatmentFramework && (
+          <EncySection icon="💊" title="Chikitsa (treatment)" accent="#FEFCE8">
+            {record.treatmentFramework.chikitsaSutra && (
+              <p style={{ fontSize: '0.76rem', lineHeight: 1.55, color: '#713F12', fontStyle: 'italic', backgroundColor: 'rgba(254,240,138,0.35)', padding: '0.55rem 0.75rem', borderRadius: '8px', borderLeft: '3px solid #EAB308', margin: '0 0 0.6rem' }}>
+                “{record.treatmentFramework.chikitsaSutra}”
+              </p>
+            )}
+            {record.treatmentFramework.classicalFormulations?.length > 0 && (
+              <div style={{ marginBottom: '0.45rem' }}>
+                <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--primary-navy)' }}>Classical formulations</div>
+                <div>{record.treatmentFramework.classicalFormulations.map((f, i) => <EncyTag key={i} color="#92400E" bg="#FFFBEB">{f}</EncyTag>)}</div>
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginTop: '0.4rem' }}>
+              {record.treatmentFramework.pathya?.length > 0 && (
+                <div><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#166534' }}>✅ Pathya</div>
+                  {record.treatmentFramework.pathya.slice(0, 5).map((p, i) => <div key={i} style={{ fontSize: '0.72rem' }}>• {p}</div>)}
+                </div>
+              )}
+              {record.treatmentFramework.apathya?.length > 0 && (
+                <div><div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#991B1B' }}>❌ Apathya</div>
+                  {record.treatmentFramework.apathya.slice(0, 5).map((a, i) => <div key={i} style={{ fontSize: '0.72rem' }}>• {a}</div>)}
+                </div>
+              )}
+            </div>
+          </EncySection>
+        )}
+      </div>
+
+      {record.labCorrelations?.suggestedTests?.length > 0 && (
+        <EncySection icon="🔬" title="Investigations">
+          <div>{record.labCorrelations.suggestedTests.map((t, i) => <EncyTag key={i} color="#0F766E" bg="#F0FDFA">{t}</EncyTag>)}</div>
+        </EncySection>
+      )}
+
+      {/* Bidirectional mapping + WHO verification */}
+      <MappingPanel record={record} onOpenNamaste={onOpenNamaste} onOpenIcd={onOpenIcd} />
+      <WhoVerifyCard record={record} />
+
+      {/* Hierarchy + provenance */}
+      {(record.parentDisease || record.relatedCodes?.length > 0) && (
+        <EncySection icon="🧬" title="Classification hierarchy">
+          {record.parentDisease && <div style={{ fontSize: '0.76rem', marginBottom: '0.35rem' }}><strong>Parent: </strong>{record.parentDisease.code} — {stripHtml(record.parentDisease.englishEquivalent)}</div>}
+          {record.relatedCodes?.length > 0 && (
+            <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap', marginTop: '0.3rem' }}>
+              {record.relatedCodes.map((r, i) => (
+                <button key={i} onClick={() => onOpenNamaste && onOpenNamaste(r.code)} style={{ fontFamily: 'monospace', fontSize: '0.7rem', fontWeight: 700, padding: '0.25rem 0.6rem', borderRadius: '999px', border: '1px solid var(--border-light)', background: '#fff', cursor: 'pointer' }}>
+                  {r.code}
+                </button>
+              ))}
+            </div>
+          )}
+        </EncySection>
+      )}
+      <div style={{ fontSize: '0.68rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+        {record.source && <div><strong>Source:</strong> {record.source}</div>}
+        {record.catalogVersion && <div><strong>Catalog:</strong> {record.catalogVersion}</div>}
+        {record.icd11MappingVersion && <div><strong>Mapping:</strong> {record.icd11MappingVersion}</div>}
+        {record.lastUpdated && <div><strong>Updated:</strong> {record.lastUpdated}</div>}
+      </div>
+    </div>
+  );
+}
+
+export default function KindleMain({ embedded = false }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('namaste'); // 'namaste' or 'icd11'
 
@@ -41,6 +387,8 @@ export default function KindleMain() {
   const [suggestions, setSuggestions] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
+  const [featuredRecords, setFeaturedRecords] = useState([]);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
 
   // Selected disease record
   const [selectedCode, setSelectedCode] = useState(null);
@@ -113,6 +461,27 @@ export default function KindleMain() {
     return () => clearTimeout(timer);
   }, [query, activeTab]);
 
+  // Give the directory useful content immediately without pre-populating the
+  // search-results list. Two records are stacked in the detail pane.
+  useEffect(() => {
+    let cancelled = false;
+    const terms = [...FEATURED_NAMASTE_TERMS].sort(() => Math.random() - 0.5).slice(0, 5);
+    setFeaturedLoading(true);
+    Promise.all(terms.map(async (term) => {
+      const search = await userApi.searchNamaste(term);
+      return search?.results?.[0] || null;
+    }))
+      .then(async (entries) => {
+        const validEntries = entries.filter(Boolean);
+        if (!cancelled) setSuggestions(validEntries);
+        const records = await Promise.all(validEntries.slice(0, 2).map((entry) => userApi.getDiseaseRecord(entry.code)));
+        if (!cancelled) setFeaturedRecords(records.filter(Boolean));
+      })
+      .catch(() => { if (!cancelled) { setFeaturedRecords([]); setSuggestions([]); } })
+      .finally(() => { if (!cancelled) setFeaturedLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
+
   const handleTabSwitch = (tab) => {
     setActiveTab(tab);
     setQuery('');
@@ -120,18 +489,38 @@ export default function KindleMain() {
     setSearchError('');
   };
 
-  const handleSelectCode = async (code, entityUri) => {
+  const handleSelectCode = async (code, entityUri, titleHint) => {
     setSelectedCode(code);
     setIsLoadingRecord(true);
     setRecord(null);
     try {
       const data = await userApi.getDiseaseRecord(code, entityUri);
+      // Backfill ICD → NAMASTE reverse peers when backend has none yet
+      // (e.g. freshly cached WHO entity), so mapping reads both ways.
+      if ((!data.namasteMappings || data.namasteMappings.length === 0) && (data.icd11PrimaryCode || activeTab === 'icd11')) {
+        try {
+          const mapping = await userApi.getIcdToNamaste(data.icd11PrimaryCode || code, data.englishEquivalent || titleHint || '');
+          if (mapping?.namasteMappings?.length) data.namasteMappings = mapping.namasteMappings;
+        } catch { /* mapping is best-effort */ }
+      }
       setRecord(data);
     } catch (err) {
       setSearchError(err.message || 'Failed to fetch clinical record');
     } finally {
       setIsLoadingRecord(false);
     }
+  };
+
+  const openNamasteRecord = async (code) => {
+    setActiveTab('namaste');
+    setQuery(code);
+    await handleSelectCode(code);
+  };
+
+  const openIcdRecord = async (code, entityUri, title) => {
+    setActiveTab('icd11');
+    setQuery(code);
+    await handleSelectCode(code, entityUri, title);
   };
 
   const parseItemLabel = (item) => {
@@ -144,18 +533,12 @@ export default function KindleMain() {
   };
 
   return (
-    <div className="sih-page-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--mint-bg)' }}>
+    <div className={embedded ? 'doc-embedded-directory' : 'sih-page-wrapper'} style={{ minHeight: embedded ? 0 : '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--mint-bg)' }}>
       {/* ===== HEADER ===== */}
-      <header className="sih-header">
+      {!embedded && <header className="sih-header">
         <div className="sih-header-inner">
           {/* Brand */}
-          <div className="sih-brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-            <div className="sih-logo-badge">🛡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Clinical Directory</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Clinical Directory" />
 
 
 
@@ -167,6 +550,8 @@ export default function KindleMain() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
+
+            <DoctorActivityBell />
 
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
@@ -192,11 +577,11 @@ export default function KindleMain() {
             </div>
           </div>
         </div>
-      </header>
+      </header>}
 
-      <div className="patient-main-container">
-        <PatientSidebar patientName={patientName} initials={initials} activePage="health-code" />
-        <div className="patient-content-area">
+      <div className={embedded ? 'doc-embedded-directory-content' : 'patient-main-container'}>
+        {!embedded && <PatientSidebar patientName={patientName} initials={initials} activePage="health-code" />}
+        <div className={embedded ? '' : 'patient-content-area'}>
 
           {/* ===== MAIN CONTENT ===== */}
           <main className="sih-main-layout" style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
@@ -374,128 +759,40 @@ export default function KindleMain() {
                 </div>
               </div>
 
-          {/* Right Column: Comprehensive Clinical Decision Card */}
+          {/* Right Column: Encyclopedia detail */}
           <div className="sih-card" style={{ padding: '2rem', minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
             {isLoadingRecord ? (
               <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 0' }}>
                 <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄</div>
-                <h4 style={{ color: 'var(--primary-navy)', margin: 0 }}>Loading Clinical Profile & WHO Entities…</h4>
+                <h4 style={{ color: 'var(--primary-navy)', margin: 0 }}>Loading encyclopedia entry & WHO verification…</h4>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.3rem' }}>
-                  Resolving classification cross-mappings and evidence-based guidance.
+                  Resolving clean definitions, symptoms, bidirectional ICD ↔ NAMASTE cross-mappings and official WHO links.
                 </p>
               </div>
             ) : record ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {/* Header Profile */}
-                <div style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
-                    <span className="sih-badge sih-badge-teal">{record.systemOfMedicine}</span>
-                    {record.icd11PrimaryCode && (
-                      <span className="sih-badge sih-badge-green">ICD-11: {record.icd11PrimaryCode}</span>
-                    )}
+              <EncyclopediaDetail record={record} onOpenNamaste={openNamasteRecord} onOpenIcd={openIcdRecord} />
+            ) : featuredLoading ? (
+              <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 0' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄</div>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Loading featured clinical records…</p>
+              </div>
+            ) : featuredRecords.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                {featuredRecords.map((featuredRecord, index) => (
+                  <div key={featuredRecord.code || featuredRecord.namasteCode || index}>
+                    {index > 0 && <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '2rem', marginBottom: '1rem', color: 'var(--teal-primary)', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Next featured condition</div>}
+                    <EncyclopediaDetail record={featuredRecord} onOpenNamaste={openNamasteRecord} onOpenIcd={openIcdRecord} />
                   </div>
-                  <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0' }}>
-                    {record.code} — {record.ayurvedicTerm}
-                  </h2>
-                  <p style={{ fontSize: '0.95rem', color: 'var(--teal-primary)', fontWeight: 600, margin: 0 }}>
-                    {record.englishEquivalent || record.transliteration}
-                  </p>
-                </div>
-
-                {/* Triage / Red Flags Alert */}
-                {record.prognosis && (
-                  <div style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #F59E0B', padding: '1rem', borderRadius: '6px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#92400E' }}>
-                        Triage Status: {record.prognosis.status}
-                      </span>
-                      <span className="sih-badge sih-badge-amber" style={{ fontSize: '0.7rem' }}>
-                        Risk: {record.prognosis.riskLevel}
-                      </span>
-                    </div>
-                    {record.clinicalOverview?.redFlags?.length > 0 && (
-                      <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#78350F' }}>
-                        <strong>Critical Red Flags:</strong> {record.clinicalOverview.redFlags.join(', ')}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Grid Details */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                  {/* Ayurvedic Pathomechanism */}
-                  {record.pathomechanism && (
-                    <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
-                      <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
-                        <Leaf size={20} />          Pathomechanism (Samprapti)
-                      </h4>
-                      <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
-                        <strong>Dominant Dosha:</strong> {record.pathomechanism.dominantDosha?.join(', ')}
-                      </p>
-                      <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
-                        <strong>Srotas Involved:</strong> {record.pathomechanism.srotasInvolved?.join(', ')}
-                      </p>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', lineHeight: '1.4' }}>
-                        {record.pathomechanism.phenotypeCheck}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Treatment Framework */}
-                  {record.treatmentFramework && (
-                    <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
-                      <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
-                        💊 Treatment Framework (Chikitsa)
-                      </h4>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.5rem', lineHeight: '1.4' }}>
-                        {record.treatmentFramework.chikitsaSutra}
-                      </p>
-                      {record.treatmentFramework.classicalFormulations?.length > 0 && (
-                        <div style={{ fontSize: '0.75rem', margin: '0.25rem 0' }}>
-                          <strong>Formulations:</strong> {record.treatmentFramework.classicalFormulations.join(', ')}
-                        </div>
-                      )}
-                      {record.treatmentFramework.pathya?.length > 0 && (
-                        <div style={{ fontSize: '0.75rem', color: '#15803D', margin: '0.25rem 0' }}>
-                          <strong>Pathya (Dietary Do\'s):</strong> {record.treatmentFramework.pathya.join(', ')}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* WHO ICD-11 Live Metadata Card */}
-                {record.icd11Details && (
-                  <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                      <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-                        <Globe  size={20} /> WHO ICD-11 Global Disease Record
-                      </h4>
-                      {record.icd11EntityUri && (
-                        <a
-                          href={record.icd11EntityUri}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ fontSize: '0.75rem', color: 'var(--teal-primary)', fontWeight: 700, textDecoration: 'none' }}
-                        >
-                          Official WHO Portal ↗
-                        </a>
-                      )}
-                    </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.5', margin: 0 }}>
-                      {record.icd11Details.definition?.['@value'] || record.icd11Details.definition || record.clinicalOverview?.definition || 'Classification record active in WHO registry.'}
-                    </p>
-                  </div>
-                )}
+                ))}
               </div>
             ) : (
-              <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 1rem', maxWidth: '420px' }}>
+              <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 1rem', maxWidth: '460px' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><BookOpen size={40} /></div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.4rem' }}>
-                  Select a Medical Code
+                  Disease encyclopedia
                 </h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
-                  Select any NAMASTE Ayurveda term or WHO ICD-11 global disease entity from the left list to view full evidence-based clinical profiles, dosages, pathomechanisms, and cross-references.
+                  Select any NAMASTE Ayurveda term or WHO ICD-11 entity to view its clean definition, symptom table, Samprapti/Chikitsa, bidirectional ICD ↔ NAMASTE mapping, and official WHO verification link.
                 </p>
               </div>
             )}
@@ -506,7 +803,7 @@ export default function KindleMain() {
         </div>
       </div>
 
-      <ChatbotFAB />
+      {!embedded && <ChatbotFAB />}
     </div>
   );
 }

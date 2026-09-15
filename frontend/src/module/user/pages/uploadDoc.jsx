@@ -6,6 +6,8 @@ import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import BrandLogo from '../../../shared/BrandLogo';
 import {
   FileText,
  Landmark, 
@@ -55,6 +57,10 @@ export default function UploadDoc() {
   const [uploadTitle, setUploadTitle] = useState('');
   const [uploadCategory, setUploadCategory] = useState('disease');
   const [isDragOver, setIsDragOver] = useState(false);
+  const [sourceMenuOpen, setSourceMenuOpen] = useState(false);
+  const [cloudSource, setCloudSource] = useState(null);
+  const [cloudUrl, setCloudUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
 
   // Preview Modal State
   const [viewingDoc, setViewingDoc] = useState(null);
@@ -128,6 +134,29 @@ export default function UploadDoc() {
     }
   };
 
+  const handleCloudImport = async () => {
+    if (!cloudUrl.trim()) {
+      showNotification(`Paste a shared ${cloudSource === 'gdrive' ? 'Google Drive' : 'Dropbox'} link first.`);
+      return;
+    }
+    setIsImporting(true);
+    try {
+      const imported = await userApi.importCloudDocument(cloudSource, cloudUrl.trim());
+      const bytes = Uint8Array.from(atob(imported.content), (character) => character.charCodeAt(0));
+      const file = new File([bytes], imported.fileName, { type: imported.mimeType || 'application/octet-stream' });
+      setSelectedFile(file);
+      setUploadTitle((current) => current || imported.fileName.replace(/\.[^/.]+$/, ''));
+      setCloudUrl('');
+      setCloudSource(null);
+      setSourceMenuOpen(false);
+      showNotification(`${imported.fileName} is ready to save.`);
+    } catch (error) {
+      showNotification(error.message || 'Unable to import this shared file.');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   // Submit Upload
   const handleConfirmUpload = async () => {
     if (!selectedFile) {
@@ -194,13 +223,7 @@ export default function UploadDoc() {
       {/* TOP NAVIGATION BAR */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
-            <div className="sih-logo-badge">🛡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Health Portal</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Health Portal" />
 
 
           <div className="sih-header-controls">
@@ -210,7 +233,7 @@ export default function UploadDoc() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell"><Bell size={22} strokeWidth={2} /><span className="sih-notif-badge">3</span></button>
+            <DoctorActivityBell />
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
@@ -239,7 +262,7 @@ export default function UploadDoc() {
           <main className="sih-main-layout">
 
         {/* DOCUMENT FILTER & ACTION BAR */}
-        <div className="sih-card" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+        <div className="sih-card" style={{ display: 'none' }} aria-hidden="true">
           
           {/* SORT BY DROPDOWN */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -258,7 +281,7 @@ export default function UploadDoc() {
           </div>
 
           {/* CATEGORY FILTER BUTTONS */}
-          <div className="consent-filter-nav">
+          <div className="consent-filter-nav" style={{ flexDirection: 'column', alignItems: 'flex-start' }}>
             <button
               onClick={() => setActiveFilter('all')}
               className={`sih-btn ${activeFilter === 'all' ? 'sih-btn-navy' : 'sih-btn-outline'}`}
@@ -290,19 +313,27 @@ export default function UploadDoc() {
             >
               Discharge Summary ({documents.filter(d => d.type === 'discharge summary').length})
             </button>
+
+            <button
+              onClick={() => setActiveFilter('lab report')}
+              className={`sih-btn ${activeFilter === 'lab report' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.75rem' }}
+            >
+              Lab Reports ({documents.filter(d => d.type === 'lab report').length})
+            </button>
           </div>
 
         </div>
 
         {/* MAIN UPLOAD & DOCUMENTS AREA */}
-        <div className="sih-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div className="sih-card" style={{ order: 1, padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
           {/* CENTRAL UPLOAD AREA */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => setSourceMenuOpen((open) => !open)}
             className={`doc-upload-box ${isDragOver ? 'drag-over' : ''}`}
           >
             <input
@@ -320,12 +351,33 @@ export default function UploadDoc() {
             <div style={{ marginTop: '0.5rem' }}>
               <h3 style={{ fontSize: '1.15rem', fontWeight: 900, color: 'var(--primary-navy)', margin: 0 }}>Upload Medical Document</h3>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.25rem' }}>
-                Drag & drop your files here, or <span style={{ color: 'var(--teal-primary)', textDecoration: 'underline' }}>browse files</span>
+                Drag & drop a file, or choose where to upload it from.
               </p>
               <p style={{ fontSize: '0.7rem', color: '#94A3B8', marginTop: '0.2rem' }}>
                 Supported formats: PDF, JPG, PNG, DOC (Max file size: 15MB)
               </p>
             </div>
+
+            {sourceMenuOpen && (
+              <div onClick={(event) => event.stopPropagation()} style={{ width: '100%', maxWidth: '500px', margin: '1rem auto 0', background: '#fff', border: '1px solid var(--border-light)', borderRadius: '12px', padding: '0.8rem', textAlign: 'left' }}>
+                <strong style={{ fontSize: '0.8rem', color: 'var(--primary-navy)' }}>Choose upload source</strong>
+                <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.65rem' }}>
+                  <button className="sih-btn sih-btn-outline" style={{ fontSize: '0.75rem' }} onClick={() => { setSourceMenuOpen(false); fileInputRef.current?.click(); }}>💻 Desktop</button>
+                  <button className="sih-btn sih-btn-outline" style={{ fontSize: '0.75rem' }} onClick={() => setCloudSource('gdrive')}>Google Drive</button>
+                  <button className="sih-btn sih-btn-outline" style={{ fontSize: '0.75rem' }} onClick={() => setCloudSource('dropbox')}>Dropbox</button>
+                </div>
+                {cloudSource && (
+                  <div style={{ marginTop: '0.8rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 800, color: 'var(--text-muted)', marginBottom: '0.35rem' }}>Shared {cloudSource === 'gdrive' ? 'Google Drive' : 'Dropbox'} file link</label>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <input className="sih-input" value={cloudUrl} onChange={(event) => setCloudUrl(event.target.value)} placeholder={cloudSource === 'gdrive' ? 'https://drive.google.com/file/d/…/view' : 'https://www.dropbox.com/s/…'} />
+                      <button className="sih-btn sih-btn-primary" onClick={handleCloudImport} disabled={isImporting}>{isImporting ? 'Importing…' : 'Import'}</button>
+                    </div>
+                    <p style={{ fontSize: '0.67rem', color: 'var(--text-muted)', margin: '0.4rem 0 0' }}>The file must be shared for anyone with the link to view or download.</p>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Selected File Box */}
             {selectedFile && (
@@ -373,6 +425,7 @@ export default function UploadDoc() {
                       <option value="disease">Disease / Scan Report</option>
                       <option value="prescription">Prescription</option>
                       <option value="discharge summary">Discharge Summary</option>
+                      <option value="lab report">Lab Report</option>
                     </select>
                   </div>
                 </div>
@@ -388,6 +441,31 @@ export default function UploadDoc() {
             )}
           </div>
 
+          <div className="documents-workspace">
+            <aside className="documents-filter-panel">
+              <label className="documents-filter-label" htmlFor="document-sort">Sort by</label>
+              <select id="document-sort" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="sih-select">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+              </select>
+
+              <p className="documents-filter-label" style={{ marginTop: '1.5rem' }}>Categories</p>
+              <div className="documents-category-list">
+                {[
+                  ['all', 'All Records', documents.length],
+                  ['disease', 'Disease / Scan Reports', documents.filter((doc) => doc.type === 'disease').length],
+                  ['prescription', 'Prescriptions', documents.filter((doc) => doc.type === 'prescription').length],
+                  ['discharge summary', 'Discharge Summaries', documents.filter((doc) => doc.type === 'discharge summary').length],
+                  ['lab report', 'Lab Reports', documents.filter((doc) => doc.type === 'lab report').length],
+                ].map(([key, label, count]) => (
+                  <button key={key} onClick={() => setActiveFilter(key)} className={activeFilter === key ? 'active' : ''}>
+                    <span>{label}</span><strong>{count}</strong>
+                  </button>
+                ))}
+              </div>
+            </aside>
+
+            <div className="documents-results-panel">
           {/* SECTION TITLE & RECORD COUNT */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
             <h3 style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
@@ -411,6 +489,8 @@ export default function UploadDoc() {
                         doc.type === 'disease'
                           ? 'sih-badge-teal'
                           : doc.type === 'prescription'
+                          ? 'sih-badge-amber'
+                          : doc.type === 'lab report'
                           ? 'sih-badge-amber'
                           : 'sih-badge-green'
                       }`}>
@@ -479,6 +559,9 @@ export default function UploadDoc() {
               </button>
             </div>
           )}
+
+            </div>
+          </div>
 
         </div>
       </main>
