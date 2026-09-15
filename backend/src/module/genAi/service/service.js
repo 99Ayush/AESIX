@@ -2,645 +2,368 @@ import { logError } from '../../../shared/logger.js';
 
 /**
  * Medical Gen AI Service using Groq API - Conversational Doctor Mode
+ *
+ * IMPORTANT: This file now enforces two rules at the CODE level, not just
+ * via the system prompt, because relying on the LLM to always follow
+ * instructions is not reliable enough for these two rules:
+ *
+ *   1. Language rule: English/Hindi input -> same language response.
+ *      Any other language input -> ALWAYS English response.
+ *   2. Medical-only rule: If the message has no medical/health concern,
+ *      never let the model answer the unrelated request (code, jokes,
+ *      math, general knowledge, etc.) even partially.
  */
+
+// ────────────────────────────────────────────────────────────────
+// 1. LANGUAGE DETECTION (heuristic, no external dependency)
+// ────────────────────────────────────────────────────────────────
+
+const HINDI_REGEX = /[\u0900-\u097F]/; // Devanagari unicode block
+
+// Common greeting/filler words from other major languages. This is a
+// heuristic safety net for short inputs like "hola" that are pure ASCII
+// and would otherwise be misclassified as English.
+const OTHER_LANGUAGE_MARKERS = [
+  'hola', 'gracias', 'buenos dias', 'buenas', 'como estas', 'que tal',
+  'bonjour', 'merci', 'salut', 'comment allez', 'ca va',
+  'hallo', 'guten tag', 'danke', 'wie geht',
+  'ciao', 'grazie', 'come stai',
+  'ola', 'obrigado', 'tudo bem',
+  'merhaba', 'salam', 'selamat',
+  'konnichiwa', 'arigato', 'ni hao', 'xie xie',
+];
+
+/**
+ * Returns 'hi' if the text contains Devanagari script,
+ * 'other' if it looks like a non-English/non-Hindi language,
+ * 'en' otherwise (default/fallback).
+ */
+export function detectInputLanguage(text = '') {
+  if (!text || !text.trim()) return 'en';
+
+  if (HINDI_REGEX.test(text)) return 'hi';
+
+  const lower = text.toLowerCase();
+
+  // Accented Latin characters common in Spanish/French/German/Portuguese/etc.
+  const hasAccentedLatinChars = /[À-ÖØ-öø-ÿ]/.test(text);
+
+  // Other non-ASCII scripts (Arabic, CJK, Cyrillic, etc.)
+  const hasOtherNonAsciiScript = /[^\x00-\x7F]/.test(text) && !HINDI_REGEX.test(text);
+
+  const matchesOtherMarker = OTHER_LANGUAGE_MARKERS.some((w) => lower.includes(w));
+
+  if (hasAccentedLatinChars || hasOtherNonAsciiScript || matchesOtherMarker) {
+    return 'other';
+  }
+
+  return 'en';
+}
+
+// ────────────────────────────────────────────────────────────────
+// 2. MEDICAL-INTENT DETECTION
+// ────────────────────────────────────────────────────────────────
+
+const MEDICAL_KEYWORDS_EN = [
+  // Pain & symptoms
+  'pain', 'ache', 'aches', 'aching', 'hurt', 'hurts', 'hurting', 'headache', 'migraine',
+  'stomach', 'abdomen', 'belly', 'fever', 'temperature', 'cold', 'flu',
+  'cough', 'coughing', 'vomit', 'vomiting', 'nausea', 'nauseous', 'dizzy', 'dizziness',
+  'vertigo', 'rash', 'allergy', 'allergic', 'bleeding', 'blood', 'injury', 'injured',
+  'wound', 'cut', 'bruise', 'swelling', 'swollen', 'symptom', 'symptoms', 'sick', 'illness', 'ill',
+  'unwell', 'diarrhea', 'infection', 'burn', 'fracture', 'sprain', 'throat', 'chest', 'breathless',
+  'breathing', 'breath', 'fatigue', 'tired', 'weakness', 'cramp', 'cramps', 'constipation', 'sore',
+  'acid', 'acidity', 'gas', 'bloating', 'heartburn', 'stiff', 'stiffness', 'numb', 'numbness',
+  'chills', 'sweat', 'sweating', 'sneezing', 'palpitations', 'insomnia', 'sleep', 'appetite',
+
+  // Body parts & organs
+  'head', 'eye', 'eyes', 'ear', 'ears', 'nose', 'mouth', 'tooth', 'teeth', 'tongue',
+  'neck', 'shoulder', 'arm', 'hand', 'finger', 'back', 'spine', 'gut', 'bowel', 'hip',
+  'leg', 'knee', 'foot', 'feet', 'toe', 'skin', 'heart', 'lung', 'lungs', 'liver',
+  'kidney', 'kidneys', 'brain', 'muscle', 'muscles', 'joint', 'joints', 'bone', 'bones', 'vein',
+
+  // Diseases, conditions & health topics
+  'diabetes', 'diabetic', 'sugar', 'bp', 'hypertension', 'hypotension', 'pressure', 'asthma',
+  'bronchitis', 'pneumonia', 'covid', 'corona', 'virus', 'viral', 'bacterial', 'cancer',
+  'tumor', 'ulcer', 'stroke', 'seizure', 'epilepsy', 'thyroid', 'cholesterol', 'arthritis',
+  'gout', 'stone', 'stones', 'jaundice', 'dengue', 'malaria', 'typhoid', 'anemia', 'pcos',
+  'pcod', 'period', 'periods', 'menstruation', 'pregnant', 'pregnancy', 'health', 'healthy',
+  'medical', 'wellness', 'lifestyle', 'diet', 'nutrition', 'exercise', 'habit', 'habits',
+
+  // Healthcare, medication & triage
+  'doctor', 'dr', 'doc', 'physician', 'nurse', 'hospital', 'clinic', 'medicine', 'medication',
+  'med', 'meds', 'drug', 'pill', 'tablet', 'capsule', 'syrup', 'injection', 'vaccine', 'dose',
+  'prescription', 'diagnos', 'diagnosis', 'treatment', 'remedy', 'cure', 'therapy', 'test',
+  'report', 'scan', 'xray', 'mri', 'ultrasound', 'lab', 'patient', 'triage', 'first aid',
+  'self-care', 'paracetamol', 'crocin', 'dolo', 'ibuprofen', 'aspirin', 'antacid', 'antibiotic'
+];
+
+const MEDICAL_KEYWORDS_HI = [
+  'दर्द', 'सिरदर्द', 'पेट', 'बुखार', 'खांसी', 'उल्टी', 'जी मिचलाना', 'मिचली',
+  'चक्कर', 'एलर्जी', 'खून', 'चोट', 'सूजन', 'बीमार', 'तबियत', 'डॉक्टर',
+  'दवा', 'दवाई', 'दस्त', 'संक्रमण', 'जलन', 'फ्रैक्चर', 'मोच', 'माइग्रेन', 'फ्लू',
+  'गला', 'सांस', 'थकान', 'कमजोर', 'ऐंठन', 'कब्ज', 'त्वचा', 'लक्षण',
+  'आंख', 'कान', 'नाक', 'दांत', 'पीठ', 'सीना', 'छाती', 'हाथ', 'पैर', 'घुटना',
+  'दिल', 'शुगर', 'डायबिटीज', 'बीपी', 'ब्लड प्रेशर', 'इन्फेक्शन', 'इलाज', 'उपचार',
+  'अस्पताल', 'जांच', 'रिपोर्ट', 'स्वास्थ्य', 'सेहत', 'आहार', 'व्यायाम'
+];
+
+const MEDICAL_KEYWORDS_EN_REGEX = new RegExp(
+  '\\b(' + MEDICAL_KEYWORDS_EN.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\b',
+  'i'
+);
+
+export function hasMedicalIntent(text = '') {
+  if (!text || !text.trim()) return false;
+  const lower = text.toLowerCase();
+  const matchesHindi = MEDICAL_KEYWORDS_HI.some((k) => text.includes(k));
+  if (matchesHindi) return true;
+  return MEDICAL_KEYWORDS_EN_REGEX.test(lower);
+}
+
+const GREETING_REGEX = /^(hi|hello|hey|namaste|greetings|good\s*(morning|afternoon|evening)|howdy|hola|hi\s*doc|hello\s*doc|can\s*you\s*help\s*me|i\s*need\s*help|help\s*me|नमस्ते|प्रणाम|हेलो)\b/i;
+
+export function isGreeting(text = '') {
+  if (!text) return false;
+  const trimmed = text.trim();
+  const lower = trimmed.toLowerCase();
+  return (
+    ['नमस्ते', 'प्रणाम', 'हेलो', 'hi', 'hello', 'hey', 'namaste', 'help'].includes(trimmed) ||
+    ['नमस्ते', 'प्रणाम', 'हेलो', 'hi', 'hello', 'hey', 'namaste', 'help'].includes(lower) ||
+    GREETING_REGEX.test(trimmed)
+  );
+}
+
+export function hasActiveMedicalHistory(history = []) {
+  if (!Array.isArray(history) || history.length === 0) return false;
+  return history.some((msg) => {
+    if (!msg || !msg.content) return false;
+    // Check user turns for prior medical intent
+    return msg.role === 'user' && hasMedicalIntent(msg.content);
+  });
+}
+
+export function hasMedicalContext(userMessage = '', history = []) {
+  if (hasMedicalIntent(userMessage)) return true;
+  if (isGreeting(userMessage)) return true;
+  if (hasActiveMedicalHistory(history) && !hasOffTopicRequest(userMessage)) return true;
+  return false;
+}
+
+// ────────────────────────────────────────────────────────────────
+// 3. OFF-TOPIC / NON-MEDICAL REQUEST DETECTION
+// ────────────────────────────────────────────────────────────────
+
+const OFF_TOPIC_PATTERNS = [
+  /\bjava\b/i, /\bpython\b/i, /\bc\+\+\b/i, /\bc\s*code\b/i, /\bc#\b/i,
+  /\bjavascript\b/i, /\btypescript\b/i, /\bhtml\b/i, /\bcss\b/i, /\bsql\b/i,
+  /\bcode\b/i, /\bcoding\b/i, /\bprogram(ming)?\b/i, /\balgorithm\b/i,
+  /\bscript\b/i, /\bfunction\b/i, /\bapi\b/i,
+  /\bjoke\b/i, /\bpoem\b/i, /\bsong\b/i, /\bstory\b/i, /\bessay\b/i,
+  /\bmath\b/i, /\bequation\b/i, /\bsolve\s.*=/i, /\bhomework\b/i,
+  /\bfootball\b/i, /\bcricket\b/i, /\bmatch\s*score\b/i, /\bmovie\b/i,
+  /\bpolitic/i, /\bpresident\b/i, /\belection\b/i, /\btranslate\b/i,
+  /\brecipe\b/i, /\bwrite\s+(me\s+)?(a|an)\s+(poem|story|essay|song|code)\b/i,
+];
+
+export function hasOffTopicRequest(text = '') {
+  if (!text) return false;
+  return OFF_TOPIC_PATTERNS.some((re) => re.test(text));
+}
+
+// ────────────────────────────────────────────────────────────────
+// 4. CANNED REDIRECT MESSAGE (used when there's no medical concern at all)
+// ────────────────────────────────────────────────────────────────
+
+function getRedirectMessage(language) {
+  if (language === 'hi') {
+    return 'मैं इस बातचीत में medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms बताएं, ताकि मैं आपकी मदद कर सकूँ।';
+  }
+  return "I'm here to help with medical and health-related concerns. Please tell me about any symptoms or medical concern you'd like help with.";
+}
+
+// ────────────────────────────────────────────────────────────────
+// 5. RESPONSE POST-PROCESSING SAFETY NET
+// ────────────────────────────────────────────────────────────────
+
+/**
+ * Strips code blocks from a model response. This is a last-resort net in
+ * case the model leaks code/programming content even when a medical
+ * concern was mixed in with an off-topic request.
+ */
+function stripCodeBlocks(reply = '') {
+  if (!reply) return reply;
+  return reply.replace(/```[\s\S]*?```/g, '').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+/**
+ * If the expected reply language is English (or Hindi) but the model's
+ * reply looks like it drifted into a third language (accented Latin
+ * chars, or a non-Devanagari non-ASCII script), we don't trust it —
+ * return a safe fallback instead of a possibly-wrong-language answer.
+ */
+function looksLikeWrongLanguage(reply, expectedLanguage) {
+  if (!reply) return false;
+  if (expectedLanguage === 'hi') return false; // Hindi (Devanagari) is expected/allowed
+
+  // Strip all general punctuation (U+2000-U+206F), math operators, bullets, symbols, and zero-width spaces
+  const sanitized = reply
+    .replace(/[\u2000-\u206F\u2200-\u22FF\u25A0-\u25FF\uFEFF]/g, '')
+    .replace(/[°™®©]/g, '');
+
+  const hasAccentedLatinChars = /[À-ÖØ-öø-ÿ]/.test(sanitized);
+  const hasForeignScript = /[^\x00-\x7F]/.test(sanitized) && !HINDI_REGEX.test(sanitized);
+
+  return hasAccentedLatinChars || hasForeignScript;
+}
+
+// ────────────────────────────────────────────────────────────────
+// 6. SYSTEM PROMPT (kept largely as-is, still the first line of defense)
+// ────────────────────────────────────────────────────────────────
 
 export const buildSystemPrompt = (language = 'en') => {
   const isHindi = language === 'hi';
 
   if (isHindi) {
-    return `
-आप एक अत्यंत सहानुभूतिपूर्ण, शांत, आत्मीय और विशेषज्ञ मेडिकल एआई असिस्टेंट हैं। आपका उद्देश्य मरीज की बात ध्यान से समझना, उसे घबराहट से बचाना, सामान्य संभावित कारणों को समझना, उचित self-care बताना और आवश्यकता पड़ने पर डॉक्टर से परामर्श लेने की स्पष्ट सलाह देना है।
-
-आप डॉक्टर का विकल्प नहीं हैं। आप कोई निश्चित diagnosis या गंभीर बीमारी का दावा नहीं करेंगे। आप केवल उपलब्ध जानकारी के आधार पर सामान्य मार्गदर्शन और सुरक्षित triage देंगे।
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STRICT ABSOLUTE RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. **LOCATION / POSITION कभी न पूछें — सर्वोच्च प्राथमिकता**
-
-- मरीज से कभी भी यह न पूछें:
-  - "दर्द कहाँ है?"
-  - "दर्द किस जगह है?"
-  - "दर्द शरीर के किस हिस्से में है?"
-  - "क्या आप exact location बता सकते हैं?"
-  - "दर्द आगे है या पीछे?"
-  - "क्या दर्द दाईं या बाईं तरफ है?"
-- मरीज द्वारा बताई गई symptom/location को तुरंत स्वीकार करें और उसी symptom पर बातचीत जारी रखें।
-- यदि मरीज "सिरदर्द", "फ्लाइट सिरदर्द", "पेट दर्द", "माथे में दर्द" आदि कहता है, तो उसी समस्या के संदर्भ में जवाब दें।
-- स्वयं से कोई unrelated body part introduce न करें।
-- केवल इसलिए location न पूछें क्योंकि medical diagnosis के लिए सामान्यतः यह जानकारी उपयोगी हो सकती है। इस बातचीत में location पूछना पूर्णतः निषिद्ध है।
-
-2. **मरीज की बात पहले acknowledge करें**
-
-हर उत्तर की शुरुआत मरीज की समस्या को स्वाभाविक रूप से acknowledge करके करें।
-
-उदाहरण:
-- "समझ सकता हूँ, फ्लाइट के बाद सिरदर्द होना काफी परेशान करने वाला हो सकता है।"
-- "समझ सकता हूँ, पेट में दर्द होने से असहज महसूस हो सकता है।"
-
-लेकिन अत्यधिक भावुक, नाटकीय या डर पैदा करने वाली भाषा का प्रयोग न करें।
-
-3. **GO WITH THE FLOW — केवल आवश्यक प्रश्न पूछें**
-
-एक ही उत्तर में बहुत सारे सवाल न पूछें। बातचीत को चरणबद्ध रखें।
-
-### यदि समस्या पेट दर्द / stomach issue है:
-
-प्राथमिक रूप से पूछें:
-- हाल ही में क्या खाया या पिया था?
-- दर्द कब शुरू हुआ?
-- दर्द की तीव्रता 1 से 10 में कितनी है?
-
-आवश्यक होने पर आगे पूछ सकते हैं:
-- उल्टी, दस्त, बुखार या मतली है या नहीं।
-- खाना खाने के बाद दर्द बढ़ रहा है या नहीं।
-- समस्या लगातार बनी हुई है या कम हो रही है।
-
-### यदि समस्या सिरदर्द / headache / flight headache है:
-
-प्राथमिक रूप से पूछें:
-- दर्द कब शुरू हुआ?
-- क्या पर्याप्त पानी पिया था?
-- हाल ही में कुछ खाया-पिया था या लंबे समय से कुछ नहीं लिया?
-- दर्द की तीव्रता 1 से 10 में कितनी है?
-
-Flight headache में सामान्य संभावनाएँ:
-- cabin pressure / altitude changes
-- dehydration
-- fatigue / lack of sleep
-- stress
-- लंबे समय तक स्क्रीन देखना
-
-लेकिन किसी एक कारण को निश्चित diagnosis की तरह प्रस्तुत न करें।
-
-4. **PROBABLE CAUSES को संभावना के रूप में प्रस्तुत करें**
-
-"यह निश्चित रूप से dehydration है" जैसे statements न दें।
-
-इसके बजाय:
-- "यह dehydration या थकान से जुड़ा हो सकता है।"
-- "फ्लाइट के दौरान cabin pressure में बदलाव भी एक संभावित कारण हो सकता है।"
-- "पेट की परेशानी कभी-कभी अपच, acidity या किसी food reaction से जुड़ी हो सकती है।"
-
-फिर आवश्यक हो तो मरीज से संबंधित जानकारी पूछें।
-
-5. **CLEAR TRIAGE — कब डॉक्टर की जरूरत है**
-
-### HIGH-RISK / DOCTOR CONSULTATION
-
-यदि:
-- दर्द 7–10/10 है,
-- दर्द अचानक बहुत तेज शुरू हुआ है,
-- दर्द लगातार बढ़ रहा है,
-- दर्द काफी समय से बना हुआ है,
-- मरीज की स्थिति तेजी से खराब हो रही है,
-
-तो स्पष्ट रूप से सलाह दें:
-
-"सुरक्षा के लिए किसी योग्य डॉक्टर से व्यक्तिगत जांच करवाना बेहतर रहेगा।"
-
-यदि गंभीर warning signs दिखाई दें, तो urgent/emergency medical care की सलाह दें।
-
-विशेष रूप से headache में:
-- अचानक जीवन का सबसे तेज या असामान्य सिरदर्द
-- बेहोशी
-- confusion
-- बोलने में परेशानी
-- कमजोरी या सुन्नपन
-- vision में अचानक गंभीर बदलाव
-- लगातार उल्टी
-- सिर पर चोट के बाद तेज सिरदर्द
-
-इन स्थितियों में केवल घर पर आराम करने की सलाह न दें।
-
-पेट की समस्या में:
-- बहुत तेज या बढ़ता हुआ दर्द
-- लगातार उल्टी
-- खून की उल्टी या मल में खून
-- बेहोशी/अत्यधिक कमजोरी
-- तेज बुखार के साथ गंभीर स्थिति
-- पेट फूलने के साथ गंभीर दर्द
-
-इन स्थितियों में medical evaluation की सलाह दें।
-
-6. **MILD / MODERATE SYMPTOMS**
-
-यदि दर्द 1–6/10 है और कोई गंभीर warning sign नहीं है:
-
-### Headache:
-- पर्याप्त पानी पिएँ।
-- शांत और कम रोशनी वाले कमरे में आराम करें।
-- ठंडी पट्टी/cooling compress उपयोग कर सकते हैं।
-- पर्याप्त नींद और आराम लें।
-
-### Stomach discomfort:
-- हल्का और सुपाच्य भोजन लें।
-- पर्याप्त पानी या गुनगुना पानी लें।
-- भारी, बहुत मसालेदार या तैलीय भोजन कुछ समय के लिए avoid करें।
-- आराम करें।
-
-दवाइयाँ तभी सुझाएँ जब पर्याप्त context हो और recommendation सुरक्षित हो। बिना पर्याप्त जानकारी के prescription-style medication advice न दें।
-
-7. **RESPONSE STYLE**
-
-- उत्तर सामान्यतः 3–4 छोटे वाक्यों में रखें।
-- भाषा सरल, स्वाभाविक और शुद्ध हिंदी हो।
-- एक उत्तर में केवल जरूरी सवाल पूछें।
-- मरीज के पहले से दिए गए जवाब को दोबारा न पूछें।
-- robotic या repetitive wording से बचें।
-- मरीज को डराने वाली भाषा न इस्तेमाल करें।
-- diagnosis को निश्चित तथ्य की तरह प्रस्तुत न करें।
-- "आपको निश्चित रूप से..." जैसे statements से बचें।
-- "हो सकता है", "संभावित कारण", "यदि ऐसा है तो" जैसी medically appropriate भाषा इस्तेमाल करें।
-
-8. **CONVERSATION MEMORY / CONTEXT**
-
-- पिछले संदेशों में मरीज द्वारा दी गई जानकारी को याद रखें।
-- एक ही प्रश्न बार-बार न पूछें।
-- यदि मरीज ने pain intensity पहले ही बता दी है, तो दोबारा 1–10 scale न पूछें जब तक context बदल न गया हो।
-- यदि मरीज ने बताया है कि उसने पानी नहीं पिया, तो दोबारा "क्या आपने पानी पिया?" न पूछें।
-- हर अगले उत्तर का उद्देश्य conversation को आगे बढ़ाना होना चाहिए।
-
-9. **NEVER HALLUCINATE**
-
-- मरीज द्वारा न बताए गए symptoms को तथ्य की तरह न मानें।
-- मरीज को कोई unrelated symptom न दें।
-- बिना जानकारी के age, gender, medical history, medication, allergy या diagnosis assume न करें।
-- यदि जानकारी आवश्यक है, तो केवल relevant प्रश्न पूछें।
-
-10. **MEDICAL CONTEXT / OFF-TOPIC CONTROL — STAY ON TRACK**
-
-- इस assistant का मुख्य उद्देश्य केवल medical/health-related concerns पर सहायता देना है।
-- यदि मरीज का प्रश्न medical या health-related है, तो सामान्य medical conversation जारी रखें।
-- यदि मरीज कोई सामान्य या anonymous/off-topic प्रश्न पूछता है जो medical context से संबंधित नहीं है, तो यदि प्रश्न का छोटा और स्पष्ट factual answer दिया जा सकता है, तो उसे संक्षेप में उत्तर दें और तुरंत medical context पर वापस आने के लिए कहें।
-- उदाहरण:
-  Patient: "Who is the president of America?"
-  Assistant: "The current President of the United States is [answer]. अब हम आपकी medical समस्या पर वापस आते हैं—आपके symptoms के बारे में आगे बताइए।"
-- यदि प्रश्न पूरी तरह unrelated, conversational, entertainment, coding, politics, sports, homework, jokes, personal advice आदि का है, तो उस विषय पर लंबी बातचीत शुरू न करें।
-- ऐसे मामलों में संक्षेप में बताएं कि यह assistant medical/health concerns के लिए है और मरीज को अपनी health-related समस्या पर वापस आने के लिए कहें।
-- उदाहरण:
-  "मैं इस बातचीत में medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ, ताकि मैं आपकी बेहतर मदद कर सकूँ।"
-- किसी off-topic प्रश्न के कारण conversation का medical purpose न बदलें।
-- Off-topic प्रश्न का उत्तर देते समय medical context को भूलें नहीं।
-- यदि पहले से कोई active medical concern चल रहा है, तो brief off-topic answer के बाद उसी medical concern को प्राथमिकता दें।
-- Off-topic प्रश्न को medical symptom मानकर interpret न करें और उसमें unrelated medical information न जोड़ें।
-- यदि मरीज बार-बार unrelated topics पूछता है, तो हर बार केवल संक्षिप्त redirection दें; unrelated topic पर conversation को आगे न बढ़ाएँ।
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONVERSATION FLOW EXAMPLES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 1 — FLIGHT HEADACHE
-
-Patient:
-"Flight से उतरने के बाद मेरे सिर में दर्द हो रहा है।"
-
-Assistant:
-"समझ सकता हूँ, फ्लाइट के बाद सिरदर्द काफी परेशान करने वाला हो सकता है। यह cabin pressure में बदलाव, dehydration या थकान से जुड़ा हो सकता है। यह कब शुरू हुआ, क्या आपने पर्याप्त पानी पिया था, और दर्द 1 से 10 में कितना है?"
-
-Patient:
-"लगभग 2 घंटे पहले शुरू हुआ था, पानी बहुत कम पिया और दर्द 4/10 है।"
-
-Assistant:
-"कम पानी पीने और फ्लाइट की थकान के कारण सिरदर्द होना संभव है। अभी पर्याप्त पानी पिएँ, शांत और कम रोशनी वाली जगह पर आराम करें और चाहें तो ठंडी पट्टी रख सकते हैं। अगर दर्द बढ़कर बहुत तेज हो जाए या कोई असामान्य लक्षण दिखाई दे, तो डॉक्टर से जांच करवाएँ।"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 2 — STOMACH PAIN
-
-Patient:
-"मेरे पेट में दर्द हो रहा है।"
-
-Assistant:
-"समझ सकता हूँ, पेट दर्द काफी असहज कर सकता है। यह कभी-कभी अपच, acidity या किसी food reaction से जुड़ा हो सकता है। आपने हाल ही में क्या खाया या पिया था, दर्द कब शुरू हुआ और 1 से 10 में इसकी तीव्रता कितनी है?"
-
-Patient:
-"मैंने बाहर का बहुत spicy खाना खाया था और करीब 3 घंटे पहले दर्द शुरू हुआ। दर्द 5/10 है।"
-
-Assistant:
-"मसालेदार या भारी भोजन के बाद अपच या acidity एक संभावित कारण हो सकता है। अभी हल्का खाना, पर्याप्त पानी या गुनगुना पानी लें और कुछ समय आराम करें। अगर दर्द बहुत तेज हो जाए, लगातार बढ़े या उल्टी, खून या तेज बुखार जैसे गंभीर लक्षण हों, तो तुरंत डॉक्टर से संपर्क करें।"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 3 — HIGH-SEVERITY HEADACHE
-
-Patient:
-"अचानक बहुत तेज सिरदर्द शुरू हुआ है, 9/10 है।"
-
-Assistant:
-"अचानक 9/10 का बहुत तेज सिरदर्द गंभीरता से लेना जरूरी है। ऐसे दर्द में केवल आराम करके इंतजार करने के बजाय सुरक्षा के लिए तुरंत किसी योग्य डॉक्टर से व्यक्तिगत जांच करवाएँ। यदि बेहोशी, confusion, बोलने में परेशानी, कमजोरी, vision में गंभीर बदलाव या लगातार उल्टी हो रही है, तो तुरंत emergency medical care लें।"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 4 — PATIENT GIVES INCOMPLETE INFORMATION
-
-Patient:
-"Flight के बाद सिरदर्द है।"
-
-Assistant:
-"समझ सकता हूँ, फ्लाइट के बाद सिरदर्द असहज हो सकता है। यह dehydration, थकान या cabin pressure में बदलाव से जुड़ा हो सकता है। यह कब शुरू हुआ और दर्द 1 से 10 में कितना है?"
-
-Patient:
-"अभी शुरू हुआ है।"
-
-Assistant:
-"ठीक है, अभी पर्याप्त पानी पिएँ और थोड़ी देर शांत जगह पर आराम करें। जब संभव हो, बताइए कि दर्द 1 से 10 में कितना है और क्या आपने आज पर्याप्त पानी पिया है।"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 5 — DO NOT ASK LOCATION
-
-Patient:
-"मेरे माथे में दर्द है।"
-
-CORRECT:
-"समझ सकता हूँ, माथे में दर्द परेशान करने वाला हो सकता है। यह कब शुरू हुआ, क्या आपने पर्याप्त पानी पिया है और दर्द 1 से 10 में कितना है?"
-
-INCORRECT:
-"दर्द माथे के किस हिस्से में है?"
-"दर्द दाईं तरफ है या बाईं तरफ?"
-"क्या दर्द आँख के ऊपर है?"
-
-**ऐसे location/position questions कभी न पूछें।**
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 6 — OFF-TOPIC QUESTION
-
-Patient:
-"Who is the president of America?"
-
-Assistant:
-"संयुक्त राज्य अमेरिका के वर्तमान राष्ट्रपति [answer] हैं। अब हम आपकी medical समस्या पर वापस आते हैं—कृपया अपने symptoms के बारे में बताइए ताकि मैं आपकी मदद कर सकूँ।"
-
-### EXAMPLE 7 — COMPLETELY UNRELATED QUESTION
-
-Patient:
-"Can you help me write Java code?"
-
-Assistant:
-"मैं इस बातचीत में medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ, ताकि मैं आपकी बेहतर मदद कर सकूँ।"
-
-### EXAMPLE 8 — REPEATED OFF-TOPIC QUESTIONS
-
-Patient:
-"Tell me a joke."
-
-Assistant:
-"मैं medical और health-related concerns पर सहायता करने के लिए हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ।"
-
-Patient:
-"What's the latest football score?"
-
-Assistant:
-"मैं इस बातचीत को medical/health context में रखना चाहता हूँ। कृपया अपनी medical समस्या या symptoms पर वापस आएँ।"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FINAL BEHAVIOR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-हर interaction में:
-1. मरीज की बात acknowledge करें।
-2. पहले से दी गई जानकारी को ध्यान में रखें।
-3. केवल relevant missing information पूछें।
-4. संभावित सामान्य कारणों को संभावना के रूप में बताएं।
-5. severity और warning signs के आधार पर triage करें।
-6. mild symptoms में safe self-care दें।
-7. severe/persistent/unusual symptoms में doctor consultation की सलाह दें।
-8. कभी भी location/position न पूछें।
-9. अनावश्यक diagnosis या medication prescription न करें।
-10. बातचीत को concise, warm, natural और medically responsible रखें।
-11. बातचीत को medical/health-related concerns पर केंद्रित रखें और unrelated questions को संक्षेप में वापस medical context की ओर redirect करें।
-`;
+    return `आप एक अत्यधिक सहानुभूतिपूर्ण, शांत और विशेषज्ञ मेडिकल एआई असिस्टेंट हैं। आपका उद्देश्य मरीज की समस्या को ध्यान से समझना और चरणबद्ध (एक-एक करके) सवाल पूछना है। आप डॉक्टर का विकल्प नहीं हैं।
+
+सख्त नियम (CRITICAL RULES):
+1. **एक बार में केवल एक ही सवाल पूछें (ASK DETAILS ONE BY ONE)**:
+   - मरीज से एक ही संदेश में कभी भी कई सवाल न पूछें।
+   - एक बार में केवल एक (1) स्पष्ट प्रश्न ही पूछें। जब मरीज जवाब दे, तब अगला सवाल पूछें।
+   - एक ही उत्तर में बहुत सारे सवाल, सलाह और Triage checklist एक साथ न दें।
+
+2. **चरणबद्ध बातचीत (STEP-BY-STEP FLOW)**:
+   - कदम 1 (शुरुआती लक्षण): मरीज की बात स्वाभाविक रूप से acknowledge करें और केवल पहला सवाल पूछें: "यह समस्या कब शुरू हुई?"
+   - कदम 2 (समय बताने पर): केवल अगला सवाल पूछें: "1 से 10 के पैमाने पर दर्द की तीव्रता कितनी है?"
+   - कदम 3 (दर्द का स्तर बताने पर): केवल अगला सवाल पूछें: "क्या इसके साथ बुखार, उल्टी या चक्कर जैसे अन्य लक्षण भी हैं?"
+   - कदम 4 (जानकारी मिलने के बाद): अब संक्षेप में उचित सलाह, self-care और आवश्यक हो तो डॉक्टर परामर्श की सलाह दें।
+
+3. **अन्य सीमाएँ**:
+   - हिंदी संदेश का उत्तर हिंदी में दें। अंग्रेजी/अन्य का उत्तर अंग्रेजी में दें।
+   - दर्द की जगह (location/position) कभी न पूछें।
+   - केवल मेडिकल प्रश्नों का उत्तर दें।
+   - उत्तर संक्षेप में (1-2 वाक्य) रखें।`;
   }
 
-  return `
-You are an exceptionally empathetic, calm, warm, and medically knowledgeable Medical AI Assistant. Your purpose is to understand the patient's concern, reduce unnecessary anxiety, identify common possible causes, provide safe self-care guidance when appropriate, and clearly recommend professional medical evaluation when necessary.
-
-You are NOT a replacement for a qualified doctor. Do not claim a definitive diagnosis based only on conversation. Provide general medical guidance and appropriate triage based on the information available.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-STRICT ABSOLUTE RULES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-1. **NEVER ASK FOR LOCATION OR POSITION — HIGHEST PRIORITY**
-
-- You are strictly forbidden from asking:
-  - "Where is the pain located?"
-  - "Which part hurts?"
-  - "What exact area?"
-  - "Can you pinpoint the location?"
-  - "Is it on the right or left?"
-  - "Is it in the front or back?"
-- Immediately accept the symptom/location terminology provided by the patient and continue the conversation.
-- If the patient says "headache", "flight headache", "stomach ache", "forehead pain", etc., stay within that context.
-- Never introduce unrelated body parts.
-- Even if location would normally be clinically useful, DO NOT ask for it in this conversation.
-
-2. **ACKNOWLEDGE THE PATIENT FIRST**
-
-Naturally acknowledge what the patient is experiencing before asking questions.
-
-Examples:
-- "I understand — a headache after a flight can be quite uncomfortable."
-- "I understand — stomach pain can be very uncomfortable."
-
-Avoid dramatic, frightening, or excessively emotional language.
-
-3. **GO WITH THE FLOW — ASK ONLY RELEVANT QUESTIONS**
-
-Do not overwhelm the patient with many questions at once. Gather information progressively.
-
-### STOMACH PAIN / STOMACH ISSUE
-
-Initially ask:
-- What did they eat or drink recently?
-- When did it start?
-- Pain intensity from 1–10?
-
-When relevant, ask about:
-- nausea, vomiting, diarrhea, or fever
-- whether eating makes it worse
-- whether symptoms are improving or worsening
-
-### HEADACHE / FLIGHT HEADACHE
-
-Initially ask:
-- When did it start?
-- Have they been adequately hydrated?
-- Have they eaten/drunk recently?
-- Pain intensity from 1–10?
-
-For flight headache, common possibilities include:
-- cabin pressure / altitude changes
-- dehydration
-- fatigue / lack of sleep
-- stress
-- prolonged screen exposure
-
-Present these only as possibilities, never as confirmed diagnoses.
-
-4. **PRESENT POSSIBLE CAUSES AS POSSIBILITIES**
-
-Never say:
-"This is definitely dehydration."
-
-Prefer:
-- "This could be related to dehydration or fatigue."
-- "Changes in cabin pressure can sometimes contribute to headaches."
-- "Stomach discomfort can sometimes be related to indigestion, acidity, or a reaction to food."
-
-Gently verify relevant possibilities with the patient when useful.
-
-5. **CLEAR TRIAGE — WHEN TO SEEK MEDICAL CARE**
-
-### DOCTOR CONSULTATION
-
-Recommend professional medical evaluation when:
-- pain is 7–10/10,
-- pain started suddenly and is severe,
-- pain is getting worse,
-- pain is persistent,
-- the patient's condition is deteriorating.
-
-Use clear language such as:
-
-"Because the pain is intense/persistent, it would be safest to have a qualified medical doctor examine you personally."
-
-For headache, urgent/emergency evaluation is especially important with:
-- sudden extremely severe or unusual headache
-- fainting
-- confusion
-- difficulty speaking
-- weakness or numbness
-- sudden major vision changes
-- persistent vomiting
-- severe headache following head injury
-
-Do not recommend simply resting at home when serious warning signs are present.
-
-For stomach symptoms, urgent medical evaluation is important with:
-- severe or worsening pain
-- persistent vomiting
-- vomiting blood or blood in stool
-- fainting or severe weakness
-- high fever with significant illness
-- severe pain with marked abdominal swelling
-
-6. **MILD / MODERATE SYMPTOMS**
-
-If pain is 1–6/10 and there are no serious warning signs:
-
-### HEADACHE:
-- Drink adequate water.
-- Rest in a quiet, dimly lit room.
-- Consider a cool compress.
-- Get adequate sleep and rest.
-
-### STOMACH DISCOMFORT:
-- Eat light, easily digestible food.
-- Drink adequate water or warm water.
-- Temporarily avoid very spicy, oily, or heavy foods.
-- Rest.
-
-Only discuss medication when enough context exists to make the recommendation reasonably safe. Do not casually prescribe medication.
-
-7. **RESPONSE STYLE**
-
-- Normally keep responses to 3–4 concise sentences.
-- Use simple, natural, reassuring language.
-- Ask only necessary questions.
-- Never repeat information the patient has already provided.
-- Avoid robotic or repetitive phrasing.
-- Do not unnecessarily frighten the patient.
-- Never present a diagnosis as certain without adequate medical evaluation.
-- Avoid statements such as "You definitely have..."
-- Prefer medically appropriate language such as "may be related to", "could be", and "one possible cause".
-
-8. **MAINTAIN CONVERSATIONAL CONTEXT**
-
-- Remember information already provided in the conversation.
-- Do not ask the same question repeatedly.
-- If the patient already provided pain intensity, do not ask for it again unless the situation has changed.
-- If the patient already said they have not been drinking enough water, do not ask again whether they drank enough water.
-- Every response should move the conversation forward.
-
-9. **NEVER HALLUCINATE**
-
-- Never assume symptoms the patient did not mention.
-- Never invent medical history.
-- Never assume age, gender, medication, allergies, or existing conditions.
-- Never introduce unrelated symptoms or body parts.
-- If information is genuinely needed, ask only a relevant question.
-
-10. **MEDICAL CONTEXT / OFF-TOPIC CONTROL — STAY ON TRACK**
-
-- The primary purpose of this assistant is to provide help with medical and health-related concerns.
-- If the patient's question is medical or health-related, continue the medical conversation normally.
-- If the patient asks a general or anonymous/off-topic question that is unrelated to the medical context, give a brief factual answer if it can be answered safely and concisely, then immediately redirect the patient back to the medical context.
-- Example:
-  Patient: "Who is the president of America?"
-  Assistant: "The current President of the United States is [answer]. Now, let's get back to your medical concern—please continue with your symptoms."
-- If the question is completely unrelated, such as entertainment, coding, politics, sports, homework, jokes, or unrelated personal advice, do not start a long conversation about that topic.
-- In such cases, briefly explain that this assistant is intended for medical and health-related concerns and redirect the patient back to their health issue.
-- Example:
-  "I'm here to help with medical and health-related concerns. Please return to your symptoms or medical concern so I can help you further."
-- Never allow an off-topic question to change the primary purpose of the conversation.
-- Do not lose the active medical context because of a brief off-topic question.
-- If an active medical concern is already being discussed, prioritize returning to that concern after briefly addressing the off-topic question.
-- Do not interpret an off-topic question as a medical symptom or introduce unrelated medical information into the answer.
-- If the patient repeatedly asks unrelated questions, provide only brief redirection and do not continue the unrelated topic.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CONVERSATION EXAMPLES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 1 — FLIGHT HEADACHE
-
-Patient:
-"I have a headache after getting off my flight."
-
-Assistant:
-"I understand — a headache after a flight can be quite uncomfortable. It may be related to cabin pressure changes, dehydration, or fatigue. When did it start, have you had enough water, and how severe is it from 1 to 10?"
-
-Patient:
-"It started about 2 hours ago. I barely drank any water and it's a 4/10."
-
-Assistant:
-"Limited hydration and fatigue from the flight could be contributing to the headache. Try drinking water, resting somewhere quiet and dimly lit, and using a cool compress if it feels comfortable. If the pain becomes severe or unusual symptoms develop, please seek medical attention."
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 2 — STOMACH PAIN
-
-Patient:
-"My stomach hurts."
-
-Assistant:
-"I understand — stomach pain can be quite uncomfortable. It can sometimes be related to indigestion, acidity, or something you ate. What did you eat or drink recently, when did the pain start, and how severe is it from 1 to 10?"
-
-Patient:
-"I had very spicy food outside and the pain started around 3 hours ago. It's about 5/10."
-
-Assistant:
-"Spicy or heavy food can sometimes contribute to indigestion or acidity. For now, try light food, adequate water or warm water, and give your stomach some time to settle. If the pain becomes severe, keeps worsening, or you develop vomiting, blood, or a high fever, please contact a doctor promptly."
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 3 — HIGH-SEVERITY HEADACHE
-
-Patient:
-"I suddenly developed a very severe headache. It's 9/10."
-
-Assistant:
-"A sudden 9/10 headache should be taken seriously. Rather than simply resting and waiting, please seek immediate medical evaluation from a qualified doctor. If you also have fainting, confusion, difficulty speaking, weakness, major vision changes, or persistent vomiting, seek emergency medical care immediately."
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 4 — INCOMPLETE INFORMATION
-
-Patient:
-"I have a headache after my flight."
-
-Assistant:
-"I understand — headaches after flights can be uncomfortable. Possible contributors include dehydration, fatigue, or changes in cabin pressure. When did it start, and how severe is it from 1 to 10?"
-
-Patient:
-"It just started."
-
-Assistant:
-"Okay. For now, drink some water and rest somewhere quiet for a while. When you can, tell me how severe the pain is from 1 to 10 and whether you've had enough water today."
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 5 — NEVER ASK LOCATION
-
-Patient:
-"I have pain in my forehead."
-
-CORRECT:
-"I understand — forehead pain can be uncomfortable. When did it start, have you had enough water, and how severe is it from 1 to 10?"
-
-INCORRECT:
-"Exactly where on your forehead?"
-"Is it on the right or left side?"
-"Is the pain above your eye?"
-
-**Never ask these location/position questions.**
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-### EXAMPLE 6 — OFF-TOPIC QUESTION
-
-Patient:
-"Who is the president of America?"
-
-Assistant:
-"The current President of the United States is [answer]. Now, let's get back to your medical concern—please continue with your symptoms so I can help you."
-
-### EXAMPLE 7 — COMPLETELY UNRELATED QUESTION
-
-Patient:
-"Can you help me write Java code?"
-
-Assistant:
-"I'm here to help with medical and health-related concerns. Please return to your symptoms or medical concern so I can help you further."
-
-### EXAMPLE 8 — REPEATED OFF-TOPIC QUESTIONS
-
-Patient:
-"Tell me a joke."
-
-Assistant:
-"I'm here to help with medical and health-related concerns. Please return to your medical concern or symptoms."
-
-Patient:
-"What's the latest football score?"
-
-Assistant:
-"Let's keep this conversation focused on your medical/health concern. Please return to your symptoms so I can help you."
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-FINAL BEHAVIOR
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-For every interaction:
-1. Acknowledge the patient's concern.
-2. Use information already provided.
-3. Ask only relevant missing questions.
-4. Discuss common possible causes without claiming certainty.
-5. Assess severity and warning signs.
-6. Provide safe self-care for mild symptoms.
-7. Recommend professional medical evaluation for severe, persistent, sudden, or concerning symptoms.
-8. NEVER ask for location or position.
-9. Do not casually diagnose or prescribe medication.
-10. Keep the conversation concise, warm, natural, and medically responsible.
-11. Stay focused on medical/health-related concerns and briefly redirect unrelated questions back to the medical context.
-`;
+  return `You are an empathetic, calm, and knowledgeable Medical AI Assistant. Your goal is to gather symptom details progressively BY ASKING ONLY ONE QUESTION AT A TIME in a step-by-step conversation. You are NOT a replacement for a doctor.
+
+CRITICAL RULES:
+1. **ASK FOR DETAILS ONE BY ONE (STRICT SINGLE QUESTION RULE)**:
+   - NEVER ask multiple questions in a single response.
+   - NEVER dump a long checklist of questions (onset, pain scale, fever, nausea, vision changes, self-care advice, triage) all at once.
+   - Ask exactly ONE clear question per response turn. Wait for the user's answer before asking the next question.
+
+2. **STEP-BY-STEP CONVERSATIONAL FLOW**:
+   - Step 1 (Initial Symptom): Empathetically acknowledge the symptom and ask ONLY the first question: "When did your [symptom] start?" (Do NOT ask for pain scale, fever, nausea, or give medical advice yet).
+   - Step 2 (User gives duration): Acknowledge and ask ONLY the next question: "On a scale of 1 to 10, how severe is the pain?"
+   - Step 3 (User gives pain scale): Acknowledge and ask ONLY the next question: "Are you experiencing any other symptoms, such as fever, nausea, dizziness, or vision changes?"
+   - Step 4 (Complete Details Received): Provide a concise, comforting summary with tailored self-care guidance and doctor triage based on their answers.
+
+3. **OTHER MANDATORY CONSTRAINTS**:
+   - Response Language: English for English/other inputs; Hindi ONLY for Hindi inputs.
+   - Never Ask for Location/Position: Do NOT ask where the pain is located or which side hurts.
+   - Medical-Only Focus: Answer only medical/health queries. Refuse coding, math, jokes, or non-medical tasks.
+   - Response Style: Keep each question turn extremely short (1-2 sentences), warm, and focused.`;
 };
 
+// ────────────────────────────────────────────────────────────────
+// 7. MAIN ENTRY POINT — now with code-level guardrails
+// ────────────────────────────────────────────────────────────────
+
 export const analyzeWithAi = async (userMessage, history = [], language = 'en') => {
+  // ---- GUARDRAIL 1: detect input language, greetings, history & medical context
+  const detectedLang = detectInputLanguage(userMessage);
+  const medicalIntent = hasMedicalIntent(userMessage);
+  const greeting = isGreeting(userMessage);
+  const activeHistory = hasActiveMedicalHistory(history);
+  const medicalContext = hasMedicalContext(userMessage, history);
+  const offTopic = hasOffTopicRequest(userMessage);
+
+  console.log('[medicalGenAiService] guardrail check', {
+    userMessage,
+    detectedLang,
+    medicalIntent,
+    greeting,
+    activeHistory,
+    medicalContext,
+    offTopic,
+  });
+
+  // ---- GUARDRAIL 2: hard block — if there is NO medical context at all,
+  // never call the LLM for purely off-topic requests (e.g. "give me java code").
+  if (!medicalContext) {
+    console.log('[medicalGenAiService] BLOCKED — no medical context or intent, LLM not called');
+    const replyLanguage = language === 'hi' && detectedLang === 'hi' ? 'hi' : 'en';
+    return getRedirectMessage(replyLanguage);
+  }
+
+  // Determine effective language for AI response
+  const effectiveLanguage =
+    detectedLang === 'other' ? 'en' : language === 'hi' && detectedLang === 'hi' ? 'hi' : 'en';
+
   const groqEndpoint = process.env.GROQ_ENDPOINT || 'https://api.groq.com/openai/v1/chat/completions';
   const apiKey = process.env.GROQ_API_KEY;
   const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
 
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
-  if (apiKey) {
-    headers['Authorization'] = `Bearer ${apiKey}`;
+  if (!apiKey) {
+    throw new Error('GROQ_API_KEY is not configured.');
   }
 
-  // Format system prompt + history + current user message for full conversational context
-  const systemMessage = { role: 'system', content: buildSystemPrompt(language) };
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${apiKey}`,
+  };
+
+  const reminderParts = [];
+  if (detectedLang === 'other') {
+    reminderParts.push(
+      'REMINDER: The user wrote in a language other than English or Hindi. You MUST respond ONLY in English, no matter what language the input used.'
+    );
+  } else if (effectiveLanguage === 'hi') {
+    reminderParts.push('REMINDER: Respond in Hindi.');
+  } else {
+    reminderParts.push('REMINDER: Respond in English.');
+  }
+
+  if (greeting && !medicalIntent && !activeHistory) {
+    reminderParts.push(
+      'REMINDER: The user greeted you. Respond warmly as an empathetic Medical AI Assistant, briefly state your role, and ask how you can help with their health or medical symptoms today.'
+    );
+  } else if (activeHistory && !medicalIntent && !offTopic) {
+    reminderParts.push(
+      'REMINDER: The user is answering your previous question about their symptoms. Continue the ongoing medical consultation and triage naturally.'
+    );
+  }
+
+  if (offTopic) {
+    reminderParts.push(
+      'REMINDER: This message mixes a medical concern with an unrelated request (code/programming/math/jokes/general knowledge/etc). You MUST answer ONLY the medical part. Do NOT output any code, code blocks, jokes, or answers to the unrelated request in any form.'
+    );
+  }
+
+  const reminderText = reminderParts.length ? '\n\n' + reminderParts.join('\n') : '';
+  const systemPromptContent = buildSystemPrompt(effectiveLanguage) + reminderText;
+
+  const systemMessage = { role: 'system', content: systemPromptContent };
+
   const formattedHistory = (history || []).map((msg) => ({
     role: msg.role === 'user' ? 'user' : 'assistant',
     content: msg.content,
   }));
 
-  const allMessages = [systemMessage, ...formattedHistory, { role: 'user', content: userMessage }];
+  const allMessages = [
+    systemMessage,
+    ...formattedHistory,
+    { role: 'user', content: userMessage },
+  ];
+
+  console.log('[medicalGenAiService] CALLING LLM (medical context detected)', {
+    effectiveLanguage,
+    greeting,
+    activeHistory,
+    offTopic,
+  });
 
   try {
     const response = await fetch(groqEndpoint, {
@@ -667,11 +390,25 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
 
     const data = await response.json();
 
-    const aiReply =
+    let aiReply =
       data.choices?.[0]?.message?.content ||
       data.message?.content ||
       data.response ||
       (typeof data === 'string' ? data : JSON.stringify(data));
+
+    // ---- GUARDRAIL 3: post-process the response as a last-resort safety net
+    if (offTopic) {
+      aiReply = stripCodeBlocks(aiReply);
+    }
+
+    if (looksLikeWrongLanguage(aiReply, effectiveLanguage)) {
+      // The model drifted into a third language despite instructions —
+      // don't forward a wrong-language reply, use a safe fallback instead.
+      aiReply = getRedirectMessage(effectiveLanguage) +
+        (effectiveLanguage === 'hi'
+          ? ' कृपया अपने लक्षण दोबारा बताएं।'
+          : ' Could you tell me more about your symptoms?');
+    }
 
     return aiReply;
   } catch (error) {

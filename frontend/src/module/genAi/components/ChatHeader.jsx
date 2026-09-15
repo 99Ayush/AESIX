@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MessageCircle } from "lucide-react";
+import { Mic } from "lucide-react";
 
 export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLanguage }) => {
   const navigate = useNavigate();
@@ -36,21 +38,24 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
       <div className="header-controls">
         {/* Prominent Segmented Language Selector */}
         <div className="convo-lang-selector" title="Active AI Conversation Language">
-          <span className="lang-label-sm">🌐 Convo:</span>
+          <span className="lang-label-sm flex items-center gap-1">
+            <MessageCircle size={16} />
+            Convo:
+          </span>
           <div className="lang-segmented-control">
             <button
               type="button"
               className={`lang-segment-btn ${!isHindi ? 'active' : ''}`}
               onClick={() => handleSelectLang('en')}
             >
-              🇬🇧 English
+              EN English
             </button>
             <button
               type="button"
               className={`lang-segment-btn ${isHindi ? 'active' : ''}`}
               onClick={() => handleSelectLang('hi')}
             >
-              🇮🇳 हिन्दी
+              IN हिन्दी
             </button>
           </div>
         </div>
@@ -61,7 +66,9 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
             onClick={onOpenVoiceToVoice}
             title="Start Voice to Voice Conversation"
           >
-            <span className="v2v-icon-pulse">🎙️</span>
+            <span className="v2v-icon-pulse">
+              <Mic size={18} />
+            </span>
             <span>Voice to Voice Convo</span>
           </button>
         )}

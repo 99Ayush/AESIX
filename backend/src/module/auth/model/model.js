@@ -21,6 +21,12 @@ const userSchema = new mongoose.Schema({
   phrAddress:   { type: [String], default: [] },
   kycVerified:  { type: Boolean, default: false },
   loginMethod:  { type: String, enum: ['aadhaar', 'mobile', 'abha', 'register'] },
+  photoUrl:     { type: String, default: null },
+  city:         { type: String, default: '' },
+  bloodGroup:   { type: String, default: '' },
+  emergencyContactName: { type: String, default: '' },
+  emergencyContactRelation: { type: String, default: '' },
+  emergencyContactPhone: { type: String, default: '' },
 }, { timestamps: true });
 
 userSchema.index({ mobile: 1 });

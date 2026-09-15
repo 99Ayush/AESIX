@@ -142,6 +142,7 @@ export default function Register() {
         mobile: mobile.replace(/\D/g, ''),
         gender,
         dob,
+        city,
       };
 
       const res = await authApi.enrollRegister(payload);

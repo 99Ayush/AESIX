@@ -1,0 +1,806 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../userPages.css';
+import { userApi } from '../services/userApi';
+
+const CHARACTER_OPTIONS = [
+  'Sharp / Stabbing',
+  'Dull / Aching',
+  'Burning',
+  'Throbbing / Pulsating',
+  'Tightness / Pressure',
+  'Cramping / Spasmodic',
+  'Numbness / Tingling',
+  'Other'
+];
+
+const ONSET_TYPES = [
+  'Sudden (Instantaneous)',
+  'Gradual (Over hours/days)',
+  'Insidious (Over weeks/months)',
+  'Intermittent (Occasional episodes)'
+];
+
+const COMMON_ASSOCIATIONS = [
+  'Nausea / Vomiting',
+  'Shortness of breath',
+  'Sweating / Cold clammy skin',
+  'Dizziness / Lightheadedness',
+  'Fever / Chills',
+  'Fatigue / Weakness',
+  'Loss of appetite',
+  'Heart palpitations'
+];
+
+export default function SocratesForm() {
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('new'); // 'new' | 'history'
+
+  // Form State
+  const [site, setSite] = useState('');
+  const [onset, setOnset] = useState('');
+  const [onsetType, setOnsetType] = useState('Gradual (Over hours/days)');
+  const [character, setCharacter] = useState([]);
+  const [customCharacter, setCustomCharacter] = useState('');
+  const [radiation, setRadiation] = useState('');
+  const [associations, setAssociations] = useState([]);
+  const [customAssociation, setCustomAssociation] = useState('');
+  const [timeCourse, setTimeCourse] = useState('');
+  const [exacerbatingFactors, setExacerbatingFactors] = useState('');
+  const [severity, setSeverity] = useState(5);
+  const [priorHistory, setPriorHistory] = useState('');
+  const [additionalNotes, setAdditionalNotes] = useState('');
+
+  // File upload state
+  const [files, setFiles] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitSuccess, setSubmitSuccess] = useState('');
+
+  // History state
+  const [history, setHistory] = useState([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetchHistory();
+    }
+  }, [activeTab]);
+
+  const fetchHistory = async () => {
+    setIsLoadingHistory(true);
+    try {
+      const res = await userApi.getSocratesHistory();
+      if (res.success) {
+        setHistory(res.assessments || []);
+      }
+    } catch (err) {
+      console.error('Error fetching SOCRATES history:', err);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const handleCharacterToggle = (opt) => {
+    if (character.includes(opt)) {
+      setCharacter(character.filter(item => item !== opt));
+    } else {
+      setCharacter([...character, opt]);
+    }
+  };
+
+  const handleAssociationToggle = (opt) => {
+    if (associations.includes(opt)) {
+      setAssociations(associations.filter(item => item !== opt));
+    } else {
+      setAssociations([...associations, opt]);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length + files.length > 5) {
+      alert('You can upload a maximum of 5 documents.');
+      return;
+    }
+    setFiles([...files, ...selectedFiles]);
+  };
+
+  const removeFile = (index) => {
+    setFiles(files.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+    setSubmitSuccess('');
+
+    if (!site.trim()) {
+      setSubmitError('Please specify the location (Site) of your symptom.');
+      return;
+    }
+    if (!onset.trim()) {
+      setSubmitError('Please describe when and how the symptom started (Onset).');
+      return;
+    }
+    if (character.length === 0 && !customCharacter.trim()) {
+      setSubmitError('Please select or specify at least one Character description.');
+      return;
+    }
+    if (!timeCourse.trim()) {
+      setSubmitError('Please describe the Time Course / duration of your symptom.');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('site', site.trim());
+      formData.append('onset', `${onsetType}: ${onset.trim()}`);
+      
+      const charStr = [...character, customCharacter.trim()].filter(Boolean).join(', ');
+      formData.append('character', charStr);
+      
+      formData.append('radiation', radiation.trim());
+      
+      const assocStr = [...associations, customAssociation.trim()].filter(Boolean).join(', ');
+      formData.append('associations', assocStr);
+      
+      formData.append('timeCourse', timeCourse.trim());
+      formData.append('exacerbatingFactors', exacerbatingFactors.trim());
+      formData.append('severity', severity);
+      formData.append('priorHistory', priorHistory.trim());
+      formData.append('additionalNotes', additionalNotes.trim());
+
+      files.forEach(file => {
+        formData.append('documents', file);
+      });
+
+      const res = await userApi.submitSocratesForm(formData);
+      if (res.success) {
+        setSubmitSuccess('✅ Your SOCRATES assessment & medical documents have been submitted to Cloudinary & saved for doctor review!');
+        // Reset form
+        setSite('');
+        setOnset('');
+        setCharacter([]);
+        setCustomCharacter('');
+        setRadiation('');
+        setAssociations([]);
+        setCustomAssociation('');
+        setTimeCourse('');
+        setExacerbatingFactors('');
+        setSeverity(5);
+        setPriorHistory('');
+        setAdditionalNotes('');
+        setFiles([]);
+        
+        setTimeout(() => {
+          setActiveTab('history');
+          fetchHistory();
+        }, 1500);
+      } else {
+        setSubmitError(res.error || 'Failed to submit form');
+      }
+    } catch (err) {
+      console.error('Submit error:', err);
+      setSubmitError(err.message || 'An unexpected error occurred during submission.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const getSeverityColor = (val) => {
+    if (val <= 3) return '#10B981'; // Green
+    if (val <= 6) return '#F59E0B'; // Amber
+    if (val <= 8) return '#EF4444'; // Red
+    return '#8B5CF6'; // Purple / Severe
+  };
+
+  return (
+    <div className="sih-page-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--mint-bg)' }}>
+      {/* Header Bar */}
+      <header className="sih-header">
+        <div className="sih-header-inner">
+          <div className="sih-brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+            <div className="sih-logo-badge">⚡</div>
+            <div>
+              <h1 className="sih-brand-title">MedVault</h1>
+              <p className="sih-brand-subtitle">SOCRATES Symptom Engine</p>
+            </div>
+          </div>
+          <nav className="sih-nav-menu">
+            <button 
+              onClick={() => setActiveTab('new')} 
+              className="sih-nav-btn"
+              style={{ background: activeTab === 'new' ? 'var(--mint-light)' : 'transparent', color: activeTab === 'new' ? 'var(--teal-primary)' : 'var(--text-muted)' }}
+            >
+              <span className="sih-nav-icon">📝</span> New Assessment
+            </button>
+            <button 
+              onClick={() => setActiveTab('history')} 
+              className="sih-nav-btn"
+              style={{ background: activeTab === 'history' ? 'var(--mint-light)' : 'transparent', color: activeTab === 'history' ? 'var(--teal-primary)' : 'var(--text-muted)' }}
+            >
+              <span className="sih-nav-icon">📋</span> Assessment History
+            </button>
+            <button onClick={() => navigate('/dashboard')} className="sih-nav-btn">
+              <span className="sih-nav-icon">🏠</span> Dashboard
+            </button>
+          </nav>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: '1000px', margin: '0 auto', width: '100%' }}>
+        
+        {activeTab === 'new' ? (
+          <div>
+            {/* Banner Header */}
+            <div className="sih-card" style={{ padding: '1.8rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #0C9A9A 0%, #086F6F 100%)', color: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>
+                  🩺
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: '#fff' }}>SOCRATES Clinical Intake Form</h2>
+                  <p style={{ margin: '0.4rem 0 0 0', opacity: 0.9, fontSize: '0.9rem', lineHeight: '1.4' }}>
+                    Provide structured details about your symptoms using the 10-point SOCRATES framework so your doctor can perform an accurate clinical evaluation.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {submitSuccess && (
+              <div className="sih-card" style={{ padding: '1.2rem', marginBottom: '1.5rem', background: '#D1FAE5', borderLeft: '5px solid #10B981', color: '#065F46', fontWeight: 600 }}>
+                {submitSuccess}
+              </div>
+            )}
+
+            {submitError && (
+              <div className="sih-card" style={{ padding: '1.2rem', marginBottom: '1.5rem', background: '#FEE2E2', borderLeft: '5px solid #EF4444', color: '#991B1B', fontWeight: 600 }}>
+                ⚠️ {submitError}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              
+              {/* Question 1: SITE */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  1. Site (S) — Where is the pain / symptom located? <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Specify the exact body location where you feel the discomfort (e.g. Center of chest, Upper right abdomen, Left forehead).
+                </p>
+                <input
+                  type="text"
+                  placeholder="e.g., Lower right abdomen radiating downwards"
+                  value={site}
+                  onChange={(e) => setSite(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem',
+                    outline: 'none'
+                  }}
+                  required
+                />
+              </div>
+
+              {/* Question 2: ONSET */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  2. Onset (O) — When and how did it start? <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Select the onset type and describe what you were doing when it started.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.6rem', marginBottom: '0.8rem' }}>
+                  {ONSET_TYPES.map(type => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => setOnsetType(type)}
+                      style={{
+                        padding: '0.6rem 0.8rem',
+                        borderRadius: '8px',
+                        border: onsetType === type ? '2px solid #0C9A9A' : '1px solid #E2E8F0',
+                        background: onsetType === type ? '#E8F7F4' : '#F8FAFC',
+                        color: onsetType === type ? '#0C9A9A' : '#334155',
+                        fontWeight: onsetType === type ? 700 : 500,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        textAlign: 'left'
+                      }}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+                <textarea
+                  rows="2"
+                  placeholder="e.g., Started suddenly 3 hours ago after eating lunch..."
+                  value={onset}
+                  onChange={(e) => setOnset(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    resize: 'vertical'
+                  }}
+                  required
+                />
+              </div>
+
+              {/* Question 3: CHARACTER */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  3. Character (C) — What is the pain / symptom like? <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Select all descriptor terms that match what you are feeling.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                  {CHARACTER_OPTIONS.map(opt => {
+                    const isSelected = character.includes(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => handleCharacterToggle(opt)}
+                        style={{
+                          padding: '0.5rem 0.9rem',
+                          borderRadius: '20px',
+                          border: isSelected ? '2px solid #0C9A9A' : '1px solid #CBD5E1',
+                          background: isSelected ? '#0C9A9A' : '#fff',
+                          color: isSelected ? '#fff' : '#475569',
+                          fontWeight: isSelected ? 700 : 500,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : '+ '}{opt}
+                      </button>
+                    );
+                  })}
+                </div>
+                {character.includes('Other') && (
+                  <input
+                    type="text"
+                    placeholder="Describe custom character..."
+                    value={customCharacter}
+                    onChange={(e) => setCustomCharacter(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '0.9rem'
+                    }}
+                  />
+                )}
+              </div>
+
+              {/* Question 4: RADIATION */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  4. Radiation (R) — Does the pain spread anywhere else?
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Does the sensation travel to other areas? (e.g., Radiates to left arm, neck, upper back, or stays in one place).
+                </p>
+                <input
+                  type="text"
+                  placeholder="e.g., Radiates to left jaw and left shoulder, or No radiation"
+                  value={radiation}
+                  onChange={(e) => setRadiation(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem'
+                  }}
+                />
+              </div>
+
+              {/* Question 5: ASSOCIATIONS */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  5. Associations (A) — Are there any associated symptoms?
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Select any additional symptoms occurring alongside the main issue.
+                </p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.8rem' }}>
+                  {COMMON_ASSOCIATIONS.map(opt => {
+                    const isSelected = associations.includes(opt);
+                    return (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => handleAssociationToggle(opt)}
+                        style={{
+                          padding: '0.5rem 0.9rem',
+                          borderRadius: '20px',
+                          border: isSelected ? '2px solid #086F6F' : '1px solid #CBD5E1',
+                          background: isSelected ? '#E8F7F4' : '#fff',
+                          color: isSelected ? '#086F6F' : '#475569',
+                          fontWeight: isSelected ? 700 : 500,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : '+ '}{opt}
+                      </button>
+                    );
+                  })}
+                </div>
+                <input
+                  type="text"
+                  placeholder="Any other associated symptoms..."
+                  value={customAssociation}
+                  onChange={(e) => setCustomAssociation(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.6rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.9rem'
+                  }}
+                />
+              </div>
+
+              {/* Question 6: TIME COURSE */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  6. Time Course (T) — How does the symptom behave over time? <span style={{ color: '#EF4444' }}>*</span>
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Is it continuous, constant, or coming in waves? How long does each episode last?
+                </p>
+                <input
+                  type="text"
+                  placeholder="e.g., Constant pain that gets progressively worse over 2 hours"
+                  value={timeCourse}
+                  onChange={(e) => setTimeCourse(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem'
+                  }}
+                  required
+                />
+              </div>
+
+              {/* Question 7: EXACERBATING & RELIEVING FACTORS */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  7. Exacerbating & Relieving Factors (E) — What makes it better or worse?
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  e.g., Worsened by deep inspiration or bending over; Relieved by antacids or lying flat.
+                </p>
+                <textarea
+                  rows="2"
+                  placeholder="e.g., Worse with exertion and walking uphill; Better when sitting still."
+                  value={exacerbatingFactors}
+                  onChange={(e) => setExacerbatingFactors(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              {/* Question 8: SEVERITY */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem' }}>
+                    8. Severity (S) — Pain / Discomfort Rating (1 to 10) <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <div 
+                    style={{ 
+                      padding: '0.4rem 1rem', 
+                      borderRadius: '20px', 
+                      background: getSeverityColor(severity), 
+                      color: '#fff', 
+                      fontWeight: 900, 
+                      fontSize: '1.1rem' 
+                    }}
+                  >
+                    {severity} / 10
+                  </div>
+                </div>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '1.2rem' }}>
+                  Slide to indicate severity (1 = Mild noticeable discomfort, 10 = Worst unbearable emergency pain).
+                </p>
+                <input
+                  type="range"
+                  min="1"
+                  max="10"
+                  value={severity}
+                  onChange={(e) => setSeverity(Number(e.target.value))}
+                  style={{ width: '100%', accentColor: getSeverityColor(severity), cursor: 'pointer', height: '8px' }}
+                />
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.4rem', fontWeight: 600 }}>
+                  <span>1 (Mild)</span>
+                  <span>5 (Moderate)</span>
+                  <span>8 (Severe)</span>
+                  <span>10 (Unbearable)</span>
+                </div>
+              </div>
+
+              {/* Question 9: PRIOR HISTORY */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  9. Previous History — Have you experienced similar symptoms before?
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Mention previous episodes, diagnosed conditions, or relevant family history.
+                </p>
+                <textarea
+                  rows="2"
+                  placeholder="e.g., Had similar mild episodes 6 months ago, diagnosed with acid reflux."
+                  value={priorHistory}
+                  onChange={(e) => setPriorHistory(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+
+              {/* Question 10: ADDITIONAL NOTES & DOCUMENT UPLOAD */}
+              <div className="sih-card" style={{ padding: '1.5rem' }}>
+                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
+                  10. Doctor Notes & Medical Document Upload
+                </label>
+                <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
+                  Add any extra details for the doctor and attach medical reports, lab results, or scans (stored securely on Cloudinary).
+                </p>
+
+                <textarea
+                  rows="2"
+                  placeholder="Additional context or notes for the reviewing physician..."
+                  value={additionalNotes}
+                  onChange={(e) => setAdditionalNotes(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    fontSize: '0.95rem',
+                    marginBottom: '1rem',
+                    resize: 'vertical'
+                  }}
+                />
+
+                {/* Cloudinary Document Dropzone */}
+                <div 
+                  style={{
+                    border: '2px dashed #0C9A9A',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    textAlign: 'center',
+                    background: '#F0FDF4',
+                    cursor: 'pointer'
+                  }}
+                  onClick={() => document.getElementById('socrates-file-input').click()}
+                >
+                  <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>☁️</div>
+                  <h4 style={{ margin: '0 0 0.2rem 0', color: '#0C9A9A', fontWeight: 700 }}>Upload Supporting Documents to Cloudinary</h4>
+                  <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B' }}>
+                    Click to select lab reports, prescriptions, or images (PDF, JPG, PNG up to 10MB each)
+                  </p>
+                  <input
+                    id="socrates-file-input"
+                    type="file"
+                    multiple
+                    accept="image/*,application/pdf"
+                    onChange={handleFileChange}
+                    style={{ display: 'none' }}
+                  />
+                </div>
+
+                {/* Selected File List */}
+                {files.length > 0 && (
+                  <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--primary-navy)' }}>
+                      Selected Files ({files.length}/5):
+                    </div>
+                    {files.map((f, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.8rem', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
+                        <span style={{ fontWeight: 600, color: '#334155' }}>📄 {f.name} ({(f.size / 1024).toFixed(1)} KB)</span>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
+                          style={{ background: 'transparent', border: 'none', color: '#EF4444', fontWeight: 700, cursor: 'pointer' }}
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Submit Button */}
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/dashboard')}
+                  style={{
+                    padding: '0.8rem 1.6rem',
+                    borderRadius: '8px',
+                    border: '1px solid #CBD5E1',
+                    background: '#fff',
+                    color: '#475569',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    padding: '0.8rem 2.2rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: isSubmitting ? '#94A3B8' : '#0C9A9A',
+                    color: '#fff',
+                    fontWeight: 800,
+                    fontSize: '1rem',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(12, 154, 154, 0.25)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  {isSubmitting ? 'Uploading to Cloudinary...' : 'Submit SOCRATES Assessment 🚀'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        ) : (
+          /* History View */
+          <div>
+            <div className="sih-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+                    📋 Past SOCRATES Submissions
+                  </h2>
+                  <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '0.2rem 0 0 0' }}>
+                    Review your previous symptom assessments and Cloudinary-stored medical files.
+                  </p>
+                </div>
+                <button
+                  onClick={fetchHistory}
+                  className="sih-nav-btn"
+                  style={{ border: '1px solid #CBD5E1' }}
+                >
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+
+            {isLoadingHistory ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: '#64748B' }}>
+                Loading assessment history...
+              </div>
+            ) : history.length === 0 ? (
+              <div className="sih-card" style={{ padding: '3rem', textAlign: 'center', color: '#64748B' }}>
+                <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>No SOCRATES assessments recorded yet.</p>
+                <button
+                  onClick={() => setActiveTab('new')}
+                  style={{
+                    marginTop: '1rem',
+                    padding: '0.6rem 1.4rem',
+                    borderRadius: '8px',
+                    background: '#0C9A9A',
+                    color: '#fff',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Fill New Assessment
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                {history.map((item, idx) => (
+                  <div key={item._id || idx} className="sih-card" style={{ padding: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', borderBottom: '1px solid #F1F5F9', pb: '0.8rem', marginBottom: '1rem' }}>
+                      <div>
+                        <span style={{ display: 'inline-block', padding: '0.25rem 0.6rem', borderRadius: '4px', background: '#E8F7F4', color: '#0C9A9A', fontWeight: 700, fontSize: '0.78rem', marginRight: '0.5rem' }}>
+                          Assessment #{history.length - idx}
+                        </span>
+                        <h3 style={{ margin: '0.4rem 0 0 0', fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
+                          Site: {item.site}
+                        </h3>
+                        <div style={{ fontSize: '0.78rem', color: '#94A3B8', marginTop: '0.2rem' }}>
+                          Submitted on {new Date(item.createdAt).toLocaleString()}
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#475569' }}>Severity:</span>
+                        <div style={{ padding: '0.3rem 0.8rem', borderRadius: '12px', background: getSeverityColor(item.severity), color: '#fff', fontWeight: 800, fontSize: '0.9rem' }}>
+                          {item.severity} / 10
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem', fontSize: '0.88rem', color: '#334155' }}>
+                      <div><strong>Onset:</strong> {item.onset}</div>
+                      <div><strong>Character:</strong> {item.character}</div>
+                      <div><strong>Radiation:</strong> {item.radiation || 'None'}</div>
+                      <div><strong>Associations:</strong> {item.associations || 'None'}</div>
+                      <div><strong>Time Course:</strong> {item.timeCourse}</div>
+                      <div><strong>Factors:</strong> {item.exacerbatingFactors || 'None'}</div>
+                      {item.priorHistory && <div style={{ gridColumn: '1 / -1' }}><strong>Prior History:</strong> {item.priorHistory}</div>}
+                      {item.additionalNotes && <div style={{ gridColumn: '1 / -1' }}><strong>Notes:</strong> {item.additionalNotes}</div>}
+                    </div>
+
+                    {item.documents && item.documents.length > 0 && (
+                      <div style={{ marginTop: '1rem', paddingTop: '0.8rem', borderTop: '1px dashed #E2E8F0' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0C9A9A', marginBottom: '0.5rem' }}>
+                          ☁️ Cloudinary Uploaded Documents ({item.documents.length}):
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
+                          {item.documents.map((doc, dIdx) => (
+                            <a
+                              key={dIdx}
+                              href={doc.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.4rem',
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: '6px',
+                                background: '#F0FDF4',
+                                border: '1px solid #A7F3D0',
+                                color: '#065F46',
+                                textDecoration: 'none',
+                                fontSize: '0.8rem',
+                                fontWeight: 600
+                              }}
+                            >
+                              📎 {doc.name || 'View Document'} ↗
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}

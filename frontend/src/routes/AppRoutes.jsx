@@ -14,6 +14,7 @@ import Register from '../module/auth/register';
 import KindleMain from '../module/user/pages/kindleMain';
 import NamasteCode from '../module/user/pages/namasteCode';
 import ICDCode from '../module/user/pages/ICD-Code';
+import SocratesForm from '../module/user/pages/SocratesForm';
 
 export const AppRoutes = () => {
   return (
@@ -41,20 +42,23 @@ export const AppRoutes = () => {
         {/* NAMASTE & ICD-11 Code Search Pages */}
         <Route path="/namaste-code" element={<NamasteCode />} />
         <Route path="/icd-code" element={<ICDCode />} />
+        <Route path="/socrates" element={<SocratesForm />} />
 
         <Route path="/genai" element={<GenAiBot />} />
+
 
         {/* Doctor routes & segregated sub-pages */}
         <Route path="/doctor" element={<DoctorDashboard activeTabDefault="overview" />} />
         <Route path="/doctor/patient-data" element={<DoctorDashboard activeTabDefault="patient-data" />} />
+        <Route path="/doctor/socrates-forms" element={<DoctorDashboard activeTabDefault="socrates-forms" />} />
         <Route path="/doctor/consultations" element={<DoctorDashboard activeTabDefault="consultations" />} />
         <Route path="/doctor/alerts" element={<DoctorDashboard activeTabDefault="alerts" />} />
         <Route path="/doctor/directory" element={<DoctorDashboard activeTabDefault="directory" />} />
         <Route path="/doctor/patient/:id?" element={<DoctorDashboard activeTabDefault="patient-data" />} />
 
         {/* Default: redirect to dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );

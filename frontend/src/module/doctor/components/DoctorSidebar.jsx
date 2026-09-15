@@ -60,6 +60,19 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
         </button>
 
         <button
+          className={`doc-sidebar-item ${activeTab === 'socrates-forms' ? 'active' : ''}`}
+          onClick={() => onTabChange && onTabChange('socrates-forms')}
+        >
+          <svg className="doc-sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 2h6l3 7H6l3-7z"></path>
+            <circle cx="12" cy="15" r="5"></circle>
+            <line x1="12" y1="13" x2="12" y2="17"></line>
+            <line x1="10" y1="15" x2="14" y2="15"></line>
+          </svg>
+          <span>SOCRATES Forms</span>
+        </button>
+
+        {/* <button
           className={`doc-sidebar-item ${activeTab === 'alerts' ? 'active' : ''}`}
           onClick={() => onTabChange && onTabChange('alerts')}
         >
@@ -69,7 +82,7 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
             <line x1="12" y1="17" x2="12.01" y2="17"></line>
           </svg>
           <span>Medical Alerts</span>
-        </button>
+        </button> */}
 
         <button
           className={`doc-sidebar-item ${activeTab === 'directory' ? 'active' : ''}`}

@@ -15,38 +15,126 @@ import {
 import { logger } from '../../../shared/logger.js';
 import { User, UserSession, OtpTxn } from '../model/model.js';
 
-async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod }) {
-  const user = await User.findOneAndUpdate(
-    { abhaNumber: profile.ABHANumber },
-    {
-      $set: {
-        ...(aadhaar ? { aadhaar } : {}),
-        firstName: profile.firstName,
-        lastName: profile.lastName,
-        mobile: mobile ?? profile.mobile,
-        gender: profile.gender,
-        dob: profile.dob,
-        abhaAddress: profile.phrAddress?.[0],
-        abhaStatus: profile.abhaStatus,
-        kycVerified: profile.kycVerified,
-        loginMethod,
-      },
-      $setOnInsert: { userId: randomUUID() },
-    },
-    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
-  );
+function buildResponseProfile(user, profile = {}) {
+  const firstName = user.firstName || profile.firstName || '';
+  const lastName = user.lastName !== undefined ? user.lastName : (profile.lastName || '');
+  const fullName = `${firstName} ${lastName}`.trim() || profile.fullName || profile.name || 'User';
+  const mobile = user.mobile || profile.mobile || profile.contact?.phone || '';
+  const rawGender = user.gender || profile.gender || '';
+  const gender = rawGender === 'M' ? 'Male' : (rawGender === 'F' ? 'Female' : (rawGender === 'O' ? 'Other' : rawGender));
+  const abhaNum = user.abhaNumber || profile.ABHANumber || profile.abhaNumber || '';
+  const abhaAddr = user.abhaAddress || profile.phrAddress?.[0] || profile.abhaAddress || '';
+  const dob = user.dob || profile.dob || profile.dateOfBirth || '';
+  const city = user.city || profile.city || profile.address || profile.contact?.address || '';
+
+  return {
+    id: user._id.toString(),
+    userId: user.userId,
+    aadhaar: user.aadhaar || '',
+    fullName,
+    firstName,
+    lastName,
+    name: fullName,
+    dob,
+    dateOfBirth: dob,
+    gender,
+    mobile,
+    phone: mobile,
+    email: user.email || profile.email || '',
+    city,
+    address: city,
+    abhaNumber: abhaNum,
+    ABHANumber: abhaNum,
+    abhaAddress: abhaAddr,
+    phrAddress: abhaAddr,
+    emergencyContactName: user.emergencyContactName || 'Family Member',
+    emergencyContactRelation: user.emergencyContactRelation || 'Relative',
+    emergencyContactPhone: user.emergencyContactPhone || mobile || '',
+    abhaStatus: user.abhaStatus || profile.abhaStatus || 'ACTIVE',
+    photoUrl: user.photoUrl || profile.photoUrl || profile.photo || null,
+    bloodGroup: user.bloodGroup || profile.bloodGroup || '',
+  };
+}
+
+async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod, city, abhaIdentifier }) {
+
+  // Find existing user by aadhaar or abhaNumber
+  // If user registered with this aadhaar, update that record (including keeping/updating abhaNumber)
+  let user = null;
+  if (aadhaar) {
+    user = await User.findOne({ aadhaar });
+  }
+  if (!user && profile.ABHANumber) {
+    user = await User.findOne({ abhaNumber: profile.ABHANumber });
+  }
+  // In mock mode the ABHANumber is always the same dummy value.
+  // Try matching by the real identifier the user typed (abhaAddress or mobile).
+  if (!user && abhaIdentifier) {
+    user = await User.findOne({
+      $or: [
+        { abhaAddress: abhaIdentifier },
+        { mobile: abhaIdentifier },
+        { abhaNumber: abhaIdentifier },
+      ],
+    });
+  }
+
+  // Check if assigning profile.ABHANumber would collide with another user
+  const targetAbha = profile.ABHANumber;
+  let canSetAbha = Boolean(targetAbha);
+  if (canSetAbha && user) {
+    const existingWithAbha = await User.findOne({ abhaNumber: targetAbha, _id: { $ne: user._id } });
+    if (existingWithAbha) {
+      canSetAbha = false;
+    }
+  }
+
+  // If user already exists in our DB (e.g. from registration), preserve their
+  // actual registered details rather than overwriting them with ABDM mock data!
+  const updateFields = {
+    ...(canSetAbha ? { abhaNumber: targetAbha } : {}),
+    ...(aadhaar ? { aadhaar } : {}),
+    firstName: user?.firstName || profile.firstName,
+    lastName: user?.lastName !== undefined ? user.lastName : profile.lastName,
+    mobile: user?.mobile || mobile || profile.mobile,
+    gender: user?.gender || profile.gender,
+    dob: user?.dob || profile.dob,
+    abhaAddress: user?.abhaAddress || profile.phrAddress?.[0] || profile.abhaAddress,
+    abhaStatus: user?.abhaStatus || profile.abhaStatus,
+    kycVerified: user?.kycVerified ?? profile.kycVerified,
+    loginMethod,
+    ...(city ? { city } : profile.city ? { city: profile.city } : {}),
+  };
+
+
+  if (user) {
+    user = await User.findByIdAndUpdate(
+      user._id,
+      { $set: updateFields },
+      { returnDocument: 'after' }
+    );
+  } else {
+    user = await User.create({
+      userId: randomUUID(),
+      ...updateFields,
+    });
+  }
 
   // Sync / create matching MongoDB User in user module schema
   try {
     const { User: MongoUser } = await import('../../user/model/userModel.js');
-    const fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'User';
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || 'User';
+    const genderCode = user.gender || profile.gender || '';
+    const genderLabel = genderCode === 'M' ? 'Male' : genderCode === 'F' ? 'Female' : genderCode === 'O' ? 'Other' : '';
     await MongoUser.findByIdAndUpdate(
       user._id,
       {
         fullName,
-        email: profile.email || `${user.userId}@example.com`,
-        phone: mobile ?? profile.mobile ?? '',
-        dateOfBirth: profile.dob ? new Date(profile.dob) : undefined,
+        email: user.email || profile.email || `${user.userId}@example.com`,
+        phone: user.mobile || mobile || profile.mobile || '',
+        dateOfBirth: user.dob ? new Date(user.dob) : (profile.dob ? new Date(profile.dob) : undefined),
+        ...(genderLabel ? { gender: genderLabel } : {}),
+        ...(city ? { address: city } : profile.city ? { address: profile.city } : {}),
       },
       { upsert: true }
     );
@@ -127,6 +215,7 @@ router.post('/login/verify',
 
       const user = await upsertUserFromProfile(profile, {
         aadhaar: method === 'aadhaar' ? txn.identifier : undefined,
+        abhaIdentifier: method !== 'aadhaar' ? txn.identifier : undefined,
         loginMethod: method,
       });
 
@@ -143,13 +232,7 @@ router.post('/login/verify',
       txn.verifiedAt = new Date();
       await txn.save();
 
-      const responseProfile = {
-        id: user._id.toString(),
-        userId: user.userId,
-        aadhaar: user.aadhaar,
-        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
-        ...profile,
-      };
+      const responseProfile = buildResponseProfile(user, profile);
 
       res.json({
         needsSelection: false,
@@ -157,6 +240,7 @@ router.post('/login/verify',
         tokens,
         userId: user.userId,
       });
+
     } catch (e) {
       logger.error('[auth/login/verify]', e);
       sendServiceError(res, e);
@@ -182,7 +266,10 @@ router.post('/login/verify-user',
       const profile = result.ABHAProfile;
       const tokens = result.tokens;
 
-      const user = await upsertUserFromProfile(profile, { loginMethod: txn.method });
+      const user = await upsertUserFromProfile(profile, {
+        loginMethod: txn.method,
+        abhaIdentifier: txn.identifier || abhaNumber,
+      });
 
       await UserSession.create({
         userId: user.userId,
@@ -196,19 +283,14 @@ router.post('/login/verify-user',
       txn.verifiedAt = new Date();
       await txn.save();
 
-      const responseProfile = {
-        id: user._id.toString(),
-        userId: user.userId,
-        aadhaar: user.aadhaar,
-        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
-        ...profile,
-      };
+      const responseProfile = buildResponseProfile(user, profile);
 
       res.json({
         profile: responseProfile,
         tokens,
         userId: user.userId,
       });
+
     } catch (e) {
       logger.error('[auth/login/verify-user]', e);
       sendServiceError(res, e);
@@ -272,6 +354,7 @@ router.post('/register/enroll',
         aadhaar: req.body.aadhaar || txn.identifier,
         mobile: req.body.mobile,
         loginMethod: 'register',
+        city: req.body.city,
       });
 
       await UserSession.create({
@@ -286,19 +369,14 @@ router.post('/register/enroll',
       txn.verifiedAt = new Date();
       await txn.save();
 
-      const responseProfile = {
-        id: user._id.toString(),
-        userId: user.userId,
-        aadhaar: user.aadhaar,
-        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
-        ...profile,
-      };
+      const responseProfile = buildResponseProfile(user, profile);
 
       res.json({
         profile: responseProfile,
         tokens,
         userId: user.userId,
       });
+
     } catch (e) {
       logger.error('[auth/register/enroll]', e);
       sendServiceError(res, e);
