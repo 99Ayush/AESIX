@@ -6,14 +6,22 @@ import { onDatabaseChange } from "../services/realtime";
 import { useDashboardLanguage } from "../LanguageContext";
 import PatientSidebar from "../components/asidebar";
 import ChatbotFAB from "../components/ChatbotFAB";
+
 import {
   Camera,
   CalendarDays,
+  CircleCheck,
+  Nut, Shell, Flower2 ,
   Search,
+  Bell,
+  LogOut,
   FileText,
   Globe,
   Hand,
+  Phone,
   Pencil, 
+  Mail,
+  CircleUser,
   ChevronsRight,
 } from "lucide-react";
 
@@ -290,7 +298,7 @@ export default function LandingPage() {
         storedUser?.mobile,
         storedUser?.phone,
       ),
-      icon: "📞",
+      icon: <Phone size={22} />,
     },
     {
       title: "Address",
@@ -322,7 +330,7 @@ export default function LandingPage() {
     {
       title: "Email",
       value: getVal(profile?.contact?.email, storedUser?.email),
-      icon: "✉️",
+      icon: <Mail size={22} strokeWidth={2} />
     },
     {
       title: "Emergency",
@@ -446,11 +454,11 @@ export default function LandingPage() {
       cursor: "pointer",
       transition: "background 0.2s",
     },
-    // 3-column body
+    // 2-column body
     bodyGrid: {
       padding: "1.5rem",
       display: "grid",
-      gridTemplateColumns: "210px 1fr 340px",
+      gridTemplateColumns: "210px 1fr",
       gap: "1.5rem",
     },
     // Left - photo + allergies
@@ -701,16 +709,16 @@ export default function LandingPage() {
               className="sih-lang-select"
             >
               <option value="English">
-                <Globe size={18} strokeWidth={2} /> English
+                <Globe size={18} strokeWidth={2} />🌐 English
               </option>
               <option value="Hindi">
-                <Globe size={18} strokeWidth={2} /> हिंदी
+                <Globe size={18} strokeWidth={2} />🌐 हिंदी
               </option>
               <option value="Bengali">
-                <Globe size={18} strokeWidth={2} /> বাংলা
+                <Globe size={18} strokeWidth={2} />🌐 বাংলা
               </option>
               <option value="Tamil">
-                <Globe size={18} strokeWidth={2} /> தமிழ்
+                <Globe size={18} strokeWidth={2} />🌐தமிழ்
               </option>
             </select>
             <div style={{ position: "relative" }} ref={notifRef}>
@@ -718,7 +726,7 @@ export default function LandingPage() {
                 className="sih-notif-bell"
                 onClick={() => setNotifOpen(!notifOpen)}
               >
-                🔔
+                <Bell size={22} strokeWidth={2} /> 
                 <span className="sih-notif-badge">{pendingRequests.length}</span>
               </button>
               {notifOpen && (
@@ -844,7 +852,7 @@ export default function LandingPage() {
                       setProfileOpen(false);
                     }}
                   >
-                    <span className="dd-icon">👤</span> Profile
+                    <span className="dd-icon"><CircleUser /></span> Profile
                   </button>
                   <button
                     className="sih-profile-dropdown-item danger"
@@ -855,7 +863,7 @@ export default function LandingPage() {
                       navigate("/login");
                     }}
                   >
-                    <span className="dd-icon">🚪</span> Sign Out
+                    <span className="dd-icon"><LogOut /></span> Sign Out
                   </button>
                 </div>
               )}
@@ -1040,8 +1048,8 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* 3-Column Body */}
-              <div style={s.bodyGrid}>
+              {/* 2-Column Body: Photo + Patient Information */}
+              <div style={s.bodyGrid} className="lp-body-grid-responsive">
                 {/* LEFT — Photo + Allergies */}
                 <div style={s.leftCol}>
                   <div style={{ position: "relative" }}>
@@ -1106,64 +1114,10 @@ export default function LandingPage() {
                     ))}
                   </div>
                 </div>
-
-                {/* RIGHT — Utility Section */}
-                <div style={s.rightUtil}>
-                  {/* Medical Dictionary Button */}
-                  <div
-                    style={s.utilBtn}
-                    onClick={() => navigate("/health-codes")}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#D0F0E8";
-                      e.currentTarget.style.boxShadow =
-                        "0 4px 12px rgba(12,154,154,0.12)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#E8F7F4";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  >
-                    <div style={s.utilBtnIcon}>
-                      <BookIcon />
-                    </div>
-                    <span style={s.utilBtnText}>Medical Dictionary</span>
-                    <span style={s.utilBtnChevron}>
-                      <ChevronRight />
-                    </span>
-                  </div>
-
-                  {/* Sockets Button */}
-                  <div
-                    style={s.utilBtn}
-                    onClick={() => navigate("/socrates")}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = "#D0F0E8";
-                      e.currentTarget.style.boxShadow =
-                        "0 4px 12px rgba(12,154,154,0.12)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = "#E8F7F4";
-                      e.currentTarget.style.boxShadow = "none";
-                    }}
-                  >
-                    <div style={s.utilBtnIcon}>
-                      <div className="socrates-icon">
-                        <span>⚕</span>
-                      </div>
-
-                    </div>
-                    <span style={s.utilBtnText}>SOCRATES</span>
-                    <span style={s.utilBtnChevron}>
-                      <ChevronRight />
-                    </span>
-                  </div>
-  
-                  
-                </div>
               </div>
 
               {/* Bottom Action Cards — Rich Detail Cards */}
-              <div style={s.bottomActions}>
+              <div style={s.bottomActions} className="lp-bottom-actions-responsive">
                 {/* ── Known Allergies Card ── */}
                 <div
                   style={{
@@ -1231,11 +1185,11 @@ export default function LandingPage() {
                         }}
                       >
                         <span style={{ fontSize: "0.9rem" }}>
-                          {["🥜", "🦐", "🌼", "💊", "🩹", "⚠️"][idx % 6]}
+                          {[<Nut size={20} />, <Shell size={20} />, <Flower2 size={20} />, "💊", "🩹", "⚠️"][idx % 6]}
                         </span>
                         {allergy}
                       </span>
-                    ))}
+                    ))} 
                     {(!profile?.allergies || profile.allergies.length === 0) && (
                       <span style={{ fontSize: "0.78rem", color: "#94A3B8", fontStyle: "italic" }}>
                        
@@ -1311,7 +1265,7 @@ export default function LandingPage() {
                           border: "1px solid rgba(12,154,154,0.15)",
                         }}
                       >
-                        <span style={{ color: "#10B981", fontSize: "0.95rem" }}>✅</span>
+                        <span style={{ color: "#10B981", fontSize: "0.95rem" }}><CircleCheck size={20} /></span>
                         <span>
                           {vac.name}
                           <span style={{
@@ -1327,19 +1281,198 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+
+            {/* ═══ CLINICAL TOOLS & SERVICES (Adjusted across Main Div) ═══ */}
+            <div
+              className="lp-tools-grid-responsive"
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1.25rem",
+                marginTop: "1.5rem",
+              }}
+            >
+              {/* ── Medical Directory Card ── */}
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: "18px",
+                  border: "1px solid #DCEAE6",
+                  padding: "1.5rem",
+                  cursor: "pointer",
+                  transition: "all 0.25s ease",
+                  boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
+                }}
+                onClick={() => navigate("/health-codes")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                {/* Card Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0,
+                      color: "#0C9A9A",
+                    }}>
+                      <BookIcon />
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
+                        Medical Directory
+                      </div>
+                      <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
+                        Search ICD-10 diagnostic codes & disease terminologies
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
+                </div>
+
+                {/* Quick Info Tags */}
+                <div style={{
+                  fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
+                }}>
+                  HEALTH CODE REPOSITORY
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {[
+                    { label: "ICD-10 Lookup", desc: "Global Codes" },
+                    { label: "Clinical Reference", desc: "Diagnostic DB" },
+                    { label: "Disease Classification", desc: "Searchable" },
+                  ].map((item, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                        background: "#EFF9F7", color: "#084766",
+                        borderRadius: "8px", padding: "0.4rem 0.75rem",
+                        fontSize: "0.8rem", fontWeight: 700,
+                        border: "1px solid rgba(12,154,154,0.15)",
+                      }}
+                    >
+                      <span style={{ color: "#0C9A9A", fontSize: "0.95rem" }}><CircleCheck size={18} /></span>
+                      <span>
+                        {item.label}
+                        <span style={{
+                          display: "block", fontSize: "0.68rem",
+                          color: "#6B9190", fontWeight: 600, marginTop: "0.1rem",
+                        }}>
+                          {item.desc}
+                        </span>
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── SOCRATES Assessment Card ── */}
+              <div
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: "18px",
+                  border: "1px solid #DCEAE6",
+                  padding: "1.5rem",
+                  cursor: "pointer",
+                  transition: "all 0.25s ease",
+                  boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
+                }}
+                onClick={() => navigate("/socrates")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                {/* Card Header */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+                    <div style={{
+                      width: 52, height: 52, borderRadius: "50%",
+                      background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      flexShrink: 0,
+                    }}>
+                      <div className="socrates-icon" style={{ width: 44, height: 44, background: "transparent" }}>
+                        <span style={{ fontSize: 26, color: "#0C9A9A" }}>⚕</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
+                        SOCRATES Intake
+                      </div>
+                      <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
+                        10-point pain & symptom clinical evaluation framework
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
+                </div>
+
+                {/* Quick Info Tags */}
+                <div style={{
+                  fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
+                  letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
+                }}>
+                  CLINICAL EVALUATION TOOLS
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {[
+                    { label: "10-Point Analysis", desc: "Structured Intake" },
+                    { label: "Pain Severity Scale", desc: "0-10 Rating" },
+                    { label: "Doctor Review Sync", desc: "Cloudinary Saved" },
+                  ].map((item, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                        background: "#EFF9F7", color: "#084766",
+                        borderRadius: "8px", padding: "0.4rem 0.75rem",
+                        fontSize: "0.8rem", fontWeight: 700,
+                        border: "1px solid rgba(12,154,154,0.15)",
+                      }}
+                    >
+                      <span style={{ color: "#0C9A9A", fontSize: "0.95rem" }}><CircleCheck size={18} /></span>
+                      <span>
+                        {item.label}
+                        <span style={{
+                          display: "block", fontSize: "0.68rem",
+                          color: "#6B9190", fontWeight: 600, marginTop: "0.1rem",
+                        }}>
+                          {item.desc}
+                        </span>
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
           </main>
         </div>
       </div>
 
       {/* ─── Responsive overrides via inline <style> ─── */}
       <style>{`
-        @media (max-width: 1100px) {
+        @media (max-width: 900px) {
           .lp-body-grid-responsive {
-            grid-template-columns: 1fr 1fr !important;
+            grid-template-columns: 1fr !important;
           }
-        }
-        @media (max-width: 768px) {
-          .lp-body-grid-responsive {
+          .lp-tools-grid-responsive {
+            grid-template-columns: 1fr !important;
+          }
+          .lp-bottom-actions-responsive {
             grid-template-columns: 1fr !important;
           }
         }

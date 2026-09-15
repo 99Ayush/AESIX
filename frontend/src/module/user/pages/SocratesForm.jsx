@@ -4,7 +4,30 @@ import '../userPages.css';
 import { userApi } from '../services/userApi';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
-
+import {
+  FileText,
+  RefreshCw,
+   CircleUser,
+    LogOut,
+  ClipboardClock,
+  ClipboardList,
+FilePenLine,
+ Landmark, 
+  Phone,
+  Pencil,Bell,BookOpen,Mail,
+  Pill,
+  TestTube,
+  Calendar,
+  Search,
+  Download,
+  Share2,
+  Eye,
+ Trash2,
+  Lock,
+  Cloud,
+  Contact,
+  Folder
+} from "lucide-react";
 const CHARACTER_OPTIONS = [
   'Sharp / Stabbing',
   'Dull / Aching',
@@ -217,17 +240,17 @@ export default function SocratesForm() {
               className="sih-nav-btn"
               style={{ background: activeTab === 'new' ? 'var(--mint-light)' : 'transparent', color: activeTab === 'new' ? 'var(--teal-primary)' : 'var(--text-muted)' }}
             >
-              <span className="sih-nav-icon">📝</span> New Assessment
+              <span className="sih-nav-icon"><FilePenLine size={24} strokeWidth={2} /></span> New Assessment
             </button>
             <button 
               onClick={() => setActiveTab('history')} 
               className="sih-nav-btn"
               style={{ background: activeTab === 'history' ? 'var(--mint-light)' : 'transparent', color: activeTab === 'history' ? 'var(--teal-primary)' : 'var(--text-muted)' }}
             >
-              <span className="sih-nav-icon">📋</span> Assessment History
+              <span className="sih-nav-icon"><ClipboardClock size={24} strokeWidth={2} /></span> Assessment History
             </button>
             <button onClick={() => navigate('/profile')} className="sih-nav-btn">
-              <span className="sih-nav-icon">👤</span> Profile
+              <span className="sih-nav-icon"><CircleUser size={24} strokeWidth={2} /></span> Profile
             </button>
           </nav>
         </div>
@@ -246,7 +269,7 @@ export default function SocratesForm() {
             <div className="sih-card" style={{ padding: '1.8rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #0C9A9A 0%, #086F6F 100%)', color: '#fff' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem' }}>
-                  🩺
+                  <span>⚕</span>
                 </div>
                 <div style={{ flex: 1 }}>
                   <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: 0, color: '#fff' }}>SOCRATES Clinical Intake Form</h2>
@@ -610,7 +633,7 @@ export default function SocratesForm() {
                   }}
                   onClick={() => document.getElementById('socrates-file-input').click()}
                 >
-                  <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}>☁️</div>
+                  <div style={{ fontSize: '2rem', marginBottom: '0.4rem' }}><Cloud size={22} /></div>
                   <h4 style={{ margin: '0 0 0.2rem 0', color: '#0C9A9A', fontWeight: 700 }}>Upload Supporting Documents to Cloudinary</h4>
                   <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B' }}>
                     Click to select lab reports, prescriptions, or images (PDF, JPG, PNG up to 10MB each)
@@ -633,7 +656,7 @@ export default function SocratesForm() {
                     </div>
                     {files.map((f, idx) => (
                       <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 0.8rem', background: '#F8FAFC', borderRadius: '6px', border: '1px solid #E2E8F0', fontSize: '0.85rem' }}>
-                        <span style={{ fontWeight: 600, color: '#334155' }}>📄 {f.name} ({(f.size / 1024).toFixed(1)} KB)</span>
+                        <span style={{ fontWeight: 600, color: '#334155' }}><Files size={20} /> {f.name} ({(f.size / 1024).toFixed(1)} KB)</span>
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
@@ -680,7 +703,7 @@ export default function SocratesForm() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  {isSubmitting ? 'Uploading to Cloudinary...' : 'Submit SOCRATES Assessment 🚀'}
+                  {isSubmitting ? 'Uploading to Cloudinary...' : 'Submit Assessment '}
                 </button>
               </div>
 
@@ -693,7 +716,7 @@ export default function SocratesForm() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <h2 style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-                    📋 Past SOCRATES Submissions
+                    <ClipboardList size={20} /> Past SOCRATES Submissions
                   </h2>
                   <p style={{ fontSize: '0.85rem', color: '#64748B', margin: '0.2rem 0 0 0' }}>
                     Review your previous symptom assessments and Cloudinary-stored medical files.
@@ -704,7 +727,7 @@ export default function SocratesForm() {
                   className="sih-nav-btn"
                   style={{ border: '1px solid #CBD5E1' }}
                 >
-                  🔄 Refresh
+                  <RefreshCw size={20} /> Refresh
                 </button>
               </div>
             </div>

@@ -5,6 +5,25 @@ import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
+import {
+ Landmark, 
+  Phone,
+  CircleUser,
+  LogOut,
+  Pencil,Bell,BookOpen,Mail,
+  Pill,
+  TestTube,
+  Calendar,
+  Search,
+  Download,
+  Share2,
+  Eye,
+  FileText,
+  Lock,
+  Cloud,
+  Contact,
+  Folder
+} from "lucide-react";
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -101,7 +120,7 @@ export default function AbhaID() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
+            <button className="sih-notif-bell"><Bell size={22} strokeWidth={2} /> <span className="sih-notif-badge">3</span></button>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>
@@ -117,10 +136,10 @@ export default function AbhaID() {
               {profileOpen && (
                 <div className="sih-profile-dropdown">
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
-                    <span className="dd-icon">👤</span> Profile
+                    <span className="dd-icon"><CircleUser /> </span> Profile
                   </button>
                   <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
-                    <span className="dd-icon">🚪</span> Sign Out
+                    <span className="dd-icon"><LogOut /></span> Sign Out
                   </button>
                 </div>
               )}
@@ -135,11 +154,11 @@ export default function AbhaID() {
           {/* MAIN CONTAINER */}
           <main className="sih-main-layout">
 
-        {/* TWO-COLUMN RESPONSIVE LAYOUT */}
-        <div className="abha-grid">
+        {/* FULL-WIDTH LAYOUT */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
-          {/* LEFT COLUMN: ABHA ID CARD */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {/* ABHA ID CARD — FULL WIDTH */}
+          <div>
             
             {/* OFFICIAL ABHA ID CARD */}
             <div className="sih-card">
@@ -148,7 +167,7 @@ export default function AbhaID() {
               <div className="abha-nha-banner">
                 <div className="abha-nha-left">
                   <div className="abha-nha-icon">
-                    🏛️
+                    <Landmark size={22} />
                   </div>
                   <div>
                     <p style={{ fontSize: '0.65rem', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em', opacity: 0.8 }}>
@@ -257,59 +276,15 @@ export default function AbhaID() {
 
           </div>
 
-          {/* RIGHT COLUMN: PENDING CONSENTS & DOWNLOAD */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            
-            {/* PENDING CONSENTS CARD */}
-            <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-              
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
-                <h3 style={{ fontSize: '0.85rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#F59E0B' }}></span>
-                  Pending Consents ({pendingConsents.length})
-                </h3>
-                <span className="sih-badge sih-badge-amber">
-                  Action Needed
-                </span>
-              </div>
-
-              {/* Pending Consents List */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                {pendingConsents.map((consent) => (
-                  <div key={consent.id} style={{ borderBottom: '1px solid #F1F5F9', paddingBottom: '0.75rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-navy)', margin: 0 }}>{consent.requester}</h4>
-                      <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>{formatDate(consent.date)}</span>
-                    </div>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500, margin: '0.2rem 0 0 0' }}>{consent.purpose}</p>
-                  </div>
-                ))}
-              </div>
-
-              {/* View All Consents Button */}
-              <div>
-                <button
-                  onClick={() => navigate('/consent')}
-                  className="sih-btn sih-btn-navy"
-                  style={{ width: '100%' }}
-                >
-                  View All Consents →
-                </button>
-              </div>
-
-            </div>
-
-            {/* DOWNLOAD BUTTON BELOW PENDING CONSENTS */}
-            <div>
-              <button
-                onClick={handleDownload}
-                className="sih-btn sih-btn-primary"
-                style={{ width: '100%', padding: '1rem 1.5rem', fontSize: '0.95rem', borderRadius: 'var(--radius-xl)' }}
-              >
-                <span>📥</span> Download Official ABHA Card (PDF)
-              </button>
-            </div>
-
+          {/* DOWNLOAD BUTTON — FULL WIDTH BELOW */}
+          <div>
+            <button
+              onClick={handleDownload}
+              className="sih-btn sih-btn-primary"
+              style={{ width: '100%', padding: '1rem 1.5rem', fontSize: '0.95rem', borderRadius: 'var(--radius-xl)' }}
+            >
+              <span><Download size={22} /></span> Download Official ABHA Card (PDF)
+            </button>
           </div>
 
         </div>

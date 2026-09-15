@@ -5,7 +5,26 @@ import { fileToBase64, userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
-
+import {
+  FileText,
+ Landmark, 
+  CircleUser,
+  LogOut,
+  Phone,
+  Pencil,Bell,BookOpen,Mail,
+  Pill,
+  TestTube,
+  Calendar,
+  Search,
+  Download,
+  Share2,
+  Eye,
+ Trash2,
+  Lock,
+  Cloud,
+  Contact,
+  Folder
+} from "lucide-react";
 // Utility for formatting dates
 export const formatDate = (dateString) => {
   if (!dateString) return 'N/A';
@@ -190,7 +209,7 @@ export default function UploadDoc() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
+            <button className="sih-notif-bell"><Bell size={22} strokeWidth={2} /><span className="sih-notif-badge">3</span></button>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
@@ -200,10 +219,10 @@ export default function UploadDoc() {
               {profileOpen && (
                 <div className="sih-profile-dropdown">
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
-                    <span className="dd-icon">👤</span> Profile
+                    <span className="dd-icon"><CircleUser /> </span> Profile
                   </button>
                   <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
-                    <span className="dd-icon">🚪</span> Sign Out
+                    <span className="dd-icon"><LogOut /></span> Sign Out
                   </button>
                 </div>
               )}
@@ -232,8 +251,8 @@ export default function UploadDoc() {
               className="sih-select"
               style={{ width: 'auto', padding: '0.45rem 0.85rem', fontSize: '0.75rem', fontWeight: 700 }}
             >
-              <option value="newest">📅 NEWEST 1ST</option>
-              <option value="oldest">📅 OLDEST 1ST</option>
+              <option value="newest"> NEWEST FIRST </option>
+              <option value="oldest"> OLDEST FIRST</option>
             </select>
           </div>
 
@@ -294,7 +313,7 @@ export default function UploadDoc() {
             />
 
             <div className="doc-icon-container" style={{ margin: '0 auto', width: '56px', height: '56px', borderRadius: '50%', fontSize: '1.8rem' }}>
-              🔍
+              <Search size={22} />
             </div>
 
             <div style={{ marginTop: '0.5rem' }}>
@@ -413,7 +432,7 @@ export default function UploadDoc() {
                     {/* File Name & Details */}
                     <div style={{ backgroundColor: 'var(--mint-bg)', padding: '0.6rem 0.75rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: '0.25rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden' }}>
-                        <span>📄</span>
+                        <span><FileText size={24} strokeWidth={2} /></span>
                         <span style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: 'var(--text-main)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{doc.fileName}</span>
                       </div>
                       <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>{doc.fileSize}</span>
@@ -427,7 +446,7 @@ export default function UploadDoc() {
                       className="sih-btn sih-btn-navy"
                       style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem' }}
                     >
-                      <span>👁️</span> View Document
+                      <span><Eye size={22} /></span> View Document
                     </button>
 
                     <button
@@ -436,7 +455,7 @@ export default function UploadDoc() {
                       style={{ padding: '0.5rem', color: '#EF4444' }}
                       title="Delete Record"
                     >
-                      🗑️
+                      <Trash2 size={24} strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -445,7 +464,7 @@ export default function UploadDoc() {
           ) : (
             /* EMPTY STATE */
             <div style={{ textAlign: 'center', padding: '3rem 1rem', backgroundColor: 'var(--mint-bg)', borderRadius: 'var(--radius-xl)', border: '1px solid var(--border-light)' }}>
-              <div style={{ fontSize: '2.5rem' }}>📂</div>
+              <div style={{ fontSize: '2.5rem' }}><FileText /></div>
               <h4 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--primary-navy)', marginTop: '0.5rem' }}>No Documents Found</h4>
               <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
                 No medical records match the selected category <strong style={{ textTransform: 'uppercase' }}>"{activeFilter}"</strong> or search query.

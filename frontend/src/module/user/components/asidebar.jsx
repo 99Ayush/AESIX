@@ -50,7 +50,7 @@ const PatientSidebar = ({
     { label: "DOCUMENTS", path: "/uploadDoc", icon: FileText, key: "uploadDoc" },
     { label: "CONSENT", path: "/consent", icon: FileCheck, key: "consent" },
     { label: "SOCRATES FORM", path: "/socrates", icon: ClipboardList, key: "socrates" },
-    { label: "CLINICAL DIRECTORY", path: "/kindle", icon: BookOpen, key: "kindle" },
+    { label: "MEDICAL DIRECTORY", path: "/kindle", icon: BookOpen, key: "kindle" },
     { label: "PROFILE", path: "/profile", icon: User, key: "profile" },
     { label: "GENAI BOT", path: "/genai", icon: Bot, key: "genai" },
   ];
