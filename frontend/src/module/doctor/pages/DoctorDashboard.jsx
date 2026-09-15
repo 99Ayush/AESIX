@@ -168,8 +168,8 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
             searchError={searchError}
           />
 
-          {/* VIEW SWITCHER SUB-HEADER PILLS */}
-          <div className="doc-view-switcher-bar">
+
+          {/* <div className="doc-view-switcher-bar">
             <span className="doc-switcher-label">View Mode:</span>
             <button
               className={`doc-view-pill ${activeTab === 'overview' ? 'active' : ''}`}
@@ -204,13 +204,7 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
             >
               <TriangleAlert size={17} /> Medical Alerts ({patientData?.alerts?.length || 0})
             </button> */}
-            <button
-              className={`doc-view-pill ${activeTab === 'directory' ? 'active' : ''}`}
-              onClick={() => handleTabSwitch('directory')}
-            >
-              <ClipboardList size={17} /> Patient Directory
-            </button>
-          </div>
+         
 
           {/* NO PATIENT SELECTED STATE */}
           {!selectedPatientId && activeTab !== 'directory' ? (
