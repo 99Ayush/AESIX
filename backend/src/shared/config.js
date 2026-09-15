@@ -26,9 +26,8 @@ const config = {
     mockMode: process.env.ABDM_MOCK !== "false",
   },
   database: {
-    uri:
-      process.env.MONGODB_URI ||
-      "mongodb+srv://alok2:12332112@cluster0.b3i0g2l.mongodb.net/aesix",
+    uri: process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/aesix",
+    dbName: process.env.MONGODB_DB || "aesix",
   },
 };
 

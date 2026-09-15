@@ -25,14 +25,14 @@
 .medical-genai-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  max-width: 1100px;
-  margin: 0 auto;
+  height: calc(100vh - 125px);
+  min-height: 650px;
+  width: 100%;
   background-color: var(--mint-bg, #F5FAF8);
   color: var(--text-main, #183B56);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  border-left: 1px solid var(--border-light, #E2E8F0);
-  border-right: 1px solid var(--border-light, #E2E8F0);
+  border: 1px solid var(--border-light, #E2E8F0);
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow-md, 0 4px 12px rgba(18, 48, 74, 0.08));

@@ -51,14 +51,44 @@ app.use("/api/users", userRoutes);
 app.use("/api/doctor", doctorRoutes);
 app.use(errorLogger);
 
+function maskMongoUri(uri) {
+  if (!uri) return "<missing>";
+  try {
+    // mongodb+srv://user:password@host/... -> mongodb+srv://user:****@host/...
+    return uri.replace(/(\/\/[^:/\s]+:)([^@\s]+)(@)/, "$1****$3");
+  } catch {
+    return "<unparseable-uri>";
+  }
+}
+
 export async function startServer() {
   if (server) return server;
   if (!config.database.uri)
     throw new Error("MONGODB_URI is required. Configure backend/.env.");
-  console.log("Connecting to MongoDB...", config.database.uri);
-  await mongoose.connect(config.database.uri, {
-    serverSelectionTimeoutMS: 10_000,
-  });
+  console.log("Connecting to MongoDB...", maskMongoUri(config.database.uri));
+  try {
+    await mongoose.connect(config.database.uri, {
+      dbName: config.database.dbName,
+      serverSelectionTimeoutMS: 10_000,
+    });
+  } catch (error) {
+    const reason = error?.reason?.message || error.message;
+    console.error(`MongoDB connection failed: ${reason}`);
+    console.error(
+      [
+        "",
+        "Atlas fix (most common cause = IP not whitelisted):",
+        "1. Atlas dashboard -> Network Access -> Add IP Address.",
+        `2. Add your current public IP, or 0.0.0.0/0 for local dev.`,
+        "3. Also check: Database Access (user exists), correct password,",
+        "   and that MONGODB_URI ends with /<dbName>?retryWrites=true.",
+        `   MONGODB_DB=${config.database.dbName}`,
+        "Docs: https://www.mongodb.com/docs/atlas/security-whitelist/",
+        "",
+      ].join("\n"),
+    );
+    throw error;
+  }
   startRealtimeDatabaseEvents(io);
   server = await new Promise((resolve, reject) => {
     const candidate = httpServer.listen(port);

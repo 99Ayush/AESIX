@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import { useDashboardLanguage } from '../LanguageContext';
 
 // Formatting Utilities
 const formatDate = (dateString) => {
@@ -38,7 +39,7 @@ export default function BasicInfo() {
   // UI State
   const [isEditing, setIsEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'medications' | 'checkups'
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [toastMessage, setToastMessage] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -286,7 +287,7 @@ export default function BasicInfo() {
           </nav>
 
           <div className="sih-header-controls">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>
               <option value="Bengali">🌐 বাংলা</option>

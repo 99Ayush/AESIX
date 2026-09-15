@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 
 export default function KindleMain() {
   const navigate = useNavigate();
@@ -18,8 +19,8 @@ export default function KindleMain() {
   const [record, setRecord] = useState(null);
   const [isLoadingRecord, setIsLoadingRecord] = useState(false);
 
-  // Header state
-  const [language, setLanguage] = useState('English');
+  // Header state (shared global language — only clicked language is shown)
+  const { language, setLanguage } = useDashboardLanguage();
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
@@ -146,7 +147,7 @@ export default function KindleMain() {
 
           {/* Header Controls */}
           <div className="sih-header-controls">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>
               <option value="Bengali">🌐 বাংলা</option>

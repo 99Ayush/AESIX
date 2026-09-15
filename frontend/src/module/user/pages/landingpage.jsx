@@ -341,13 +341,12 @@ export default function LandingPage() {
   ];
 
   // Known allergies
-  // --------------- causes hydration err -----------------
-  // const allergies = (profile?.allergies || []).map((text, index) => ({
-  //   text,
-  //   icon: "✦",
-  //   bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
-  //   color: "#F52B91",
-  // }));
+  const allergies = (Array.isArray(profile?.allergies) ? profile.allergies : []).map((text, index) => ({
+    text,
+    icon: "✦",
+    bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
+    color: "#F52B91",
+  }));
 
   /* ─── Inline styles ─── */
   const s = {
@@ -719,19 +718,13 @@ export default function LandingPage() {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="sih-lang-select"
+              data-no-translate
+              translate="no"
             >
-              <option value="English">
-                <Globe size={18} strokeWidth={2} /> English
-              </option>
-              <option value="Hindi">
-                <Globe size={18} strokeWidth={2} /> हिंदी
-              </option>
-              <option value="Bengali">
-                <Globe size={18} strokeWidth={2} /> বাংলা
-              </option>
-              <option value="Tamil">
-                <Globe size={18} strokeWidth={2} /> தமிழ்
-              </option>
+              <option value="English">🌐 English</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
             </select>
             <div style={{ position: "relative" }} ref={notifRef}>
               <button

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import { useDashboardLanguage } from '../LanguageContext';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -21,7 +22,7 @@ export default function AbhaID() {
   const [abhaDetails, setAbhaDetails] = useState({});
   const [pendingConsents, setPendingConsents] = useState([]);
 
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -104,7 +105,7 @@ export default function AbhaID() {
           </nav>
 
           <div className="sih-header-controls">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>
               <option value="Bengali">🌐 বাংলা</option>
