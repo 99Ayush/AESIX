@@ -5,6 +5,7 @@ import { userApi } from "../services/userApi";
 import { onDatabaseChange } from "../services/realtime";
 import { useDashboardLanguage } from "../LanguageContext";
 import PatientSidebar from "../components/asidebar";
+import ChatbotFAB from "../components/ChatbotFAB";
 import {
   Camera,
   CalendarDays,
@@ -12,6 +13,8 @@ import {
   FileText,
   Globe,
   Hand,
+  Pencil, 
+  ChevronsRight,
 } from "lucide-react";
 
 /* ─── Inline SVG icons ─── */
@@ -866,422 +869,465 @@ export default function LandingPage() {
         <div className="patient-content-area">
           {/* ===== MAIN ===== */}
           <main style={s.main}>
-        {/* Welcome Header */}
-        <div style={s.headingRow}>
-          <div>
-            <h2 style={s.welcome}>
-              Welcome back, {patientName} <span>👋</span>
-            </h2>
-          </div>
-          <div style={s.dateBadge}>
-            <span>
-              <CalendarDays size={18} />
-            </span>
-            <div>
-              <span style={{ fontWeight: 700 }}>
-                {new Date().toLocaleDateString("en-IN", {
-                  weekday: "long",
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </span>
-              <span style={{ color: "#6B9190", marginLeft: "0.5rem" }}>
-                • Last synced 3 min ago
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* ===== PENDING ACCESS REQUESTS BANNER ===== */}
-        {pendingRequests.length > 0 && (
-          <div
-            style={{
-              background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-              border: "1px solid #FCD34D",
-              borderRadius: "16px",
-              padding: "1.25rem 1.5rem",
-              marginBottom: "1.5rem",
-              boxShadow: "0 4px 14px rgba(245,158,11,0.08)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "0.85rem",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                <span style={{ fontSize: "1.3rem" }}>🩺</span>
+            {/* Welcome Header */}
+            <div style={s.headingRow}>
+              <div>
+                <h2 style={s.welcome}>
+                  Welcome back, {patientName} <span>!!</span>
+                </h2>
+              </div>
+              <div style={s.dateBadge}>
+                <span>
+                  <CalendarDays size={18} />
+                </span>
                 <div>
-                  <h3
-                    style={{
-                      margin: 0,
-                      fontSize: "1rem",
-                      fontWeight: 800,
-                      color: "#92400E",
-                    }}
-                  >
-                    Pending Doctor Access Requests ({pendingRequests.length})
-                  </h3>
-                  <p
-                    style={{
-                      margin: "0.15rem 0 0",
-                      fontSize: "0.78rem",
-                      color: "#B45309",
-                    }}
-                  >
-                    A doctor is requesting consent to view your clinical SOCRATES assessment forms.
-                  </p>
+                  <span style={{ fontWeight: 700 }}>
+                    {new Date().toLocaleDateString("en-IN", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span style={{ color: "#6B9190", marginLeft: "0.5rem" }}>
+                    • Last synced 3 min ago
+                  </span>
                 </div>
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-              {pendingRequests.map((req) => (
+            {/* ===== PENDING ACCESS REQUESTS BANNER ===== */}
+            {pendingRequests.length > 0 && (
+              <div
+                style={{
+                  background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
+                  border: "1px solid #FCD34D",
+                  borderRadius: "16px",
+                  padding: "1.25rem 1.5rem",
+                  marginBottom: "1.5rem",
+                  boxShadow: "0 4px 14px rgba(245,158,11,0.08)",
+                }}
+              >
                 <div
-                  key={req._id}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    background: "#FFFFFF",
-                    borderRadius: "12px",
-                    padding: "0.85rem 1.25rem",
-                    border: "1px solid #FDE68A",
-                    flexWrap: "wrap",
-                    gap: "0.75rem",
+                    marginBottom: "0.85rem",
                   }}
                 >
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 800,
-                        color: "#1E293B",
-                        fontSize: "0.92rem",
-                      }}
-                    >
-                      {req.doctorName}
-                    </div>
-                    <div style={{ fontSize: "0.8rem", color: "#64748B", marginTop: "0.2rem" }}>
-                      Requested access to: <strong>SOCRATES Form — {req.formInfo?.site || "Pain Assessment"}</strong> (Pain Severity: {req.formInfo?.severity ?? "N/A"}/10)
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <span style={{ fontSize: "1.3rem" }}>🩺</span>
+                    <div>
+                      <h3
+                        style={{
+                          margin: 0,
+                          fontSize: "1rem",
+                          fontWeight: 800,
+                          color: "#92400E",
+                        }}
+                      >
+                        Pending Doctor Access Requests ({pendingRequests.length})
+                      </h3>
+                      <p
+                        style={{
+                          margin: "0.15rem 0 0",
+                          fontSize: "0.78rem",
+                          color: "#B45309",
+                        }}
+                      >
+                        A doctor is requesting consent to view your clinical SOCRATES assessment forms.
+                      </p>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "0.5rem" }}>
-                    <button
-                      onClick={() => handleRespond(req._id, "accepted")}
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  {pendingRequests.map((req) => (
+                    <div
+                      key={req._id}
                       style={{
-                        background: "#10B981",
-                        color: "#FFFFFF",
-                        border: "none",
-                        padding: "0.5rem 1.25rem",
-                        borderRadius: "8px",
-                        fontWeight: 700,
-                        fontSize: "0.82rem",
-                        cursor: "pointer",
-                        boxShadow: "0 2px 6px rgba(16,185,129,0.2)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        background: "#FFFFFF",
+                        borderRadius: "12px",
+                        padding: "0.85rem 1.25rem",
+                        border: "1px solid #FDE68A",
+                        flexWrap: "wrap",
+                        gap: "0.75rem",
                       }}
                     >
-                      ✓ Grant Access
-                    </button>
+                      <div>
+                        <div
+                          style={{
+                            fontWeight: 800,
+                            color: "#1E293B",
+                            fontSize: "0.92rem",
+                          }}
+                        >
+                          {req.doctorName}
+                        </div>
+                        <div style={{ fontSize: "0.8rem", color: "#64748B", marginTop: "0.2rem" }}>
+                          Requested access to: <strong>SOCRATES Form — {req.formInfo?.site || "Pain Assessment"}</strong> (Pain Severity: {req.formInfo?.severity ?? "N/A"}/10)
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <button
+                          onClick={() => handleRespond(req._id, "accepted")}
+                          style={{
+                            background: "#10B981",
+                            color: "#FFFFFF",
+                            border: "none",
+                            padding: "0.5rem 1.25rem",
+                            borderRadius: "8px",
+                            fontWeight: 700,
+                            fontSize: "0.82rem",
+                            cursor: "pointer",
+                            boxShadow: "0 2px 6px rgba(16,185,129,0.2)",
+                          }}
+                        >
+                          ✓ Grant Access
+                        </button>
+                        <button
+                          onClick={() => handleRespond(req._id, "rejected")}
+                          style={{
+                            background: "#EF4444",
+                            color: "#FFFFFF",
+                            border: "none",
+                            padding: "0.5rem 1.25rem",
+                            borderRadius: "8px",
+                            fontWeight: 700,
+                            fontSize: "0.82rem",
+                            cursor: "pointer",
+                            boxShadow: "0 2px 6px rgba(239,68,68,0.2)",
+                          }}
+                        >
+                          ✕ Decline
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ===== PATIENT PROFILE CONTAINER ===== */}
+            <div style={s.profileContainer}>
+              {/* Profile Header */}
+              <div style={s.profileHeader}>
+                <div>
+                  <p style={s.profileLabel}>Patient Profile</p>
+                  <h3 style={s.profileNameHeading}>{patientName}</h3>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                  <span style={s.activeBadge}>
+                    <span style={s.activeDot} />
+                    Active Patient
+                  </span>
+                  <button
+                    style={s.editBtn}
+                    onClick={() => navigate("/basicInfo")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "#E2F6EE")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "#F1F7F5")
+                    }
+                  >
+                     <Pencil size={18} /> Profile
+                  </button>
+                </div>
+              </div>
+
+              {/* 3-Column Body */}
+              <div style={s.bodyGrid}>
+                {/* LEFT — Photo + Allergies */}
+                <div style={s.leftCol}>
+                  <div style={{ position: "relative" }}>
+                    <div style={s.photoBg}>
+                      <div style={{ ...s.photoCircle, overflow: "hidden" }}>
+                        {profile?.photoUrl ||
+                          profile?.photo ||
+                          storedUser?.photoUrl ||
+                          storedUser?.photo ? (
+                          <img
+                            src={
+                              profile?.photoUrl ||
+                              profile?.photo ||
+                              storedUser?.photoUrl ||
+                              storedUser?.photo
+                            }
+                            alt="Profile DP"
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        ) : (
+                          initials
+                        )}
+                      </div>
+                    </div>
                     <button
-                      onClick={() => handleRespond(req._id, "rejected")}
-                      style={{
-                        background: "#EF4444",
-                        color: "#FFFFFF",
-                        border: "none",
-                        padding: "0.5rem 1.25rem",
-                        borderRadius: "8px",
-                        fontWeight: 700,
-                        fontSize: "0.82rem",
-                        cursor: "pointer",
-                        boxShadow: "0 2px 6px rgba(239,68,68,0.2)",
-                      }}
+                      style={s.cameraBtn}
+                      title="Change photo"
+                      onClick={() => navigate("/basicInfo")}
                     >
-                      ✕ Decline
+                      <Camera size={20} strokeWidth={2.5} />
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* ===== PATIENT PROFILE CONTAINER ===== */}
-        <div style={s.profileContainer}>
-          {/* Profile Header */}
-          <div style={s.profileHeader}>
-            <div>
-              <p style={s.profileLabel}>Patient Profile</p>
-              <h3 style={s.profileNameHeading}>{patientName}</h3>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-              <span style={s.activeBadge}>
-                <span style={s.activeDot} />
-                Active Patient
-              </span>
-              <button
-                style={s.editBtn}
-                onClick={() => navigate("/basicInfo")}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#E2F6EE")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "#F1F7F5")
-                }
-              >
-                ✏️ Edit Profile
-              </button>
-            </div>
-          </div>
+                {/* CENTER — Patient Information */}
+                <div style={s.infoPanel}>
+                  <p style={s.infoTitle}>Patient Information</p>
+                  <div style={s.infoGrid}>
+                    {/* Left column items */}
+                    {patientInfoLeft.map((item, i) => (
+                      <div key={`l-${i}`}>
+                        <p style={s.infoLabel}>{item.title}</p>
+                        <div style={s.infoValue}>
+                          {item.icon && <span style={s.infoIcon}>{item.icon}</span>}
+                          <span>{item.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {/* Right column items */}
+                    {patientInfoRight.map((item, i) => (
+                      <div key={`r-${i}`}>
+                        <p style={s.infoLabel}>{item.title}</p>
+                        <div style={s.infoValue}>
+                          {item.icon && <span style={s.infoIcon}>{item.icon}</span>}
+                          <span>{item.value}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-          {/* 3-Column Body */}
-          <div style={s.bodyGrid}>
-            {/* LEFT — Photo + Allergies */}
-            <div style={s.leftCol}>
-              <div style={{ position: "relative" }}>
-                <div style={s.photoBg}>
-                  <div style={{ ...s.photoCircle, overflow: "hidden" }}>
-                    {profile?.photoUrl ||
-                    profile?.photo ||
-                    storedUser?.photoUrl ||
-                    storedUser?.photo ? (
-                      <img
-                        src={
-                          profile?.photoUrl ||
-                          profile?.photo ||
-                          storedUser?.photoUrl ||
-                          storedUser?.photo
-                        }
-                        alt="Profile DP"
+                {/* RIGHT — Utility Section */}
+                <div style={s.rightUtil}>
+                  {/* Medical Dictionary Button */}
+                  <div
+                    style={s.utilBtn}
+                    onClick={() => navigate("/health-codes")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#D0F0E8";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 12px rgba(12,154,154,0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#E8F7F4";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <div style={s.utilBtnIcon}>
+                      <BookIcon />
+                    </div>
+                    <span style={s.utilBtnText}>Medical Dictionary</span>
+                    <span style={s.utilBtnChevron}>
+                      <ChevronRight />
+                    </span>
+                  </div>
+
+                  {/* Sockets Button */}
+                  <div
+                    style={s.utilBtn}
+                    onClick={() => navigate("/socrates")}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = "#D0F0E8";
+                      e.currentTarget.style.boxShadow =
+                        "0 4px 12px rgba(12,154,154,0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = "#E8F7F4";
+                      e.currentTarget.style.boxShadow = "none";
+                    }}
+                  >
+                    <div style={s.utilBtnIcon}>
+                      <div className="socrates-icon">
+                        <span>⚕</span>
+                      </div>
+
+                    </div>
+                    <span style={s.utilBtnText}>SOCRATES</span>
+                    <span style={s.utilBtnChevron}>
+                      <ChevronRight />
+                    </span>
+                  </div>
+  
+                  
+                </div>
+              </div>
+
+              {/* Bottom Action Cards — Rich Detail Cards */}
+              <div style={s.bottomActions}>
+                {/* ── Known Allergies Card ── */}
+                <div
+                  style={{
+                    background: "#FFFFFF",
+                    borderRadius: "18px",
+                    border: "1px solid #DCEAE6",
+                    padding: "1.5rem",
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                    boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
+                  }}
+                  onClick={() => navigate("/basicInfo")}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  {/* Card Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+                      <div style={{
+                        width: 52, height: 52, borderRadius: "50%",
+                        background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <AllergyIcon />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
+                          Known Allergies
+                        </div>
+                        <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
+                          View and manage your allergies
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
+                  </div>
+
+                  {/* Allergy Tags */}
+                  <div style={{
+                    fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
+                    letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
+                  }}>
+                    YOUR ALLERGIES
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    {(profile?.allergies && profile.allergies.length > 0
+                      ? profile.allergies
+                      : ["Peanut Allergy", "Shellfish Allergy", "Pollen Allergy"]
+                    ).map((allergy, idx) => (
+                      <span
+                        key={idx}
                         style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
+                          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                          background: "#EFF9F7", color: "#0C9A9A",
+                          borderRadius: "8px", padding: "0.4rem 0.75rem",
+                          fontSize: "0.8rem", fontWeight: 700,
+                          border: "1px solid rgba(12,154,154,0.15)",
                         }}
-                      />
-                    ) : (
-                      initials
+                      >
+                        <span style={{ fontSize: "0.9rem" }}>
+                          {["🥜", "🦐", "🌼", "💊", "🩹", "⚠️"][idx % 6]}
+                        </span>
+                        {allergy}
+                      </span>
+                    ))}
+                    {(!profile?.allergies || profile.allergies.length === 0) && (
+                      <span style={{ fontSize: "0.78rem", color: "#94A3B8", fontStyle: "italic" }}>
+                       
+                      </span>
                     )}
                   </div>
                 </div>
-                <button
-                  style={s.cameraBtn}
-                  title="Change photo"
-                  onClick={() => navigate("/basicInfo")}
-                >
-                  <Camera size={20} strokeWidth={2.5} />
-                </button>
-              </div>
-            </div>
 
-            {/* CENTER — Patient Information */}
-            <div style={s.infoPanel}>
-              <p style={s.infoTitle}>Patient Information</p>
-              <div style={s.infoGrid}>
-                {/* Left column items */}
-                {patientInfoLeft.map((item, i) => (
-                  <div key={`l-${i}`}>
-                    <p style={s.infoLabel}>{item.title}</p>
-                    <div style={s.infoValue}>
-                      {item.icon && <span style={s.infoIcon}>{item.icon}</span>}
-                      <span>{item.value}</span>
-                    </div>
-                  </div>
-                ))}
-                {/* Right column items */}
-                {patientInfoRight.map((item, i) => (
-                  <div key={`r-${i}`}>
-                    <p style={s.infoLabel}>{item.title}</p>
-                    <div style={s.infoValue}>
-                      {item.icon && <span style={s.infoIcon}>{item.icon}</span>}
-                      <span>{item.value}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* RIGHT — Utility Section */}
-            <div style={s.rightUtil}>
-              {/* Medical Dictionary Button */}
-              <div
-                style={s.utilBtn}
-                onClick={() => navigate("/health-codes")}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#D0F0E8";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(12,154,154,0.12)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#E8F7F4";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <div style={s.utilBtnIcon}>
-                  <BookIcon />
-                </div>
-                <span style={s.utilBtnText}>Medical Dictionary</span>
-                <span style={s.utilBtnChevron}>
-                  <ChevronRight />
-                </span>
-              </div>
-
-              {/* Sockets Button */}
-              <div
-                style={s.utilBtn}
-                onClick={() => navigate("/socrates")}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "#D0F0E8";
-                  e.currentTarget.style.boxShadow =
-                    "0 4px 12px rgba(12,154,154,0.12)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "#E8F7F4";
-                  e.currentTarget.style.boxShadow = "none";
-                }}
-              >
-                <div style={s.utilBtnIcon}>
-                  <PlugIcon />
-                </div>
-                <span style={s.utilBtnText}>SOCRATES</span>
-                <span style={s.utilBtnChevron}>
-                  <ChevronRight />
-                </span>
-              </div>
-
-              {/* Chatbot Panel */}
-              <div
-                onClick={() => navigate("/genai")}
-                style={{
-                  position: "relative",
-                  width: "100%",
-                  height: "260px",
-                  cursor: "pointer",
-                  overflow: "visible",
-                }}
-              >
-                {/* Speech Bubble */}
+                {/* ── Vaccination Card ── */}
                 <div
                   style={{
-                    position: "absolute",
-                    top: "20px",
-                    left: "8%",
-                    background: "#0C9A9A",
-                    color: "#fff",
-                    padding: "12px 20px",
-                    borderRadius: "22px",
-                    fontSize: "16px",
-                    fontWeight: 700,
-                    lineHeight: "1.35",
-                    textAlign: "center",
-                    minWidth: "210px",
-                    bottom: "170px",
-                    zIndex: 5,
+                    background: "#FFFFFF",
+                    borderRadius: "18px",
+                    border: "1px solid #DCEAE6",
+                    padding: "1.5rem",
+                    cursor: "pointer",
+                    transition: "all 0.25s ease",
+                    boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
+                  }}
+                  onClick={() => navigate("/basicInfo")}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
+                    e.currentTarget.style.transform = "translateY(0)";
                   }}
                 >
-                  Hiee 👋
-                  <br />
-                  What can I do for you?
-                  {/* Bubble tail */}
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "-10px",
-                      right: "55px",
-                      width: "20px",
-                      height: "20px",
-                      background: "#0C9A9A",
-                      transform: "rotate(45deg)",
-                    }}
-                  />
-                </div>
+                  {/* Card Header */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
+                      <div style={{
+                        width: 52, height: 52, borderRadius: "50%",
+                        background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        flexShrink: 0,
+                      }}>
+                        <SyringeIcon />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
+                          Vaccination
+                        </div>
+                        <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
+                          View your vaccination records
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
+                  </div>
 
-                {/* Robot */}
-                <img
-                  src="/chatbot.png"
-                  alt="AI Health Assistant"
-                  style={{
-                    position: "absolute",
-                    width: "220px",
-                    height: "220px",
-                    objectFit: "contain",
-                    left: "45%",
-                    bottom: "0",
-                    transform: "translateX(-50%)",
-                    zIndex: 3,
-                    background: "transparent",
-                    border: "none",
-                    boxShadow: "none",
-                    animation: "chatbotFloat 2.5s ease-in-out infinite",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Action Cards */}
-          <div style={s.bottomActions}>
-            {/* Known Allergies Card */}
-            <div
-              style={s.actionCard}
-              onClick={() => navigate("/basicInfo")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#D0F0E8";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(12,154,154,0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#E8F7F4";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <div style={s.actionCardIcon}>
-                <AllergyIcon />
-              </div>
-              <div>
-                <div style={s.actionCardTitle}>Known Allergies</div>
-                <div style={s.actionCardDesc}>
-                  View and manage your allergies
+                  {/* Vaccination Tags */}
+                  <div style={{
+                    fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
+                    letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
+                  }}>
+                    YOUR VACCINATIONS
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                    {[
+                      { name: "COVID-19", date: "Mar 12, 2023" },
+                      { name: "Hepatitis B", date: "Jan 18, 2023" },
+                      { name: "Tetanus (Tdap)", date: "Nov 05, 2022" },
+                    ].map((vac, idx) => (
+                      <span
+                        key={idx}
+                        style={{
+                          display: "inline-flex", alignItems: "center", gap: "0.35rem",
+                          background: "#EFF9F7", color: "#084766",
+                          borderRadius: "8px", padding: "0.4rem 0.75rem",
+                          fontSize: "0.8rem", fontWeight: 700,
+                          border: "1px solid rgba(12,154,154,0.15)",
+                        }}
+                      >
+                        <span style={{ color: "#10B981", fontSize: "0.95rem" }}>✅</span>
+                        <span>
+                          {vac.name}
+                          <span style={{
+                            display: "block", fontSize: "0.68rem",
+                            color: "#6B9190", fontWeight: 600, marginTop: "0.1rem",
+                          }}>
+                            {vac.date}
+                          </span>
+                        </span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <span style={s.actionCardChevron}>
-                <ChevronRight />
-              </span>
             </div>
-
-            {/* Vaccination Card */}
-            <div
-              style={s.actionCard}
-              onClick={() => navigate("/basicInfo")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "#D0F0E8";
-                e.currentTarget.style.boxShadow =
-                  "0 4px 12px rgba(12,154,154,0.1)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "#E8F7F4";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <div style={s.actionCardIcon}>
-                <SyringeIcon />
-              </div>
-              <div>
-                <div style={s.actionCardTitle}>Vaccination</div>
-                <div style={s.actionCardDesc}>
-                  View your vaccination records
-                </div>
-              </div>
-              <span style={s.actionCardChevron}>
-                <ChevronRight />
-              </span>
-            </div>
-          </div>
-        </div>
-      </main>
+          </main>
         </div>
       </div>
 
@@ -1310,6 +1356,7 @@ export default function LandingPage() {
     }
   }
 `}</style>
+      <ChatbotFAB />
     </div>
   );
 }
