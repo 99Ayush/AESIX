@@ -341,12 +341,13 @@ export default function LandingPage() {
   ];
 
   // Known allergies
-  const allergies = (profile?.allergies || []).map((text, index) => ({
-    text,
-    icon: "✦",
-    bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
-    color: "#F52B91",
-  }));
+  // --------------- causes hydration err -----------------
+  // const allergies = (profile?.allergies || []).map((text, index) => ({
+  //   text,
+  //   icon: "✦",
+  //   bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
+  //   color: "#F52B91",
+  // }));
 
   /* ─── Inline styles ─── */
   const s = {
