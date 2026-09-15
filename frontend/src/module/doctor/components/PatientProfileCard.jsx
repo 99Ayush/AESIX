@@ -16,7 +16,7 @@ export const PatientProfileCard = ({ patient }) => {
   return (
     <div className="doc-card doc-profile-card">
       <div className="doc-card-header">
-        <h3 className="doc-card-title">basic deatails of the patient/user</h3>
+        <h3 className="doc-card-title">basic details of the patient/user</h3>
         <span className="doc-abha-pill">ABHA: {patient.abhaId}</span>
       </div>
 

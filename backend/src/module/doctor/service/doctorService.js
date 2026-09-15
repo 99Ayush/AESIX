@@ -9,13 +9,35 @@ import ConsentRequest from '../model/consentRequestModel.js';
 /**
  * Search patients by ABHA ID (partial match)
  */
+const escapeRegExp = (s = '') => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 export async function searchByAbha(abhaId = '') {
   const q = abhaId.trim();
-  if (!q) return [];
+  if (!q || q.length < 2) return [];
 
-  const users = await User.find({
-    abhaNumber: { $regex: q, $options: 'i' },
-  }).limit(20).lean();
+  // Escaped partial match (fast: projection + small limit + hard timeout).
+  // ABHA is numeric with dashes; also allow name/mobile fallback when the
+  // ABHA field yields nothing (doctor often types a name).
+  const safe = escapeRegExp(q);
+  const abhaQuery = { abhaNumber: { $regex: safe, $options: 'i' } };
+  let users = await User.find(abhaQuery)
+    .select('_id userId firstName lastName dob gender bloodGroup mobile email abhaNumber photoUrl city')
+    .limit(10)
+    .maxTimeMS(4000)
+    .lean();
+  if (!users.length && q.length >= 3) {
+    users = await User.find({
+      $or: [
+        { firstName: { $regex: safe, $options: 'i' } },
+        { lastName: { $regex: safe, $options: 'i' } },
+        { mobile: { $regex: safe, $options: 'i' } },
+      ],
+    })
+      .select('_id userId firstName lastName dob gender bloodGroup mobile email abhaNumber photoUrl city')
+      .limit(10)
+      .maxTimeMS(4000)
+      .lean();
+  }
 
   return users.map((u) => ({
     id: u._id.toString(),
@@ -35,7 +57,15 @@ export async function searchByAbha(abhaId = '') {
  * Get full patient profile from Auth User collection
  */
 export async function getPatientProfile(userId) {
-  const u = await User.findById(userId).lean();
+  let u = null;
+  try {
+    u = await User.findById(userId).lean();
+  } catch (_) { /* not an ObjectId — fall through to UUID/ABHA lookup */ }
+  if (!u) {
+    u = await User.findOne({
+      $or: [{ userId }, { abhaNumber: userId }, { mobile: userId }],
+    }).lean();
+  }
   if (!u) return null;
 
   const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'Unknown';
@@ -65,8 +95,27 @@ export async function getPatientProfile(userId) {
  * Also attaches the consent status for each form relative to the requesting doctor.
  */
 export async function getPatientForms(patientId, doctorId = '') {
-  const assessments = await SocratesAssessment.find({ userId: patientId })
+  const pid = String(patientId || '');
+  // Resolve every identifier this patient owns, then match assessments
+  // written under ANY of them (old rows have only `userId`, new rows have
+  // userId + userObjectId + patientAbha).
+  let user = null;
+  try { user = await User.findById(pid).lean(); } catch (_) {}
+  if (!user) {
+    user = await User.findOne({ $or: [{ userId: pid }, { abhaNumber: pid }] }).lean();
+  }
+  const or = [{ userId: pid }, { userObjectId: pid }, { patientAbha: pid }];
+  if (user) {
+    const oid = user._id.toString();
+    const uuid = user.userId;
+    const abha = user.abhaNumber;
+    or.push({ userId: oid }, { userObjectId: oid });
+    if (uuid) { or.push({ userId: uuid }, { userObjectId: uuid }); }
+    if (abha) or.push({ patientAbha: abha });
+  }
+  const assessments = await SocratesAssessment.find({ $or: or })
     .sort({ createdAt: -1 })
+    .maxTimeMS(5000)
     .lean();
 
   // Fetch all consent requests from this doctor for this patient's forms

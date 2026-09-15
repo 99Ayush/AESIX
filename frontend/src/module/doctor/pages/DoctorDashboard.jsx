@@ -9,6 +9,7 @@ import AlertsSection from '../components/AlertsSection';
 import PatientDirectoryView from '../components/PatientDirectoryView';
 import SocratesFormsList from '../components/SocratesFormsList';
 import { doctorApi } from '../services/doctorApi';
+import { onDatabaseChange } from '../../user/services/realtime';
 import './DoctorDashboard.css';
 import {
   BarChart3,
@@ -39,6 +40,10 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
   const [loading, setLoading] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const searchAbortRef = React.useRef(null);
+  const searchSeqRef = React.useRef(0);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [patientForms, setPatientForms] = useState([]);
   const [formsLoading, setFormsLoading] = useState(false);
@@ -66,25 +71,31 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
     return () => { isMounted = false; };
   }, [selectedPatientId]);
 
-  // Fetch SOCRATES forms when patient changes or tab is forms
-  const fetchForms = (silent = false) => {
+  // Fetch SOCRATES forms when patient changes.
+  // No aggressive polling — refresh on realtime DB events + manual refresh.
+  // This was hammering the API every 3s and making search feel hung.
+  const fetchForms = React.useCallback(async (silent = false) => {
     if (!selectedPatientId) return;
     if (!silent) setFormsLoading(true);
-    doctorApi.getPatientForms(selectedPatientId).then((data) => {
+    try {
+      const data = await doctorApi.getPatientForms(selectedPatientId);
       setPatientForms(data || []);
+    } catch {
+      if (!silent) setPatientForms([]);
+    } finally {
       if (!silent) setFormsLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    if (selectedPatientId) {
-      fetchForms();
-      const interval = setInterval(() => {
-        fetchForms(true);
-      }, 3000);
-      return () => clearInterval(interval);
     }
   }, [selectedPatientId]);
+
+  useEffect(() => {
+    if (!selectedPatientId) {
+      setPatientForms([]);
+      return;
+    }
+    fetchForms();
+    // Live refresh when a new SOCRATES form / consent lands in the DB.
+    return onDatabaseChange(() => fetchForms(true));
+  }, [selectedPatientId, fetchForms]);
 
   const handleTabSwitch = (tabKey) => {
     setActiveTab(tabKey);
@@ -97,8 +108,33 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
   };
 
   const handleSearch = async (query) => {
-    const results = await doctorApi.searchByAbha(query);
-    setSearchResults(results);
+    const q = (query || '').trim();
+    // Cancel the previous in-flight search so slow responses can't
+    // overwrite newer results ("still no response" / stale UI).
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    if (q.length < 2) {
+      setSearchResults([]);
+      setSearchError('');
+      setSearching(false);
+      return;
+    }
+    const seq = ++searchSeqRef.current;
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    setSearching(true);
+    setSearchError('');
+    try {
+      const results = await doctorApi.searchByAbha(q, { signal: controller.signal });
+      if (searchSeqRef.current !== seq) return; // stale — ignore
+      setSearchResults(results || []);
+    } catch (err) {
+      if (searchSeqRef.current !== seq) return;
+      if (err?.name === 'AbortError') return;
+      setSearchResults([]);
+      setSearchError(err?.message || 'Search failed — please retry');
+    } finally {
+      if (searchSeqRef.current === seq) setSearching(false);
+    }
   };
 
   const handleSelectPatient = (id, targetTab) => {
@@ -129,6 +165,8 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
             onSearch={handleSearch}
             searchResults={searchResults}
             onSelectPatient={handleSelectPatient}
+            searching={searching}
+            searchError={searchError}
           />
 
           {/* VIEW SWITCHER SUB-HEADER PILLS */}

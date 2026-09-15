@@ -89,6 +89,17 @@
   gap: 1rem;
 }
 
+.doc-lang-select {
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgba(20, 150, 150, 0.25);
+  background: #F1F7F5;
+  color: #084766;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .doc-avatar-badge {
   width: 42px;
   height: 42px;
