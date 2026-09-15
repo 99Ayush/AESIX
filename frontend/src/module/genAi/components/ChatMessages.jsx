@@ -1,9 +1,57 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const ChatMessages = ({ messages, loading, chatEndRef, language = 'en' }) => {
   const isHindi = language === 'hi';
 
-  // Render text with bullet point formatting
+  // Helper to parse markdown links [Text](/route) inside string content
+  const renderInlineContent = (contentStr) => {
+    if (!contentStr) return null;
+
+    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+    const parts = [];
+    let lastIdx = 0;
+    let match;
+
+    while ((match = linkRegex.exec(contentStr)) !== null) {
+      if (match.index > lastIdx) {
+        parts.push(contentStr.substring(lastIdx, match.index));
+      }
+      const linkText = match[1];
+      const linkUrl = match[2];
+
+      const isRelative = linkUrl.startsWith('/');
+
+      if (isRelative) {
+        parts.push(
+          <Link key={`link_${match.index}`} to={linkUrl} className="chat-inline-link">
+            📍 {linkText}
+          </Link>
+        );
+      } else {
+        parts.push(
+          <a
+            key={`link_${match.index}`}
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="chat-inline-link"
+          >
+            🔗 {linkText}
+          </a>
+        );
+      }
+      lastIdx = linkRegex.lastIndex;
+    }
+
+    if (lastIdx < contentStr.length) {
+      parts.push(contentStr.substring(lastIdx));
+    }
+
+    return parts.length > 0 ? parts : contentStr;
+  };
+
+  // Render text with bullet point formatting & direction link parsing
   const renderFormattedText = (text) => {
     if (!text) return null;
     const lines = text.split('\n');
@@ -13,7 +61,7 @@ export const ChatMessages = ({ messages, loading, chatEndRef, language = 'en' })
         return (
           <div key={idx} className="chat-bullet-item">
             <span className="bullet-dot">•</span>
-            <span>{trimmed.replace(/^[•*-]\s*/, '')}</span>
+            <span>{renderInlineContent(trimmed.replace(/^[•*-]\s*/, ''))}</span>
           </div>
         );
       }
@@ -21,11 +69,15 @@ export const ChatMessages = ({ messages, loading, chatEndRef, language = 'en' })
         return (
           <div key={idx} className="chat-bullet-item">
             <span className="bullet-num">{trimmed.match(/^\d+\./)[0]}</span>
-            <span>{trimmed.replace(/^\d+\.\s*/, '')}</span>
+            <span>{renderInlineContent(trimmed.replace(/^\d+\.\s*/, ''))}</span>
           </div>
         );
       }
-      return trimmed ? <p key={idx} className="chat-para">{trimmed}</p> : <div key={idx} className="chat-spacer" />;
+      return trimmed ? (
+        <p key={idx} className="chat-para">{renderInlineContent(trimmed)}</p>
+      ) : (
+        <div key={idx} className="chat-spacer" />
+      );
     });
   };
 
