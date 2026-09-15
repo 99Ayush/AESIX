@@ -9,10 +9,6 @@ import ChatbotFAB from "../components/ChatbotFAB";
 import {
   Camera,
   CalendarDays,
-  Search,
-  FileText,
-  Globe,
-  Hand,
   Pencil, 
   ChevronsRight,
 } from "lucide-react";

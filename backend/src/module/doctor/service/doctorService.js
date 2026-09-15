@@ -95,10 +95,10 @@ export async function getPatientProfile(userId) {
  * Also attaches the consent status for each form relative to the requesting doctor.
  */
 export async function getPatientForms(patientId, doctorId = '') {
-  const pid = String(patientId || '');
-  // Resolve every identifier this patient owns, then match assessments
-  // written under ANY of them (old rows have only `userId`, new rows have
-  // userId + userObjectId + patientAbha).
+  const pid = String(patientId || '').trim();
+  if (!pid || pid === 'undefined' || pid === 'null') {
+    return [];
+  }
   let user = null;
   try { user = await User.findById(pid).lean(); } catch (_) {}
   if (!user) {
@@ -106,11 +106,11 @@ export async function getPatientForms(patientId, doctorId = '') {
   }
   const or = [{ userId: pid }, { userObjectId: pid }, { patientAbha: pid }];
   if (user) {
-    const oid = user._id.toString();
-    const uuid = user.userId;
-    const abha = user.abhaNumber;
-    or.push({ userId: oid }, { userObjectId: oid });
-    if (uuid) { or.push({ userId: uuid }, { userObjectId: uuid }); }
+    const oid = user._id ? user._id.toString() : '';
+    const uuid = user.userId || '';
+    const abha = user.abhaNumber || '';
+    if (oid) or.push({ userId: oid }, { userObjectId: oid });
+    if (uuid) or.push({ userId: uuid }, { userObjectId: uuid });
     if (abha) or.push({ patientAbha: abha });
   }
   const assessments = await SocratesAssessment.find({ $or: or })

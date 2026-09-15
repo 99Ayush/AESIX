@@ -138,6 +138,13 @@ export default function SocratesForm() {
 
     try {
       const formData = new FormData();
+      const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      if (storedUser?.userId || storedUser?.id || storedUser?._id) {
+        formData.append('userId', storedUser.userId || storedUser.id || storedUser._id);
+      }
+      if (storedUser?.abhaNumber || storedUser?.abhaId) {
+        formData.append('patientAbha', storedUser.abhaNumber || storedUser.abhaId);
+      }
       formData.append('site', site.trim());
       formData.append('onset', `${onsetType}: ${onset.trim()}`);
       
