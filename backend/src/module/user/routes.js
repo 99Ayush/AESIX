@@ -64,7 +64,7 @@ const getCollection = async () => {
     mongoConnecting = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 })
       .connect()
       .then((client) => {
-        mongoCollection = client.db(process.env.MONGODB_DB || 'aesix').collection('users');
+        mongoCollection = client.db(process.env.MONGODB_DB || 'aesix').collection('user_profiles');
         return mongoCollection;
       })
       .catch((error) => {
@@ -335,11 +335,12 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
     if (!authUser) {
       return res.status(401).json({ success: false, error: 'Authentication required. Please log in to submit a SOCRATES assessment.' });
     }
+    const data = await read(req);
     const userObjectId = authUser._id ? authUser._id.toString() : '';
     const userUuid = authUser.userId || '';
     const userId = userUuid || userObjectId;
     const patientAbha = authUser.abhaNumber || req.body?.patientAbha || req.body?.abhaNumber || '';
-    const userName = `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || authUser.fullName || req.body.userName || 'Patient';
+    const userName = data.profile.name || `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || authUser.fullName || req.body.userName || 'Patient';
 
     const {
       site,
