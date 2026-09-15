@@ -1,13 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { sendChatMessageToBackend } from '../services/bot';
-import { ChatHeader } from '../components/ChatHeader';
 import { QuickActions } from '../components/QuickActions';
 import { ChatMessages } from '../components/ChatMessages';
 import { ChatInput } from '../components/ChatInput';
 import { VoiceToVoiceView } from '../components/VoiceToVoiceView';
+import { ChatHeader } from '../components/ChatHeader';
+import { userApi } from '../../user/services/userApi';
+import '../../user/userPages.css';
 import '../components/GenAiChat.css';
+import PatientSidebar from '../../user/components/asidebar';
 
 export const GenAiBot = () => {
+  const navigate = useNavigate();
   // Conversation language state ('en' | 'hi')
   const [convoLanguage, setConvoLanguage] = useState('en');
 
@@ -33,6 +38,24 @@ export const GenAiBot = () => {
   const [v2vUserTranscript, setV2vUserTranscript] = useState('');
   const [v2vAiResponse, setV2vAiResponse] = useState('');
   const [isMicMuted, setIsMicMuted] = useState(false);
+
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const [profileData, setProfileData] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    userApi.profile().then(res => setProfileData(res.patient || res)).catch(() => {});
+  }, []);
 
   const chatEndRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -461,39 +484,94 @@ export const GenAiBot = () => {
   };
 
   return (
-    <div className="medical-genai-container">
-      <ChatHeader
-        onOpenVoiceToVoice={handleOpenVoiceToVoice}
-        language={convoLanguage}
-        onToggleLanguage={handleToggleLanguage}
-      />
+    <div className="sih-page-wrapper">
+      {/* Top Header (same as Dashboard) */}
+      <header className="sih-header">
+        <div className="sih-header-inner">
+          <div className="sih-brand" onClick={() => navigate("/dashboard")} style={{ cursor: "pointer" }}>
+            <div className="sih-logo-badge">🛡</div>
+            <div>
+              <h1 className="sih-brand-title">MedVault</h1>
+              <p className="sih-brand-subtitle">Health Portal & AI Assistant</p>
+            </div>
+          </div>
 
-      {isVoiceToVoiceOpen ? (
-        <VoiceToVoiceView
-          voiceState={v2vState}
-          userTranscript={v2vUserTranscript}
-          aiResponseText={v2vAiResponse}
-          onClose={handleCloseVoiceToVoice}
-          toggleMic={handleToggleV2vMic}
-          isMicMuted={isMicMuted}
-          language={convoLanguage}
-        />
-      ) : (
-        <>
-          <QuickActions onSelectAction={handleSelectQuickAction} language={convoLanguage} />
-          <ChatMessages messages={messages} loading={loading} chatEndRef={chatEndRef} language={convoLanguage} />
-          <ChatInput
-            inputMessage={inputMessage}
-            setInputMessage={setInputMessage}
-            handleSendMessage={handleSendMessage}
-            loading={loading}
-            isVoiceActive={isVoiceActive}
-            toggleVoiceMode={toggleVoiceMode}
-            onOpenVoiceToVoice={handleOpenVoiceToVoice}
-            language={convoLanguage}
-          />
-        </>
-      )}
+          <div className="sih-header-controls">
+            <select
+              value={convoLanguage}
+              onChange={(e) => setConvoLanguage(e.target.value)}
+              className="sih-lang-select"
+            >
+              <option value="en">🌐 English</option>
+              <option value="hi">🌐 हिंदी</option>
+            </select>
+            
+            <div className="sih-profile-wrapper" ref={profileRef}>
+              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                  {profileData?.photoUrl || profileData?.photo ? (
+                    <img src={profileData.photoUrl || profileData.photo} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (profileData?.fullName || profileData?.name || 'PT').split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+                  )}
+                </div>
+                <span className="sih-profile-name">{profileData?.fullName || profileData?.name || 'Profile'}</span>
+                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+              </button>
+              {profileOpen && (
+                <div className="sih-profile-dropdown">
+                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                    <span className="dd-icon">👤</span> Profile
+                  </button>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                    <span className="dd-icon">🚪</span> Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="patient-main-container">
+        <PatientSidebar activePage="genai" />
+        <div className="patient-content-area">
+          <div className="medical-genai-container">
+            <ChatHeader
+              onOpenVoiceToVoice={handleOpenVoiceToVoice}
+              language={convoLanguage}
+              onToggleLanguage={setConvoLanguage}
+              showBrand={false}
+            />
+            {isVoiceToVoiceOpen ? (
+              <VoiceToVoiceView
+                voiceState={v2vState}
+                userTranscript={v2vUserTranscript}
+                aiResponseText={v2vAiResponse}
+                onClose={handleCloseVoiceToVoice}
+                toggleMic={handleToggleV2vMic}
+                isMicMuted={isMicMuted}
+                language={convoLanguage}
+              />
+            ) : (
+              <>
+                <QuickActions onSelectAction={handleSelectQuickAction} language={convoLanguage} />
+                <ChatMessages messages={messages} loading={loading} chatEndRef={chatEndRef} language={convoLanguage} />
+                <ChatInput
+                  inputMessage={inputMessage}
+                  setInputMessage={setInputMessage}
+                  handleSendMessage={handleSendMessage}
+                  loading={loading}
+                  isVoiceActive={isVoiceActive}
+                  toggleVoiceMode={toggleVoiceMode}
+                  onOpenVoiceToVoice={handleOpenVoiceToVoice}
+                  language={convoLanguage}
+                />
+              </>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

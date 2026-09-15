@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import PatientSidebar from '../components/asidebar';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -91,17 +92,6 @@ export default function AbhaID() {
             </div>
           </div>
 
-          <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/abha')} className="sih-nav-btn active">
-              <span className="sih-nav-icon">🛡</span> ABHA
-            </button>
-            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
-              <span className="sih-nav-icon">📄</span> Documents
-            </button>
-            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🔍</span> Basic Info
-            </button>
-          </nav>
 
           <div className="sih-header-controls">
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
@@ -138,8 +128,11 @@ export default function AbhaID() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
-      <main className="sih-main-layout">
+      <div className="patient-main-container">
+        <PatientSidebar profile={abhaDetails} patientName={abhaDetails.name} activePage="abha" />
+        <div className="patient-content-area">
+          {/* MAIN CONTAINER */}
+          <main className="sih-main-layout">
 
         {/* TWO-COLUMN RESPONSIVE LAYOUT */}
         <div className="abha-grid">
@@ -321,6 +314,8 @@ export default function AbhaID() {
         </div>
 
       </main>
+        </div>
+      </div>
 
     </div>
   );

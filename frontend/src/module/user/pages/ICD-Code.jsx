@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import PatientSidebar from '../components/asidebar';
 
 function parseItemLabel(item) {
   return String(item.title || item.theCodeAndTitle?.title || item.matchingPhrases?.[0]?.label || item.id || 'WHO ICD-11 Entity').replace(/<[^>]*>/g, '');
@@ -77,6 +78,10 @@ export default function ICDCode() {
           </nav>
         </div>
       </header>
+
+      <div className="patient-main-container">
+        <PatientSidebar activePage="health-code" />
+        <div className="patient-content-area">
 
       <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         <div className="sih-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
@@ -183,6 +188,9 @@ export default function ICDCode() {
           </div>
         </div>
       </main>
+    </div>
+  </div>
+
     </div>
   );
 }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
+import PatientSidebar from '../components/asidebar';
 
 export default function NamasteCode() {
   const navigate = useNavigate();
@@ -73,6 +74,10 @@ export default function NamasteCode() {
           </nav>
         </div>
       </header>
+
+      <div className="patient-main-container">
+        <PatientSidebar activePage="health-code" />
+        <div className="patient-content-area">
 
       <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
         <div className="sih-card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
@@ -177,6 +182,9 @@ export default function NamasteCode() {
           </div>
         </div>
       </main>
+    </div>
+  </div>
+
     </div>
   );
 }

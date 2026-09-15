@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import PatientSidebar from '../components/asidebar';
 
 // Formatting Utilities
 export const formatDate = (dateString) => {
@@ -145,17 +146,6 @@ export default function Consent() {
             </div>
           </div>
 
-          <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🛡</span> ABHA
-            </button>
-            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
-              <span className="sih-nav-icon">📄</span> Documents
-            </button>
-            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🔍</span> Basic Info
-            </button>
-          </nav>
 
           <div className="sih-header-controls">
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
@@ -186,7 +176,9 @@ export default function Consent() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
+      <div className="patient-main-container">
+        <PatientSidebar activePage="consent" />
+        <div className="patient-content-area">
       <main className="sih-main-layout">
 
         {/* CONSENTS MAIN HEADING CONTAINER */}
@@ -510,6 +502,9 @@ export default function Consent() {
           </div>
         </div>
       )}
+
+        </div>
+      </div>
 
     </div>
   );

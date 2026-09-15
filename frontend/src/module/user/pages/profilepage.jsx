@@ -78,17 +78,6 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🛡</span> ABHA
-            </button>
-            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
-              <span className="sih-nav-icon">📄</span> Documents
-            </button>
-            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🔍</span> Basic Info
-            </button>
-          </nav>
 
           <div className="sih-header-controls">
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
