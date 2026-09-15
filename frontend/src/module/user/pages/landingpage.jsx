@@ -9,10 +9,6 @@ import ChatbotFAB from "../components/ChatbotFAB";
 import {
   Camera,
   CalendarDays,
-  Search,
-  FileText,
-  Globe,
-  Hand,
   Pencil, 
   ChevronsRight,
 } from "lucide-react";
@@ -1211,8 +1207,10 @@ export default function LandingPage() {
                     YOUR ALLERGIES
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {(profile?.allergies && profile.allergies.length > 0
+                    {(Array.isArray(profile?.allergies) && profile.allergies.length > 0
                       ? profile.allergies
+                      : typeof profile?.allergies === "string" && profile.allergies.trim() !== ""
+                      ? profile.allergies.split(",").map((a) => a.trim())
                       : ["Peanut Allergy", "Shellfish Allergy", "Pollen Allergy"]
                     ).map((allergy, idx) => (
                       <span
@@ -1231,7 +1229,7 @@ export default function LandingPage() {
                         {allergy}
                       </span>
                     ))}
-                    {(!profile?.allergies || profile.allergies.length === 0) && (
+                    {(!profile?.allergies || (Array.isArray(profile.allergies) && profile.allergies.length === 0)) && (
                       <span style={{ fontSize: "0.78rem", color: "#94A3B8", fontStyle: "italic" }}>
                        
                       </span>
