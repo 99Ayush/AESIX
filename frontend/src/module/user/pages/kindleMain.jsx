@@ -345,132 +345,132 @@ export default function KindleMain() {
                 </div>
               </div>
 
-              {/* Right Column: Comprehensive Clinical Decision Card */}
-              <div className="sih-card" style={{ padding: '2rem', minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
-                {isLoadingRecord ? (
-                  <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 0' }}>
-                    <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄</div>
-                    <h4 style={{ color: 'var(--primary-navy)', margin: 0 }}>Loading Clinical Profile & WHO Entities…</h4>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.3rem' }}>
-                      Resolving classification cross-mappings and evidence-based guidance.
-                    </p>
+          {/* Right Column: Comprehensive Clinical Decision Card */}
+          <div className="sih-card" style={{ padding: '2rem', minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+            {isLoadingRecord ? (
+              <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 0' }}>
+                <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🔄</div>
+                <h4 style={{ color: 'var(--primary-navy)', margin: 0 }}>Loading Clinical Profile & WHO Entities…</h4>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '0.3rem' }}>
+                  Resolving classification cross-mappings and evidence-based guidance.
+                </p>
+              </div>
+            ) : record ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {/* Header Profile */}
+                <div style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+                    <span className="sih-badge sih-badge-teal">{record.systemOfMedicine}</span>
+                    {record.icd11PrimaryCode && (
+                      <span className="sih-badge sih-badge-green">ICD-11: {record.icd11PrimaryCode}</span>
+                    )}
                   </div>
-                ) : record ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                    {/* Header Profile */}
-                    <div style={{ borderBottom: '1px solid var(--border-light)', paddingBottom: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
-                        <span className="sih-badge sih-badge-teal">{record.systemOfMedicine}</span>
-                        {record.icd11PrimaryCode && (
-                          <span className="sih-badge sih-badge-green">ICD-11: {record.icd11PrimaryCode}</span>
-                        )}
+                  <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0' }}>
+                    {record.code} — {record.ayurvedicTerm}
+                  </h2>
+                  <p style={{ fontSize: '0.95rem', color: 'var(--teal-primary)', fontWeight: 600, margin: 0 }}>
+                    {record.englishEquivalent || record.transliteration}
+                  </p>
+                </div>
+
+                {/* Triage / Red Flags Alert */}
+                {record.prognosis && (
+                  <div style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #F59E0B', padding: '1rem', borderRadius: '6px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#92400E' }}>
+                        Triage Status: {record.prognosis.status}
+                      </span>
+                      <span className="sih-badge sih-badge-amber" style={{ fontSize: '0.7rem' }}>
+                        Risk: {record.prognosis.riskLevel}
+                      </span>
+                    </div>
+                    {record.clinicalOverview?.redFlags?.length > 0 && (
+                      <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#78350F' }}>
+                        <strong>Critical Red Flags:</strong> {record.clinicalOverview.redFlags.join(', ')}
                       </div>
-                      <h2 style={{ fontSize: '1.6rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0' }}>
-                        {record.code} — {record.ayurvedicTerm}
-                      </h2>
-                      <p style={{ fontSize: '0.95rem', color: 'var(--teal-primary)', fontWeight: 600, margin: 0 }}>
-                        {record.englishEquivalent || record.transliteration}
+                    )}
+                  </div>
+                )}
+
+                {/* Grid Details */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
+                  {/* Ayurvedic Pathomechanism */}
+                  {record.pathomechanism && (
+                    <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
+                        🌿 Pathomechanism (Samprapti)
+                      </h4>
+                      <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
+                        <strong>Dominant Dosha:</strong> {record.pathomechanism.dominantDosha?.join(', ')}
+                      </p>
+                      <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
+                        <strong>Srotas Involved:</strong> {record.pathomechanism.srotasInvolved?.join(', ')}
+                      </p>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', lineHeight: '1.4' }}>
+                        {record.pathomechanism.phenotypeCheck}
                       </p>
                     </div>
+                  )}
 
-                    {/* Triage / Red Flags Alert */}
-                    {record.prognosis && (
-                      <div style={{ backgroundColor: '#FFFBEB', borderLeft: '4px solid #F59E0B', padding: '1rem', borderRadius: '6px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#92400E' }}>
-                            Triage Status: {record.prognosis.status}
-                          </span>
-                          <span className="sih-badge sih-badge-amber" style={{ fontSize: '0.7rem' }}>
-                            Risk: {record.prognosis.riskLevel}
-                          </span>
-                        </div>
-                        {record.clinicalOverview?.redFlags?.length > 0 && (
-                          <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#78350F' }}>
-                            <strong>Critical Red Flags:</strong> {record.clinicalOverview.redFlags.join(', ')}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Grid Details */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
-                      {/* Ayurvedic Pathomechanism */}
-                      {record.pathomechanism && (
-                        <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
-                          <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
-                            🌿 Pathomechanism (Samprapti)
-                          </h4>
-                          <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
-                            <strong>Dominant Dosha:</strong> {record.pathomechanism.dominantDosha?.join(', ')}
-                          </p>
-                          <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
-                            <strong>Srotas Involved:</strong> {record.pathomechanism.srotasInvolved?.join(', ')}
-                          </p>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.4rem', lineHeight: '1.4' }}>
-                            {record.pathomechanism.phenotypeCheck}
-                          </p>
+                  {/* Treatment Framework */}
+                  {record.treatmentFramework && (
+                    <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
+                      <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
+                        💊 Treatment Framework (Chikitsa)
+                      </h4>
+                      <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                        {record.treatmentFramework.chikitsaSutra}
+                      </p>
+                      {record.treatmentFramework.classicalFormulations?.length > 0 && (
+                        <div style={{ fontSize: '0.75rem', margin: '0.25rem 0' }}>
+                          <strong>Formulations:</strong> {record.treatmentFramework.classicalFormulations.join(', ')}
                         </div>
                       )}
-
-                      {/* Treatment Framework */}
-                      {record.treatmentFramework && (
-                        <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
-                          <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
-                            💊 Treatment Framework (Chikitsa)
-                          </h4>
-                          <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginBottom: '0.5rem', lineHeight: '1.4' }}>
-                            {record.treatmentFramework.chikitsaSutra}
-                          </p>
-                          {record.treatmentFramework.classicalFormulations?.length > 0 && (
-                            <div style={{ fontSize: '0.75rem', margin: '0.25rem 0' }}>
-                              <strong>Formulations:</strong> {record.treatmentFramework.classicalFormulations.join(', ')}
-                            </div>
-                          )}
-                          {record.treatmentFramework.pathya?.length > 0 && (
-                            <div style={{ fontSize: '0.75rem', color: '#15803D', margin: '0.25rem 0' }}>
-                              <strong>Pathya (Dietary Do\'s):</strong> {record.treatmentFramework.pathya.join(', ')}
-                            </div>
-                          )}
+                      {record.treatmentFramework.pathya?.length > 0 && (
+                        <div style={{ fontSize: '0.75rem', color: '#15803D', margin: '0.25rem 0' }}>
+                          <strong>Pathya (Dietary Do\'s):</strong> {record.treatmentFramework.pathya.join(', ')}
                         </div>
                       )}
                     </div>
+                  )}
+                </div>
 
-                    {/* WHO ICD-11 Live Metadata Card */}
-                    {record.icd11Details && (
-                      <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
-                          <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-                            🌐 WHO ICD-11 Global Disease Record
-                          </h4>
-                          {record.icd11EntityUri && (
-                            <a
-                              href={record.icd11EntityUri}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              style={{ fontSize: '0.75rem', color: 'var(--teal-primary)', fontWeight: 700, textDecoration: 'none' }}
-                            >
-                              Official WHO Portal ↗
-                            </a>
-                          )}
-                        </div>
-                        <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.5', margin: 0 }}>
-                          {record.icd11Details.definition?.['@value'] || record.icd11Details.definition || record.clinicalOverview?.definition || 'Classification record active in WHO registry.'}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 1rem', maxWidth: '420px' }}>
-                    <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📖</div>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.4rem' }}>
-                      Select a Medical Code
-                    </h3>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
-                      Select any NAMASTE Ayurveda term or WHO ICD-11 global disease entity from the left list to view full evidence-based clinical profiles, dosages, pathomechanisms, and cross-references.
+                {/* WHO ICD-11 Live Metadata Card */}
+                {record.icd11Details && (
+                  <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+                        🌐 WHO ICD-11 Global Disease Record
+                      </h4>
+                      {record.icd11EntityUri && (
+                        <a
+                          href={record.icd11EntityUri}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: '0.75rem', color: 'var(--teal-primary)', fontWeight: 700, textDecoration: 'none' }}
+                        >
+                          Official WHO Portal ↗
+                        </a>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.5', margin: 0 }}>
+                      {record.icd11Details.definition?.['@value'] || record.icd11Details.definition || record.clinicalOverview?.definition || 'Classification record active in WHO registry.'}
                     </p>
                   </div>
                 )}
               </div>
+            ) : (
+              <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 1rem', maxWidth: '420px' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📖</div>
+                <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.4rem' }}>
+                  Select a Medical Code
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: '1.5', margin: 0 }}>
+                  Select any NAMASTE Ayurveda term or WHO ICD-11 global disease entity from the left list to view full evidence-based clinical profiles, dosages, pathomechanisms, and cross-references.
+                </p>
+              </div>
+            )}
+          </div>
 
             </div>
           </main>

@@ -341,7 +341,7 @@ export default function LandingPage() {
     },
   ];
 
-  // // Known allergies
+  // Known allergies
   // const allergies = (profile?.allergies || []).map((text, index) => ({
   //   text,
   //   icon: "✦",
