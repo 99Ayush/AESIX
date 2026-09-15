@@ -345,6 +345,7 @@ export default function LandingPage() {
   ];
 
   // Known allergies
+  // --------------- causes hydration err -----------------
   // const allergies = (profile?.allergies || []).map((text, index) => ({
   //   text,
   //   icon: "✦",
@@ -699,6 +700,8 @@ export default function LandingPage() {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="sih-lang-select"
+              data-no-translate
+              translate="no"
             >
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>

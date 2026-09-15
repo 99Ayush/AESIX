@@ -154,6 +154,19 @@
   margin-bottom: 1.75rem;
   font-size: 0.9rem;
   color: var(--mv-text-body);
+  gap: 0.75rem;
+}
+
+.mv-lang-select {
+  margin-right: auto;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--mv-teal);
+  background: transparent;
+  color: var(--mv-teal);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
 }
 
 .mv-btn-outline {

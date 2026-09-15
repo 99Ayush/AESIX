@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Shield, Eye, EyeOff, ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Heart } from 'lucide-react';
 import { authApi } from './authApi';
+import { LanguageSelect } from '../user/LanguageContext';
 import './auth.css';
 
 export default function Register() {
@@ -207,6 +208,7 @@ export default function Register() {
       <div className="mv-auth-main">
         <div className="mv-auth-card" style={{ maxWidth: '580px' }}>
           <div className="mv-auth-top-nav">
+            <LanguageSelect className="mv-lang-select" />
             <span>Already have an account?</span>
             <Link to="/login" className="mv-btn-outline">Login</Link>
           </div>

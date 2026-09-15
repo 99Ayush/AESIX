@@ -13,7 +13,7 @@ export const ConsultationResults = ({ consultations = [] }) => {
   return (
     <div className="doc-card doc-consultation-card">
       <div className="doc-card-header">
-        <h3 className="doc-card-title">consolution results -:</h3>
+        <h3 className="doc-card-title">Consultation Results</h3>
         <span className="doc-count-badge">{consultations.length} Visits</span>
       </div>
 

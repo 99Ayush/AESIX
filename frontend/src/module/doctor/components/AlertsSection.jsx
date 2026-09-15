@@ -11,7 +11,7 @@ export const AlertsSection = ({ alerts = [] }) => {
   return (
     <div className="doc-card doc-alerts-card">
       <div className="doc-card-header">
-        <h3 className="doc-card-title">alerts -:</h3>
+        <h3 className="doc-card-title">Alerts</h3>
         <span className="doc-alert-count-badge">{alerts.length} Active</span>
       </div>
 

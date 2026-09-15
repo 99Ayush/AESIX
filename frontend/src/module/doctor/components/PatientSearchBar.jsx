@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient }) => {
+export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient, searching = false, searchError = '' }) => {
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
-  const [debounceTimer, setDebounceTimer] = useState(null);
+  const timerRef = useRef(null);
   const containerRef = useRef(null);
 
   // Close dropdown on outside click
@@ -14,22 +14,32 @@ export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
+
+  const scheduleSearch = (value, immediate = false) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    if (!value || value.trim().length < 2) {
+      // Clear stale results immediately for short queries
+      onSearch('');
+      setIsOpen(false);
+      return;
+    }
+    const run = () => {
+      onSearch(value);
+      if (value.trim().length >= 2) setIsOpen(true);
+    };
+    if (immediate) run();
+    else timerRef.current = setTimeout(run, 600);
+  };
 
   const handleChange = (e) => {
     const value = e.target.value;
     setQuery(value);
-
-    // Debounce search for DB queries
-    if (debounceTimer) clearTimeout(debounceTimer);
-    const timer = setTimeout(() => {
-      onSearch(value);
-      if (value.trim().length >= 2) {
-        setIsOpen(true);
-      }
-    }, 400);
-    setDebounceTimer(timer);
+    scheduleSearch(value);
   };
 
   const handleSelect = (patient) => {
@@ -41,11 +51,12 @@ export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (debounceTimer) clearTimeout(debounceTimer);
-      onSearch(query);
+      scheduleSearch(query, true);
       setIsOpen(true);
     }
   };
+
+  const showEmpty = isOpen && !searching && !searchError && query.trim().length >= 2 && searchResults.length === 0;
 
   return (
     <div className="doc-search-container" ref={containerRef}>
@@ -53,17 +64,21 @@ export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient
         <input
           type="text"
           className="doc-search-input"
-          placeholder="🔍 Search patient by ABHA ID (e.g., 91-1234-5678-9012)..."
+          placeholder="🔍 Search patient by ABHA ID, name, or mobile..."
           value={query}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          onFocus={() => { if (searchResults.length > 0) setIsOpen(true); }}
+          onFocus={() => { if (searchResults.length > 0 || searchError) setIsOpen(true); }}
         />
-        <div className="doc-search-icon-btn" onClick={() => { onSearch(query); setIsOpen(true); }}>
-          <svg className="doc-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
+        <div className="doc-search-icon-btn" onClick={() => { scheduleSearch(query, true); setIsOpen(true); }}>
+          {searching ? (
+            <span className="doc-btn-spinner">⟳</span>
+          ) : (
+            <svg className="doc-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          )}
         </div>
       </div>
 
@@ -71,6 +86,7 @@ export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient
         <div className="doc-search-dropdown">
           <div className="doc-search-dropdown-header">
             <span className="doc-search-result-count">{searchResults.length} patient{searchResults.length !== 1 ? 's' : ''} found</span>
+            {searching && <span className="doc-search-result-count"> · searching…</span>}
           </div>
           {searchResults.map((patient) => (
             <div
@@ -99,11 +115,29 @@ export const PatientSearchBar = ({ onSearch, searchResults = [], onSelectPatient
         </div>
       )}
 
-      {isOpen && query.trim().length >= 2 && searchResults.length === 0 && (
+      {isOpen && searching && searchResults.length === 0 && !searchError && (
+        <div className="doc-search-dropdown">
+          <div className="doc-search-empty">
+            <span className="doc-btn-spinner">⟳</span>
+            <span>Searching…</span>
+          </div>
+        </div>
+      )}
+
+      {isOpen && searchError && (
+        <div className="doc-search-dropdown">
+          <div className="doc-search-empty">
+            <span className="doc-search-empty-icon">⚠️</span>
+            <span>{searchError}</span>
+          </div>
+        </div>
+      )}
+
+      {showEmpty && (
         <div className="doc-search-dropdown">
           <div className="doc-search-empty">
             <span className="doc-search-empty-icon">🔍</span>
-            <span>No patients found for "{query}"</span>
+            <span>No patients found for &quot;{query}&quot;</span>
           </div>
         </div>
       )}

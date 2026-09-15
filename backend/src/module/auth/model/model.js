@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 userSchema.index({ mobile: 1 });
+// NOTE: abhaNumber already has { unique: true, sparse: true } above, which
+// auto-creates its index — do NOT add schema.index({ abhaNumber: 1 }) or
+// mongoose logs "Duplicate schema index" on every boot.
+userSchema.index({ firstName: 1, lastName: 1 });
 
 // ─── USER SESSION (ephemeral ABDM X-token) ────────────────────────────────────
 const userSessionSchema = new mongoose.Schema({
