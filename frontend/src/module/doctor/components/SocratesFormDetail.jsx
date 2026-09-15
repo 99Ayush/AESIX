@@ -1,8 +1,7 @@
 import React from 'react';
 
-const fieldLabel = (label, icon) => (
+const fieldLabel = (label) => (
   <div className="doc-form-detail-label">
-    <span className="doc-form-detail-icon">{icon}</span>
     <span>{label}</span>
   </div>
 );
@@ -24,20 +23,20 @@ export const SocratesFormDetail = ({ form, onClose }) => {
             <div className="doc-modal-header-top">
               <span className="doc-modal-badge">SOCRATES Assessment</span>
               <span className="doc-modal-date">
-                📅 {new Date(form.createdAt).toLocaleDateString('en-IN', {
+                {new Date(form.createdAt).toLocaleDateString('en-IN', {
                   year: 'numeric', month: 'short', day: 'numeric',
                   hour: '2-digit', minute: '2-digit',
                 })}
               </span>
             </div>
-            <h3 className="doc-modal-title">Pain Assessment — {form.site}</h3>
+            <h3 className="doc-modal-title">Pain Assessment - {form.site}</h3>
             {form.userName && (
               <div className="doc-form-detail-patient">
-                👤 Patient: <strong>{form.userName}</strong>
+                Patient: <strong>{form.userName}</strong>
               </div>
             )}
           </div>
-          <button className="doc-modal-close" onClick={onClose} title="Close modal">✕</button>
+          <button className="doc-modal-close" onClick={onClose} title="Close modal">X</button>
         </div>
 
         {/* Modal Body */}
@@ -45,7 +44,7 @@ export const SocratesFormDetail = ({ form, onClose }) => {
           {/* Severity Gauge */}
           <div className="doc-severity-section">
             <div className="doc-severity-header">
-              {fieldLabel('Pain Severity Level', '⚡')}
+              {fieldLabel('Pain Severity Level')}
               <span className="doc-severity-status-pill" style={{ backgroundColor: `${severityColor}20`, color: severityColor, border: `1px solid ${severityColor}40` }}>
                 {severityLabel} ({severity}/10)
               </span>
@@ -61,37 +60,37 @@ export const SocratesFormDetail = ({ form, onClose }) => {
           {/* SOCRATES Grid */}
           <div className="doc-form-detail-grid">
             <div className="doc-form-detail-field">
-              {fieldLabel('Site (Location)', '📍')}
+              {fieldLabel('Site (Location)')}
               <p className="doc-form-detail-value">{form.site || 'Not specified'}</p>
             </div>
 
             <div className="doc-form-detail-field">
-              {fieldLabel('Onset (Start & Mode)', '⏱')}
+              {fieldLabel('Onset (Start & Mode)')}
               <p className="doc-form-detail-value">{form.onset || 'Not specified'}</p>
             </div>
 
             <div className="doc-form-detail-field">
-              {fieldLabel('Character (Type of Pain)', '🔥')}
+              {fieldLabel('Character (Type of Pain)')}
               <p className="doc-form-detail-value">{form.character || 'Not specified'}</p>
             </div>
 
             <div className="doc-form-detail-field">
-              {fieldLabel('Radiation (Spread)', '➡️')}
+              {fieldLabel('Radiation (Spread)')}
               <p className="doc-form-detail-value">{form.radiation || 'None reported'}</p>
             </div>
 
             <div className="doc-form-detail-field">
-              {fieldLabel('Associated Symptoms', '🔗')}
+              {fieldLabel('Associated Symptoms')}
               <p className="doc-form-detail-value">{form.associations || 'None reported'}</p>
             </div>
 
             <div className="doc-form-detail-field">
-              {fieldLabel('Time Course (Pattern)', '🕐')}
+              {fieldLabel('Time Course (Pattern)')}
               <p className="doc-form-detail-value">{form.timeCourse || 'Not specified'}</p>
             </div>
 
             <div className="doc-form-detail-field doc-form-detail-field-wide">
-              {fieldLabel('Exacerbating / Relieving Factors', '📊')}
+              {fieldLabel('Exacerbating / Relieving Factors')}
               <p className="doc-form-detail-value">{form.exacerbatingFactors || 'None reported'}</p>
             </div>
           </div>
@@ -99,7 +98,7 @@ export const SocratesFormDetail = ({ form, onClose }) => {
           {/* Prior History */}
           {form.priorHistory && (
             <div className="doc-form-detail-section">
-              {fieldLabel('Prior Clinical History', '📚')}
+              {fieldLabel('Prior Clinical History')}
               <p className="doc-form-detail-value">{form.priorHistory}</p>
             </div>
           )}
@@ -107,7 +106,7 @@ export const SocratesFormDetail = ({ form, onClose }) => {
           {/* Additional Notes */}
           {form.additionalNotes && (
             <div className="doc-form-detail-section">
-              {fieldLabel('Additional Patient Notes', '📝')}
+              {fieldLabel('Additional Patient Notes')}
               <p className="doc-form-detail-value">{form.additionalNotes}</p>
             </div>
           )}
@@ -115,7 +114,7 @@ export const SocratesFormDetail = ({ form, onClose }) => {
           {/* Attached Documents */}
           {form.documents && form.documents.length > 0 && (
             <div className="doc-form-detail-section">
-              {fieldLabel(`Attached Clinical Reports & Files (${form.documents.length})`, '📎')}
+              {fieldLabel(`Attached Clinical Reports & Files (${form.documents.length})`)}
               <div className="doc-form-docs-list">
                 {form.documents.map((doc, idx) => (
                   <a
@@ -125,14 +124,11 @@ export const SocratesFormDetail = ({ form, onClose }) => {
                     rel="noopener noreferrer"
                     className="doc-form-doc-item"
                   >
-                    <span className="doc-form-doc-icon">
-                      {doc.fileType?.startsWith('image/') ? '🖼️' : '📄'}
-                    </span>
                     <div className="doc-form-doc-info">
                       <span className="doc-form-doc-name">{doc.name || `Attachment ${idx + 1}`}</span>
                       <span className="doc-form-doc-sub">{doc.fileType || 'Medical Record'}</span>
                     </div>
-                    <span className="doc-form-doc-arrow">View File ↗</span>
+                    <span className="doc-form-doc-arrow">View File</span>
                   </a>
                 ))}
               </div>

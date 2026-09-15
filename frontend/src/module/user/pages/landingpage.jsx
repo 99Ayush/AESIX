@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../userPages.css";
-import { userApi } from "../services/userApi";
+import { userApi, readLocalJSON } from "../services/userApi";
 import { onDatabaseChange } from "../services/realtime";
 import { useDashboardLanguage } from "../LanguageContext";
 import PatientSidebar from "../components/asidebar";
 import ChatbotFAB from "../components/ChatbotFAB";
+import DoctorActivityBell from "../components/DoctorActivityBell";
+import BrandLogo from '../../../shared/BrandLogo';
 
 import {
   Camera,
@@ -13,7 +15,6 @@ import {
   CircleCheck,
   Nut, Shell, Flower2 ,
   Search,
-  Bell,
   LogOut,
   FileText,
   Globe,
@@ -199,18 +200,13 @@ export default function LandingPage() {
   const navigate = useNavigate();
   const { language, setLanguage } = useDashboardLanguage();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [notifOpen, setNotifOpen] = useState(false);
   const profileRef = useRef(null);
-  const notifRef = useRef(null);
   const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
         setProfileOpen(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(e.target)) {
-        setNotifOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -253,13 +249,7 @@ export default function LandingPage() {
   };
 
   const profile = dashboard?.profile;
-  const storedUser = (() => {
-    try {
-      return JSON.parse(localStorage.getItem("user_profile") || "{}");
-    } catch {
-      return {};
-    }
-  })();
+  const storedUser = readLocalJSON("user_profile", {});
   const patientName =
     profile?.name?.trim() ||
     (storedUser?.firstName
@@ -692,15 +682,7 @@ export default function LandingPage() {
       {/* ===== HEADER (reusing existing classes) ===== */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate("/dashboard")}>
-            <div className="sih-logo-badge">
-              <ShieldIcon />
-            </div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Health Portal</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Health Portal" />
 
 
           <div className="sih-header-controls">
@@ -716,115 +698,8 @@ export default function LandingPage() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <div style={{ position: "relative" }} ref={notifRef}>
-              <button
-                className="sih-notif-bell"
-                onClick={() => setNotifOpen(!notifOpen)}
-              >
-                <Bell size={22} strokeWidth={2} /> 
-                <span className="sih-notif-badge">{pendingRequests.length}</span>
-              </button>
-              {notifOpen && (
-                <div
-                  style={{
-                    position: "absolute",
-                    right: 0,
-                    top: "calc(100% + 8px)",
-                    width: "320px",
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: "12px",
-                    boxShadow:
-                      "0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-                    border: "1px solid var(--border-light)",
-                    padding: "1rem",
-                    zIndex: 1000,
-                    textAlign: "left",
-                  }}
-                >
-                  <h4
-                    style={{
-                      fontSize: "0.85rem",
-                      fontWeight: 800,
-                      color: "#084766",
-                      margin: "0 0 0.75rem 0",
-                      paddingBottom: "0.5rem",
-                      borderBottom: "1px solid #E2E8F0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <span>Doctor Access Requests</span>
-                    <span style={{ fontSize: "0.75rem", color: "#0C9A9A", fontWeight: 700 }}>
-                      {pendingRequests.length} Pending
-                    </span>
-                  </h4>
-                  {pendingRequests.length === 0 ? (
-                    <div style={{ textAlign: "center", padding: "0.5rem 0" }}>
-                      <div style={{ fontSize: "1.5rem", marginBottom: "0.2rem" }}>🔕</div>
-                      <p style={{ fontSize: "0.75rem", color: "#6B9190", margin: 0 }}>
-                        No pending requests from doctors.
-                      </p>
-                    </div>
-                  ) : (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", maxHeight: "300px", overflowY: "auto" }}>
-                      {pendingRequests.map((req) => (
-                        <div
-                          key={req._id}
-                          style={{
-                            padding: "0.65rem",
-                            borderRadius: "8px",
-                            background: "#F8FAFC",
-                            border: "1px solid #E2E8F0",
-                          }}
-                        >
-                          <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1E293B" }}>
-                            {req.doctorName}
-                          </div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748B", margin: "0.2rem 0 0.5rem" }}>
-                            Form: <strong>{req.formInfo?.site || "Pain Assessment"}</strong> (Severity: {req.formInfo?.severity ?? "N/A"}/10)
-                          </div>
-                          <div style={{ display: "flex", gap: "0.4rem" }}>
-                            <button
-                              onClick={() => handleRespond(req._id, "accepted")}
-                              style={{
-                                flex: 1,
-                                background: "#16B889",
-                                color: "#FFF",
-                                border: "none",
-                                borderRadius: "6px",
-                                padding: "0.3rem",
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={() => handleRespond(req._id, "rejected")}
-                              style={{
-                                flex: 1,
-                                background: "#EF4444",
-                                color: "#FFF",
-                                border: "none",
-                                borderRadius: "6px",
-                                padding: "0.3rem",
-                                fontSize: "0.75rem",
-                                fontWeight: 700,
-                                cursor: "pointer",
-                              }}
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Doctor activity bell: access logs + consent requests */}
+            <DoctorActivityBell />
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button
                 className="sih-profile-trigger"
@@ -1300,7 +1175,7 @@ export default function LandingPage() {
                   transition: "all 0.25s ease",
                   boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
                 }}
-                onClick={() => navigate("/health-codes")}
+                onClick={() => navigate("/kindle")}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
                   e.currentTarget.style.transform = "translateY(-2px)";

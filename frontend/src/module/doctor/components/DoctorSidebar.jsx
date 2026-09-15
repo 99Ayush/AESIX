@@ -6,7 +6,16 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
       {/* Profile Section */}
       <div className="doc-sidebar-block doc-profile-block">
         <div className="doc-sidebar-label">Profile</div>
-        <div className="doc-doctor-card">
+        <div
+          className="doc-doctor-card"
+          onClick={() => onTabChange && onTabChange('overview')}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') onTabChange && onTabChange('overview');
+          }}
+          role="button"
+          tabIndex={0}
+          title="Open Doctor Dashboard Overview"
+        >
           <div className="doc-doctor-avatar">
             <span>A</span>
           </div>
@@ -46,19 +55,6 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
           <span>Patient Data View</span>
         </button>
 
-        {/* <button
-          className={`doc-sidebar-item ${activeTab === 'consultations' ? 'active' : ''}`}
-          onClick={() => onTabChange && onTabChange('consultations')}
-        >
-          <svg className="doc-sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-          </svg>
-          <span>Consultation Results</span>
-        </button> */}
-
         <button
           className={`doc-sidebar-item ${activeTab === 'socrates-forms' ? 'active' : ''}`}
           onClick={() => onTabChange && onTabChange('socrates-forms')}
@@ -72,18 +68,6 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
           <span>SOCRATES Forms</span>
         </button>
 
-        {/* <button
-          className={`doc-sidebar-item ${activeTab === 'alerts' ? 'active' : ''}`}
-          onClick={() => onTabChange && onTabChange('alerts')}
-        >
-          <svg className="doc-sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-            <line x1="12" y1="9" x2="12" y2="13"></line>
-            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-          </svg>
-          <span>Medical Alerts</span>
-        </button> */}
-
         <button
           className={`doc-sidebar-item ${activeTab === 'directory' ? 'active' : ''}`}
           onClick={() => onTabChange && onTabChange('directory')}
@@ -95,6 +79,19 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
           <span>Patient Directory</span>
+        </button>
+
+        <button
+          className="doc-sidebar-item"
+          onClick={() => onTabChange && onTabChange('medical-directory')}
+        >
+          <svg className="doc-sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            <path d="M12 7v6"></path>
+            <path d="M9 10h6"></path>
+          </svg>
+          <span>Medical Directory</span>
         </button>
       </div>
 

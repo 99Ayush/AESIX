@@ -1,6 +1,7 @@
 import { User } from '../../auth/model/model.js';
 import SocratesAssessment from '../../user/model/socratesModel.js';
 import ConsentRequest from '../model/consentRequestModel.js';
+import DoctorAccessLog from '../model/doctorAccessLogModel.js';
 
 /**
  * Doctor Service Layer — Real MongoDB queries
@@ -54,13 +55,56 @@ export async function searchByAbha(abhaId = '') {
 }
 
 /**
+ * Audit log: record that a doctor opened a particular patient's data.
+ * Fire-and-forget — never blocks the doctor's read. Keeps only the
+ * latest 50 entries per patient so the log collection stays bounded.
+ */
+export async function logDoctorAccess({ doctorId, doctorName, patientId, patientAbha = '', accessType = 'profile-view' }) {
+  try {
+    const pid = String(patientId || '').trim();
+    if (!pid) return null;
+    const entry = await DoctorAccessLog.create({
+      doctorId: doctorId || 'unknown-doctor',
+      doctorName: doctorName || 'Doctor',
+      patientId: pid,
+      patientAbha: String(patientAbha || ''),
+      accessType,
+    });
+    // Bound per-patient history (best-effort).
+    try {
+      const overflow = await DoctorAccessLog.countDocuments({ patientId: pid });
+      if (overflow > 50) {
+        const oldest = await DoctorAccessLog.find({ patientId: pid })
+          .sort({ createdAt: 1 })
+          .limit(overflow - 50)
+          .select('_id')
+          .lean();
+        await DoctorAccessLog.deleteMany({ _id: { $in: oldest.map((o) => o._id) } });
+      }
+    } catch { /* bounding is best-effort */ }
+    return entry;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get recent access-log entries for a patient (patient-side notifications).
+ */
+export async function getPatientAccessLogs(patientId, limit = 20) {
+  const pid = String(patientId || '').trim();
+  if (!pid) return [];
+  return DoctorAccessLog.find({ patientId: pid }).sort({ createdAt: -1 }).limit(limit).lean();
+}
+
+/**
  * Get full patient profile from Auth User collection
  */
 export async function getPatientProfile(userId) {
   let u = null;
   try {
     u = await User.findById(userId).lean();
-  } catch (_) { /* not an ObjectId — fall through to UUID/ABHA lookup */ }
+  } catch { /* not an ObjectId — fall through to UUID/ABHA lookup */ }
   if (!u) {
     u = await User.findOne({
       $or: [{ userId }, { abhaNumber: userId }, { mobile: userId }],
@@ -100,7 +144,7 @@ export async function getPatientForms(patientId, doctorId = '') {
     return [];
   }
   let user = null;
-  try { user = await User.findById(pid).lean(); } catch (_) {}
+  try { user = await User.findById(pid).lean(); } catch { /* ignore invalid ObjectId */ }
   if (!user) {
     user = await User.findOne({ $or: [{ userId: pid }, { abhaNumber: pid }] }).lean();
   }

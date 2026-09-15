@@ -24,9 +24,18 @@ const PatientSidebar = ({
   const location = useLocation();
   const currentPath = location.pathname;
 
+  // Every patient page shares this persisted identity. Individual pages often
+  // load partial profile shapes, so they must not replace the signed-in name.
+  const persistedUser = (() => {
+    try { return JSON.parse(localStorage.getItem('user_profile') || '{}'); } catch { return {}; }
+  })();
+  const identity = { ...persistedUser, ...(storedUser || {}) };
+  const identityName = identity.fullName || identity.name ||
+    `${identity.firstName || ''} ${identity.lastName || ''}`.trim();
+
   const pName =
+    identityName ||
     patientName ||
-    (storedUser ? `${storedUser.firstName || ''} ${storedUser.lastName || ''}`.trim() : '') ||
     profile?.fullName ||
     profile?.name ||
     "Patient";
@@ -40,8 +49,8 @@ const PatientSidebar = ({
   const photoUrl =
     profile?.photoUrl ||
     profile?.photo ||
-    storedUser?.photoUrl ||
-    storedUser?.photo;
+    identity.photoUrl ||
+    identity.photo;
 
   const menuItems = [
     { label: "DASHBOARD", path: "/dashboard", icon: LayoutDashboard, key: "dashboard" },
@@ -88,8 +97,8 @@ const PatientSidebar = ({
               <h4 className="patient-sidebar-name">{pName}</h4>
 
               <p className="patient-sidebar-spec">
-                {storedUser?.gender || profile?.gender || "Patient"}
-                {profile?.bloodGroup ? ` • ${profile.bloodGroup}` : ""}
+                {identity.gender || profile?.gender || "Patient"}
+                {identity.bloodGroup || profile?.bloodGroup ? ` • ${identity.bloodGroup || profile?.bloodGroup}` : ""}
               </p>
 
               <span className="patient-status-online">

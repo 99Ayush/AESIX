@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
-import { userApi } from '../services/userApi';
+import { userApi, readLocalJSON } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import PatientSidebar from '../components/asidebar';
 import { useDashboardLanguage } from '../LanguageContext';
 import ChatbotFAB from '../components/ChatbotFAB';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import BrandLogo from '../../../shared/BrandLogo';
 import {
   FileText,
   RefreshCw,
@@ -62,7 +64,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfileData = () => {
-      const storedProfile = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      const storedProfile = readLocalJSON('user_profile', {});
       const profilePromise = storedProfile.id ? userApi.getUserById(storedProfile.id) : userApi.profile();
       Promise.all([profilePromise, userApi.abha().catch(() => ({}))]).then(([profile, abha]) => {
         setPatientProfile({
@@ -101,13 +103,7 @@ export default function ProfilePage() {
       {/* TOP HEADER */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
-            <div className="sih-logo-badge">🛡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Health Portal</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Health Portal" />
 
 
           <div className="sih-header-controls">
@@ -117,7 +113,7 @@ export default function ProfilePage() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell"><Bell size={22} strokeWidth={2} /> <span className="sih-notif-badge">3</span></button>
+            <DoctorActivityBell />
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>

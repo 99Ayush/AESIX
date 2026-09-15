@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
-import { userApi } from '../services/userApi';
+import { userApi, readLocalJSON } from '../services/userApi';
+import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import BrandLogo from '../../../shared/BrandLogo';
 import {
   FileText,
   RefreshCw,
@@ -26,7 +29,7 @@ FilePenLine,
   Lock,
   Cloud,
   Contact,
-  Folder
+  Files, Folder
 } from "lucide-react";
 const CHARACTER_OPTIONS = [
   'Sharp / Stabbing',
@@ -59,7 +62,22 @@ const COMMON_ASSOCIATIONS = [
 
 export default function SocratesForm() {
   const navigate = useNavigate();
+  const { language, setLanguage } = useDashboardLanguage();
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef(null);
+  const profileRef = useRef(null);
+  const [profileOpen, setProfileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('new'); // 'new' | 'history'
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (langRef.current && !langRef.current.contains(e.target)) {
+        setLangOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Form State
   const [site, setSite] = useState('');
@@ -92,7 +110,7 @@ export default function SocratesForm() {
     }
   }, [activeTab]);
 
-  const fetchHistory = async () => {
+  async function fetchHistory() {
     setIsLoadingHistory(true);
     try {
       const res = await userApi.getSocratesHistory();
@@ -161,7 +179,7 @@ export default function SocratesForm() {
 
     try {
       const formData = new FormData();
-      const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      const storedUser = readLocalJSON('user_profile', {});
       if (storedUser?.userId || storedUser?.id || storedUser?._id) {
         formData.append('userId', storedUser.userId || storedUser.id || storedUser._id);
       }
@@ -234,32 +252,34 @@ export default function SocratesForm() {
       {/* Header Bar */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-            <div className="sih-logo-badge">⚡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">SOCRATES Symptom Engine</p>
+          <BrandLogo subtitle="SOCRATES Symptom Engine" />
+
+          <div className="sih-header-controls">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
+              <option value="English">🌐 English</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
+            </select>
+            <DoctorActivityBell />
+            <div className="sih-profile-wrapper" ref={profileRef}>
+              <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                <div className="sih-profile-avatar">PT</div>
+                <span className="sih-profile-name">Profile</span>
+                <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+              </button>
+              {profileOpen && (
+                <div className="sih-profile-dropdown">
+                  <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                    <span className="dd-icon"><CircleUser /></span> Profile
+                  </button>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                    <span className="dd-icon"><LogOut /></span> Sign Out
+                  </button>
+                </div>
+              )}
             </div>
           </div>
-          <nav className="sih-nav-menu">
-            <button 
-              onClick={() => setActiveTab('new')} 
-              className="sih-nav-btn"
-              style={{ background: activeTab === 'new' ? 'var(--mint-light)' : 'transparent', color: activeTab === 'new' ? 'var(--teal-primary)' : 'var(--text-muted)' }}
-            >
-              <span className="sih-nav-icon"><FilePenLine size={24} strokeWidth={2} /></span> New Assessment
-            </button>
-            <button 
-              onClick={() => setActiveTab('history')} 
-              className="sih-nav-btn"
-              style={{ background: activeTab === 'history' ? 'var(--mint-light)' : 'transparent', color: activeTab === 'history' ? 'var(--teal-primary)' : 'var(--text-muted)' }}
-            >
-              <span className="sih-nav-icon"><ClipboardClock size={24} strokeWidth={2} /></span> Assessment History
-            </button>
-            <button onClick={() => navigate('/profile')} className="sih-nav-btn">
-              <span className="sih-nav-icon"><CircleUser size={24} strokeWidth={2} /></span> Profile
-            </button>
-          </nav>
         </div>
       </header>
 

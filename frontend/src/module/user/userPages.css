@@ -177,6 +177,24 @@
   border: 2px solid var(--white);
 }
 
+/* ── Doctor activity bell (yellow/amber, active when items are pending) ── */
+.sih-notif-bell-active {
+  border-radius: 50%;
+  color: #D97706;
+  border-color: #F59E0B;
+  animation: notif-bell-ring-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes notif-bell-ring-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(217, 119, 6, 0);
+  }
+}
+
 /* Patient Profile + Dropdown */
 .sih-profile-wrapper {
   position: relative;
@@ -396,6 +414,7 @@
   gap: 0.5rem;
   cursor: pointer;
   border: none;
+  text-decoration: none;
 }
 
 .sih-btn-primary {
@@ -706,8 +725,7 @@
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text-muted);
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
+  border: 1px solid transparent;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -718,7 +736,47 @@
 
 .tab-nav-btn.active {
   color: var(--teal-primary);
-  border-bottom-color: var(--teal-primary);
+  background: linear-gradient(135deg, rgba(12, 154, 154, 0.12) 0%, rgba(12, 154, 154, 0.06) 100%);
+  border: 1px solid rgba(12, 154, 154, 0.25);
+  border-radius: 10px;
+}
+
+/* Consent page: categories on the left, records on the right */
+.consent-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.consent-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.consent-cats .tab-nav-btn {
+  border-bottom: none;
+  margin-bottom: 0;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-align: left;
+  justify-content: flex-start;
+}
+
+.consent-cats .tab-nav-btn.active {
+  background-color: var(--mint-light);
+  border-color: rgba(47, 143, 131, 0.25);
+}
+
+@media (min-width: 1024px) {
+  .consent-layout {
+    grid-template-columns: 250px minmax(0, 1fr);
+  }
+  .consent-cats-card {
+    position: sticky;
+    top: 1.5rem;
+  }
 }
 
 .info-cards-grid {
@@ -2710,4 +2768,64 @@
   font-size: 28px;
   color: #00a6a6;
   line-height: 1;
+}
+
+.sih-notif-bell-profile-alert {
+  color: #DC2626;
+  border-color: #F87171;
+  animation: profile-bell-ring-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes profile-bell-ring-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5); }
+  50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+}
+
+/* Documents: upload first, then filters beside the matching records. */
+.documents-workspace {
+  display: grid;
+  grid-template-columns: minmax(210px, 250px) minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.documents-filter-panel {
+  background: var(--mint-bg);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+}
+
+.documents-filter-label {
+  display: block;
+  color: var(--primary-navy);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.documents-filter-panel .sih-select { width: 100%; }
+.documents-category-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.documents-category-list button {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 700;
+  justify-content: space-between;
+  padding: 0.55rem 0.65rem;
+  text-align: left;
+}
+.documents-category-list button.active { background: var(--teal-primary); border-color: var(--teal-primary); color: #fff; }
+.documents-category-list strong { font-size: 0.7rem; }
+.documents-results-panel { min-width: 0; }
+
+@media (max-width: 760px) {
+  .documents-workspace { grid-template-columns: 1fr; }
 }

@@ -9,10 +9,10 @@ const severityColor = (severity) => {
 };
 
 const statusConfig = {
-  none: { label: 'Request Access', className: 'doc-consent-btn doc-consent-request', icon: '🔒' },
-  pending: { label: 'Pending Approval', className: 'doc-consent-btn doc-consent-pending', icon: '⏳' },
-  accepted: { label: 'View Form', className: 'doc-consent-btn doc-consent-accepted', icon: '✅' },
-  rejected: { label: 'Re-request Access', className: 'doc-consent-btn doc-consent-request', icon: '🔒' },
+  none: { label: 'Request Access', className: 'doc-consent-btn doc-consent-request' },
+  pending: { label: 'Pending Approval', className: 'doc-consent-btn doc-consent-pending' },
+  accepted: { label: 'View Form', className: 'doc-consent-btn doc-consent-accepted' },
+  rejected: { label: 'Re-request Access', className: 'doc-consent-btn doc-consent-request' },
 };
 
 export const SocratesFormsList = ({ forms = [], patientId, patientAbha, onRefresh }) => {
@@ -68,7 +68,6 @@ export const SocratesFormsList = ({ forms = [], patientId, patientAbha, onRefres
   if (!forms.length) {
     return (
       <div className="doc-card doc-socrates-empty">
-        <div className="doc-empty-icon">📋</div>
         <h4 className="doc-empty-title">No SOCRATES Forms Found</h4>
         <p className="doc-empty-text">This patient has not submitted any SOCRATES symptom assessments yet.</p>
       </div>
@@ -79,17 +78,13 @@ export const SocratesFormsList = ({ forms = [], patientId, patientAbha, onRefres
     <>
       {toast && (
         <div className="doc-toast">
-          <span className="doc-toast-icon">ℹ️</span>
           <span>{toast}</span>
         </div>
       )}
 
       <div className="doc-card doc-socrates-list-card">
         <div className="doc-card-header">
-          <h3 className="doc-card-title">
-            <span className="doc-card-title-icon">📋</span>
-            SOCRATES Symptom Assessments
-          </h3>
+          <h3 className="doc-card-title">SOCRATES Assessments</h3>
           <span className="doc-forms-count">{forms.length} form{forms.length !== 1 ? 's' : ''}</span>
         </div>
 
@@ -104,26 +99,26 @@ export const SocratesFormsList = ({ forms = [], patientId, patientAbha, onRefres
                 <div className="doc-socrates-form-top">
                   <div className="doc-socrates-form-info">
                     <div className="doc-socrates-site-row">
-                      <span className="doc-socrates-site-label">📍 Site:</span>
+                      <span className="doc-socrates-site-label">Site:</span>
                       <span className="doc-socrates-site-value">{form.site}</span>
                     </div>
                     <div className="doc-socrates-meta-row">
                       <span className="doc-socrates-meta-item">
-                        🔥 Character: <strong>{form.character}</strong>
+                        Character: <strong>{form.character}</strong>
                       </span>
                       <span className="doc-socrates-meta-item">
-                        ⏱ Onset: <strong>{form.onset}</strong>
+                        Onset: <strong>{form.onset}</strong>
                       </span>
                       <span className="doc-socrates-meta-item">
-                        🕐 Time: <strong>{form.timeCourse}</strong>
+                        Time: <strong>{form.timeCourse}</strong>
                       </span>
                     </div>
                     <div className="doc-socrates-meta-row">
                       <span className="doc-socrates-meta-item">
-                        📎 Documents: <strong>{form.documentCount}</strong>
+                        Documents: <strong>{form.documentCount}</strong>
                       </span>
                       <span className="doc-socrates-meta-item">
-                        📅 {new Date(form.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                        {new Date(form.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
                       </span>
                     </div>
                   </div>
@@ -146,26 +141,24 @@ export const SocratesFormsList = ({ forms = [], patientId, patientAbha, onRefres
                     disabled={isPending || isLoading}
                   >
                     {isLoading ? (
-                      <span className="doc-btn-spinner">⟳</span>
-                    ) : (
-                      <span>{config.icon}</span>
-                    )}
+                      <span className="doc-btn-spinner">...</span>
+                    ) : null}
                     <span>{isLoading ? 'Processing...' : config.label}</span>
                   </button>
 
                   {form.consentStatus === 'accepted' && (
                     <span className="doc-consent-status-tag doc-consent-granted-tag">
-                      ✅ Access Granted
+                      Access Granted
                     </span>
                   )}
                   {form.consentStatus === 'pending' && (
                     <span className="doc-consent-status-tag doc-consent-pending-tag">
-                      ⏳ Waiting for patient
+                      Waiting for patient
                     </span>
                   )}
                   {form.consentStatus === 'rejected' && (
                     <span className="doc-consent-status-tag doc-consent-rejected-tag">
-                      ❌ Request Rejected
+                      Request Rejected
                     </span>
                   )}
                 </div>

@@ -51,9 +51,8 @@ export const AppRoutes = () => {
         <Route path="/doctor" element={<DoctorDashboard activeTabDefault="overview" />} />
         <Route path="/doctor/patient-data" element={<DoctorDashboard activeTabDefault="patient-data" />} />
         <Route path="/doctor/socrates-forms" element={<DoctorDashboard activeTabDefault="socrates-forms" />} />
-        <Route path="/doctor/consultations" element={<DoctorDashboard activeTabDefault="consultations" />} />
-        <Route path="/doctor/alerts" element={<DoctorDashboard activeTabDefault="alerts" />} />
         <Route path="/doctor/directory" element={<DoctorDashboard activeTabDefault="directory" />} />
+        <Route path="/doctor/medical-directory" element={<DoctorDashboard activeTabDefault="medical-directory" />} />
         <Route path="/doctor/patient/:id?" element={<DoctorDashboard activeTabDefault="patient-data" />} />
 
         {/* Default: redirect to dashboard */}

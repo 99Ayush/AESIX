@@ -6,6 +6,8 @@ import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import BrandLogo from '../../../shared/BrandLogo';
 
 import {
   FileText,
@@ -14,7 +16,7 @@ import {
   LockKeyhole,
   LogOut,
   Phone,
-  Pencil,Bell,BookOpen,Mail,
+  Pencil,BookOpen,Mail,
   Pill,
   TestTube,
   Calendar,
@@ -161,13 +163,7 @@ export default function Consent() {
       {/* TOP NAVIGATION BAR */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate('/dashboard')}>
-            <div className="sih-logo-badge">🛡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Health Portal</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Health Portal" />
 
 
           <div className="sih-header-controls">
@@ -177,7 +173,7 @@ export default function Consent() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell"><Bell size={22} strokeWidth={2} /> <span className="sih-notif-badge">3</span></button>
+            <DoctorActivityBell />
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar">RK</div>
@@ -226,58 +222,66 @@ export default function Consent() {
           </div>
         </div>
 
-        {/* STATUS FILTER HEADER */}
-        <div className="sih-card" style={{ padding: '0.4rem', display: 'flex', gap: '0.4rem', marginBottom: '1.25rem' }}>
+        {/* CATEGORIES (LEFT) + RECORDS (RIGHT) */}
+        <div style={{ display: 'flex', gap: '1.25rem' }}>
+
+        {/* STATUS CATEGORIES — left sidebar */}
+        <div className="sih-card" style={{ padding: '1rem', width: '220px', flexShrink: 0 }}>
+          <p style={{ fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', margin: '0 0 0.6rem 0.25rem' }}>
+            Categories
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <button
+            onClick={() => setActiveStatus('all')}
+            className={`tab-nav-btn ${activeStatus === 'all' ? 'active' : ''}`}
+            style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <span style={{ flex: 1 }}>All Records</span>
+            <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'rgba(18,48,74,0.08)', fontWeight: 900, color: 'var(--primary-navy)' }}>
+              {consents.length}
+            </span>
+          </button>
+
           <button
             onClick={() => setActiveStatus('accepted')}
             className={`tab-nav-btn ${activeStatus === 'accepted' ? 'active' : ''}`}
-            style={{ flex: 1, padding: '0.6rem 1rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981' }}></span>
-            Accepted
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981', flexShrink: 0 }}></span>
+            <span style={{ flex: 1 }}>Accepted</span>
             <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'rgba(12,154,154,0.12)', fontWeight: 900, color: 'var(--teal-primary)' }}>
               {countAccepted}
             </span>
           </button>
 
           <button
-            onClick={() => setActiveStatus('rejected')}
-            className={`tab-nav-btn ${activeStatus === 'rejected' ? 'active' : ''}`}
-            style={{ flex: 1, padding: '0.6rem 1rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-          >
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444' }}></span>
-            Rejected
-            <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'rgba(239,68,68,0.1)', fontWeight: 900, color: '#EF4444' }}>
-              {countRejected}
-            </span>
-          </button>
-
-          <button
             onClick={() => setActiveStatus('pending')}
             className={`tab-nav-btn ${activeStatus === 'pending' ? 'active' : ''}`}
-            style={{ flex: 1, padding: '0.6rem 1rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#F59E0B' }}></span>
-            Pending
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#F59E0B', flexShrink: 0 }}></span>
+            <span style={{ flex: 1 }}>Pending</span>
             <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'rgba(245,158,11,0.1)', fontWeight: 900, color: '#F59E0B' }}>
               {countPending}
             </span>
           </button>
 
           <button
-            onClick={() => setActiveStatus('all')}
-            className={`tab-nav-btn ${activeStatus === 'all' ? 'active' : ''}`}
-            style={{ flex: 1, padding: '0.6rem 1rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+            onClick={() => setActiveStatus('rejected')}
+            className={`tab-nav-btn ${activeStatus === 'rejected' ? 'active' : ''}`}
+            style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
           >
-            All Records
-            <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'rgba(18,48,74,0.08)', fontWeight: 900, color: 'var(--primary-navy)' }}>
-              {consents.length}
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#EF4444', flexShrink: 0 }}></span>
+            <span style={{ flex: 1 }}>Rejected</span>
+            <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '999px', backgroundColor: 'rgba(239,68,68,0.1)', fontWeight: 900, color: '#EF4444' }}>
+              {countRejected}
             </span>
           </button>
+          </div>
         </div>
 
-        {/* CONSENT RECORDS — Full Width */}
-        <div className="sih-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        {/* CONSENT RECORDS — right side */}
+        <div className="sih-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', flex: 1, minWidth: 0 }}>
           
           {/* Panel Sub-header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
@@ -403,6 +407,7 @@ export default function Consent() {
             </div>
           )}
 
+        </div>
         </div>
 
       </main>

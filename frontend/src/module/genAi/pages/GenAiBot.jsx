@@ -10,11 +10,23 @@ import { userApi } from '../../user/services/userApi';
 import '../../user/userPages.css';
 import '../components/GenAiChat.css';
 import PatientSidebar from '../../user/components/asidebar';
+import { LanguageSelect, useDashboardLanguage } from '../../user/LanguageContext';
+import { convoCodeForGlobal } from '../../user/translations';
+import BrandLogo from '../../../shared/BrandLogo';
+import DoctorActivityBell from '../../user/components/DoctorActivityBell';
 
 export const GenAiBot = () => {
   const navigate = useNavigate();
-  // Conversation language state ('en' | 'hi')
-  const [convoLanguage, setConvoLanguage] = useState('en');
+  // Conversation language ('en' | 'hi') follows the GLOBAL dashboard language
+  // so one button drives every page including the chatbot (AI answers EN/HI).
+  const { language: globalLanguage } = useDashboardLanguage();
+  const [convoLanguage, setConvoLanguage] = useState(() => convoCodeForGlobal(localStorage.getItem('dashboard-language') || 'English'));
+
+  // Keep chatbot in sync whenever the global language button changes.
+  useEffect(() => {
+    const mapped = convoCodeForGlobal(globalLanguage);
+    setConvoLanguage((prev) => (prev === mapped ? prev : mapped));
+  }, [globalLanguage]);
 
   const getWelcomeMessage = (lang) => ({
     id: 'welcome_1',
@@ -488,23 +500,23 @@ export const GenAiBot = () => {
       {/* Top Header (same as Dashboard) */}
       <header className="sih-header">
         <div className="sih-header-inner">
-          <div className="sih-brand" onClick={() => navigate("/dashboard")} style={{ cursor: "pointer" }}>
-            <div className="sih-logo-badge">🛡</div>
-            <div>
-              <h1 className="sih-brand-title">MedVault</h1>
-              <p className="sih-brand-subtitle">Health Portal & AI Assistant</p>
-            </div>
-          </div>
+          <BrandLogo subtitle="Health Portal & AI Assistant" />
 
           <div className="sih-header-controls">
             <select
               value={convoLanguage}
-              onChange={(e) => setConvoLanguage(e.target.value)}
+              onChange={(e) => handleToggleLanguage(e.target.value)}
               className="sih-lang-select"
+              data-no-translate
+              translate="no"
+              aria-label="AI conversation language"
+              title="AI conversation language (English/Hindi)"
             >
-              <option value="en">🌐 English</option>
-              <option value="hi">🌐 हिंदी</option>
+              <option value="en">AI: English</option>
+              <option value="hi">AI: हिंदी</option>
             </select>
+
+            <DoctorActivityBell />
             
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>

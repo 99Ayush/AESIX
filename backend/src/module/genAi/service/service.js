@@ -49,7 +49,9 @@ export function detectInputLanguage(text = '') {
   const hasAccentedLatinChars = /[À-ÖØ-öø-ÿ]/.test(text);
 
   // Other non-ASCII scripts (Arabic, CJK, Cyrillic, etc.)
+  // eslint-disable-next-line no-control-regex
   const hasOtherNonAsciiScript = /[^\x00-\x7F]/.test(text) && !HINDI_REGEX.test(text);
+
 
   const matchesOtherMarker = OTHER_LANGUAGE_MARKERS.some((w) => lower.includes(w));
 
@@ -147,21 +149,7 @@ export function hasActiveMedicalHistory(history = []) {
 // 2.5 DIRECTION & NAVIGATION INTENT DETECTION (AppRoutes Directory)
 // ────────────────────────────────────────────────────────────────
 
-const DIRECTION_KEYWORDS = [
-  'navigate', 'navigation', 'direction', 'directions', 'where', 'where is', 'where can i',
-  'how to go', 'how to reach', 'how to access', 'how do i find', 'find page', 'show me',
-  'open page', 'rasta', 'kahan', 'kaha', 'kaise jaye', 'kaise khoje', 'kaise khojen',
-  'location of', 'take me to', 'link for', 'url for', 'go to', 'route', 'routes', 'page', 'pages', 'section'
-];
 
-const APP_FEATURE_KEYWORDS = [
-  'upload', 'document', 'documents', 'docs', 'lab report', 'prescription',
-  'basic info', 'basicinfo', 'profile', 'abha', 'abha id', 'consent',
-  'socrates', 'symptom form', 'namaste', 'namaste code', 'ayush',
-  'icd', 'icd code', 'icd-11', 'kindle', 'health code', 'doctor', 'doctor dashboard',
-  'patient data', 'consultation', 'consultations', 'alerts', 'directory', 'dashboard',
-  'login', 'register', 'app', 'platform'
-];
 
 export function hasDirectionIntent(text = '') {
   if (!text || !text.trim()) return false;
@@ -256,7 +244,9 @@ function looksLikeWrongLanguage(reply, expectedLanguage) {
     .replace(/[°™®©]/g, '');
 
   const hasAccentedLatinChars = /[À-ÖØ-öø-ÿ]/.test(sanitized);
+  // eslint-disable-next-line no-control-regex
   const hasForeignScript = /[^\x00-\x7F]/.test(sanitized) && !HINDI_REGEX.test(sanitized);
+
 
   return hasAccentedLatinChars || hasForeignScript;
 }
@@ -459,7 +449,7 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
       try {
         const parsed = JSON.parse(errorText);
         errorDetail = parsed.error?.message || errorText;
-      } catch (e) {
+      } catch {
         errorDetail = errorText;
       }
       throw new Error(`Groq API error (${response.status}): ${errorDetail}`);
