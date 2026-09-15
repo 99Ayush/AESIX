@@ -1990,9 +1990,9 @@
   position: fixed;
   right: 1.5rem;
   bottom: 1.5rem;
-  z-index: 50;
-  width: 130px;
-  height: 130px;
+  z-index: 50; 
+  width: 100px;
+  height: 100px;
   cursor: pointer;
   transition: transform 0.3s;
   animation: lp-wiggle 1.5s ease-in-out infinite;

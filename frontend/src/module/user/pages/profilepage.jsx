@@ -3,8 +3,37 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import PatientSidebar from '../components/asidebar';
 import { useDashboardLanguage } from '../LanguageContext';
 import ChatbotFAB from '../components/ChatbotFAB';
+import {
+  FileText,
+  RefreshCw,
+  ClipboardClock,
+  ClipboardList,
+FilePenLine,
+ Landmark, 
+  Phone,
+  Pencil,Bell,BookOpen,Mail,
+  Pill,
+  TestTube,
+  Calendar,
+  Search,
+  Download,
+  Share2,
+  Eye,
+ Trash2,
+  Lock,
+  Cloud,
+  Contact,
+  Folder,
+  Leaf,
+  Globe,
+  FolderLock,
+   CircleUser,
+  LogOut,
+} from "lucide-react";
+
 
 export default function ProfilePage() {
   const navigate = useNavigate();
@@ -88,7 +117,7 @@ export default function ProfilePage() {
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            <button className="sih-notif-bell">🔔<span className="sih-notif-badge">3</span></button>
+            <button className="sih-notif-bell"><Bell size={22} strokeWidth={2} /> <span className="sih-notif-badge">3</span></button>
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
                 <div className="sih-profile-avatar" style={{ overflow: 'hidden', padding: 0 }}>
@@ -104,10 +133,10 @@ export default function ProfilePage() {
               {profileOpen && (
                 <div className="sih-profile-dropdown">
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
-                    <span className="dd-icon">👤</span> Profile
+                    <span className="dd-icon"><CircleUser /></span> Profile
                   </button>
                   <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
-                    <span className="dd-icon">🚪</span> Sign Out
+                    <span className="dd-icon"><LogOut /></span> Sign Out
                   </button>
                 </div>
               )}
@@ -116,8 +145,11 @@ export default function ProfilePage() {
         </div>
       </header>
 
-      {/* MAIN CONTENT */}
-      <main className="sih-main-layout">
+      <div className="patient-main-container">
+        <PatientSidebar profile={patientProfile} patientName={patientProfile.name} activePage="profile" />
+        <div className="patient-content-area">
+          {/* MAIN CONTENT */}
+          <main className="sih-main-layout">
         
         {/* HERO BANNER */}
         <div className="profile-hero-banner">
@@ -235,17 +267,17 @@ export default function ProfilePage() {
               </h3>
 
               <button onClick={() => navigate('/abha')} className="sih-btn sih-btn-outline" style={{ justifyContent: 'space-between' }}>
-                <span>🪪 View Official ABHA Card</span>
+                <span><Contact size={20} /> View Official ABHA Card</span>
                 <span>→</span>
               </button>
 
               <button onClick={() => navigate('/uploadDoc')} className="sih-btn sih-btn-outline" style={{ justifyContent: 'space-between' }}>
-                <span>📁 Upload Medical Reports</span>
+                <span><Folder size={22} /> Upload Medical Reports</span>
                 <span>→</span>
               </button>
 
               <button onClick={() => navigate('/consent')} className="sih-btn sih-btn-outline" style={{ justifyContent: 'space-between' }}>
-                <span>🔒 Manage Consent Requests</span>
+                <span><FolderLock size={20} /> Manage Consent Requests</span>
                 <span>→</span>
               </button>
             </div>
@@ -254,7 +286,9 @@ export default function ProfilePage() {
 
         </div>
 
-      </main>
+          </main>
+        </div>
+      </div>
 
       <ChatbotFAB />
     </div>

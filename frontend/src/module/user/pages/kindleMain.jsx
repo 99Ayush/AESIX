@@ -5,6 +5,32 @@ import { userApi } from '../services/userApi';
 import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
+import {
+  FileText,
+   CircleUser,
+    LogOut,
+  RefreshCw,
+  ClipboardClock,
+  ClipboardList,
+FilePenLine,
+ Landmark, 
+  Phone,
+  Pencil,Bell,BookOpen,Mail,
+  Pill,
+  TestTube,
+  Calendar,
+  Search,
+  Download,
+  Share2,
+  Eye,
+ Trash2,
+  Lock,
+  Cloud,
+  Contact,
+  Folder,
+  Leaf,
+  Globe
+} from "lucide-react";
 
 export default function KindleMain() {
   const navigate = useNavigate();
@@ -151,7 +177,7 @@ export default function KindleMain() {
               {profileOpen && (
                 <div className="sih-profile-dropdown">
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
-                    <span className="dd-icon">👤</span> Profile
+                    <span className="dd-icon"><CircleUser /> </span> Profile
                   </button>
                   <button className="sih-profile-dropdown-item danger" onClick={() => {
                     localStorage.removeItem('token');
@@ -159,7 +185,7 @@ export default function KindleMain() {
                     setProfileOpen(false);
                     navigate('/login');
                   }}>
-                    <span className="dd-icon">🚪</span> Sign Out
+                    <span className="dd-icon"><LogOut /></span> Sign Out
                   </button>
                 </div>
               )}
@@ -196,14 +222,15 @@ export default function KindleMain() {
                   className={`sih-btn ${activeTab === 'namaste' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
                   style={{ padding: '0.6rem 1.25rem', fontSize: '0.85rem' }}
                 >
-                  🌿 NAMASTE (Ayurveda)
+                  
+<Leaf size={20} /> NAMASTE (Ayurveda)
                 </button>
                 <button
                   onClick={() => handleTabSwitch('icd11')}
                   className={`sih-btn ${activeTab === 'icd11' ? 'sih-btn-primary' : 'sih-btn-outline'}`}
                   style={{ padding: '0.6rem 1.25rem', fontSize: '0.85rem' }}
                 >
-                  🌐 WHO ICD-11 (Global)
+                  <Globe size={20} /> WHO ICD-11 (Global)
                 </button>
               </div>
             </div>
@@ -223,7 +250,7 @@ export default function KindleMain() {
                     style={{ paddingLeft: '2.5rem', height: '46px', fontSize: '0.9rem' }}
                   />
                   <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
-                    🔍
+                    <Search size={20} />
                   </span>
                   {query && (
                     <button
@@ -400,7 +427,7 @@ export default function KindleMain() {
                   {record.pathomechanism && (
                     <div style={{ backgroundColor: '#F8FAFC', padding: '1rem', borderRadius: '10px', border: '1px solid var(--border-light)' }}>
                       <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '0.5rem' }}>
-                        🌿 Pathomechanism (Samprapti)
+                        <Leaf size={20} />          Pathomechanism (Samprapti)
                       </h4>
                       <p style={{ fontSize: '0.78rem', margin: '0.25rem 0' }}>
                         <strong>Dominant Dosha:</strong> {record.pathomechanism.dominantDosha?.join(', ')}
@@ -442,7 +469,7 @@ export default function KindleMain() {
                   <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                       <h4 style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
-                        🌐 WHO ICD-11 Global Disease Record
+                        <Globe  size={20} /> WHO ICD-11 Global Disease Record
                       </h4>
                       {record.icd11EntityUri && (
                         <a
@@ -463,7 +490,7 @@ export default function KindleMain() {
               </div>
             ) : (
               <div style={{ margin: 'auto', textAlign: 'center', padding: '3rem 1rem', maxWidth: '420px' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📖</div>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><BookOpen size={40} /></div>
                 <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)', margin: '0 0 0.4rem' }}>
                   Select a Medical Code
                 </h3>

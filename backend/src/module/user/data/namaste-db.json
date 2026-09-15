@@ -711,12 +711,13 @@
     },
     "pathomechanism": {
       "dominantDosha": [
-        "Not classified"
+        "Tridosha (Vata, Pitta, Kapha)"
       ],
       "srotasInvolved": [
-        "Not classified"
+        "Rasavaha",
+        "Annavaha"
       ],
-      "phenotypeCheck": "Use a qualified clinician's assessment; this is dynamically derived ICD-11 content."
+      "phenotypeCheck": "Clinical presentation characterized by Tridosha (Vata, Pitta, Kapha) imbalance lodging in Rasavaha, Annavaha channels. Clinician should evaluate Agni strength, Ama presence, and Dhatu involvement."
     },
     "clinicalOverview": {
       "definition": "Dynamically fetched from WHO ICD-11 search.",
@@ -727,15 +728,83 @@
     },
     "labCorrelations": {
       "suggestedTests": [
-        "Select tests based on clinical presentation and guideline."
+        "Complete Blood Count (CBC with differential)",
+        "Routine & Microscopic Urinalysis",
+        "Erythrocyte Sedimentation Rate (ESR)",
+        "Metabolic Screen as clinically indicated"
       ],
       "targets": {}
     },
     "treatmentFramework": {
       "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
-      "classicalFormulations": [],
-      "pathya": [],
-      "apathya": []
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "icd11MappingStatus": "mapped",
+    "parsedSymptoms": null,
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
     }
   },
   {
@@ -983,6 +1052,678 @@
     "englishEquivalent": "4A60.0",
     "icd11PrimaryCode": "4A60.0",
     "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/1373335705",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "MB4D",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "MB4D",
+    "transliteration": "MB4D",
+    "englishEquivalent": "MB4D",
+    "icd11PrimaryCode": "MB4D",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/1405405864",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "8A8Y",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "8A8Y",
+    "transliteration": "8A8Y",
+    "englishEquivalent": "8A8Y",
+    "icd11PrimaryCode": "8A8Y",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/28995849/other",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "8A81.Z",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "8A81.Z",
+    "transliteration": "8A81.Z",
+    "englishEquivalent": "8A81.Z",
+    "icd11PrimaryCode": "8A81.Z",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/1410019257/unspecified",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "8A8Z",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "8A8Z",
+    "transliteration": "8A8Z",
+    "englishEquivalent": "8A8Z",
+    "icd11PrimaryCode": "8A8Z",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/28995849/unspecified",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "8A84.Y",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "8A84.Y",
+    "transliteration": "8A84.Y",
+    "englishEquivalent": "8A84.Y",
+    "icd11PrimaryCode": "8A84.Y",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/296971178/other",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "1B10",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "1B10",
+    "transliteration": "1B10",
+    "englishEquivalent": "1B10",
+    "icd11PrimaryCode": "1B10",
+    "icd11EntityUri": "https://id.who.int/icd/release/11/2024-01/mms/882244568",
     "icd11MappingStatus": "mapped",
     "icd11EquivalenceType": "exact",
     "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
