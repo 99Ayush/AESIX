@@ -119,7 +119,7 @@ export const PatientDirectoryView = ({ searchResults = [], onSelectPatient }) =>
                 className="doc-dir-action-btn secondary"
                 onClick={() => onSelectPatient && onSelectPatient(pt.id, 'consultations')}
               >
-                <FileText size={17} /> View Consultations
+                <FileText size={17} />Previous Records
               </button>
             </div>
           </div>

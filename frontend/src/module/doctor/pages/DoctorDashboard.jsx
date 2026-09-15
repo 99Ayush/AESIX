@@ -4,7 +4,6 @@ import DoctorHeader from '../components/DoctorHeader';
 import DoctorSidebar from '../components/DoctorSidebar';
 import PatientSearchBar from '../components/PatientSearchBar';
 import PatientProfileCard from '../components/PatientProfileCard';
-import ConsultationResults from '../components/ConsultationResults';
 import AlertsSection from '../components/AlertsSection';
 import PatientDirectoryView from '../components/PatientDirectoryView';
 import SocratesFormsList from '../components/SocratesFormsList';
@@ -30,7 +29,7 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
     const path = location.pathname;
     if (path.includes('/patient-data')) return 'patient-data';
     if (path.includes('/socrates-forms')) return 'socrates-forms';
-    if (path.includes('/consultations')) return 'consultations';
+    // if (path.includes('/consultations')) return 'consultations';
     if (path.includes('/alerts')) return 'alerts';
     if (path.includes('/directory')) return 'directory';
     return 'patient-data';
@@ -193,12 +192,12 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
                 <span className="doc-pill-badge">{patientForms.length}</span>
               )}
             </button>
-            <button
+            {/* <button
               className={`doc-view-pill ${activeTab === 'consultations' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('consultations')}
             >
               <FileText size={17} /> Consultation Results
-            </button>
+            </button> */}
             {/* <button
               className={`doc-view-pill ${activeTab === 'alerts' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('alerts')}
@@ -271,12 +270,12 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
                 </div>
               )}
 
-              {/* VIEW 4: DEDICATED CONSULTATION RESULTS */}
+              {/* VIEW 4: DEDICATED CONSULTATION RESULTS
               {activeTab === 'consultations' && (
                 <div className="doc-single-view-full">
                   <ConsultationResults consultations={patientData?.consultationResults} />
                 </div>
-              )}
+              )} */}
 
               {/* VIEW 5: DEDICATED MEDICAL ALERTS */}
               {activeTab === 'alerts' && (

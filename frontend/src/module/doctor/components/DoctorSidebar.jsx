@@ -46,7 +46,7 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
           <span>Patient Data View</span>
         </button>
 
-        <button
+        {/* <button
           className={`doc-sidebar-item ${activeTab === 'consultations' ? 'active' : ''}`}
           onClick={() => onTabChange && onTabChange('consultations')}
         >
@@ -57,7 +57,7 @@ export const DoctorSidebar = ({ activeTab = 'patient-data', onTabChange, selecte
             <line x1="16" y1="17" x2="8" y2="17"></line>
           </svg>
           <span>Consultation Results</span>
-        </button>
+        </button> */}
 
         <button
           className={`doc-sidebar-item ${activeTab === 'socrates-forms' ? 'active' : ''}`}
