@@ -4,6 +4,7 @@ import '../userPages.css';
 import { fileToBase64, userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
+import PatientSidebar from '../components/asidebar';
 
 // Utility for formatting dates
 export const formatDate = (dateString) => {
@@ -181,17 +182,6 @@ export default function UploadDoc() {
             </div>
           </div>
 
-          <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🛡</span> ABHA
-            </button>
-            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn active">
-              <span className="sih-nav-icon">📄</span> Documents
-            </button>
-            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🔍</span> Basic Info
-            </button>
-          </nav>
 
           <div className="sih-header-controls">
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
@@ -222,8 +212,11 @@ export default function UploadDoc() {
         </div>
       </header>
 
-      {/* MAIN CONTAINER */}
-      <main className="sih-main-layout">
+      <div className="patient-main-container">
+        <PatientSidebar activePage="uploadDoc" />
+        <div className="patient-content-area">
+          {/* MAIN CONTAINER */}
+          <main className="sih-main-layout">
 
         {/* DOCUMENT FILTER & ACTION BAR */}
         <div className="sih-card" style={{ padding: '1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
@@ -521,6 +514,9 @@ export default function UploadDoc() {
           </div>
         </div>
       )}
+
+        </div>
+      </div>
 
     </div>
   );

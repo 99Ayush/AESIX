@@ -4,6 +4,7 @@ import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import { useDashboardLanguage } from '../LanguageContext';
+import PatientSidebar from '../components/asidebar'
 
 // Formatting Utilities
 const formatDate = (dateString) => {
@@ -274,17 +275,6 @@ export default function BasicInfo() {
             </div>
           </div>
 
-          <nav className="sih-nav-menu">
-            <button onClick={() => navigate('/abha')} className="sih-nav-btn">
-              <span className="sih-nav-icon">🛡</span> ABHA
-            </button>
-            <button onClick={() => navigate('/uploadDoc')} className="sih-nav-btn">
-              <span className="sih-nav-icon">📄</span> Documents
-            </button>
-            <button onClick={() => navigate('/basicInfo')} className="sih-nav-btn active">
-              <span className="sih-nav-icon">🔍</span> Basic Info
-            </button>
-          </nav>
 
           <div className="sih-header-controls">
             <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
@@ -321,636 +311,640 @@ export default function BasicInfo() {
         </div>
       </header>
 
-      {/* SUB-HEADER / ACTIONS BAR */}
-      <div style={{ backgroundColor: 'white', borderBottom: '1px solid var(--border-light)', padding: '0.75rem 1.5rem' }}>
-        <div style={{ maxWidth: '1600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+      <div className="patient-main-container">
+        <PatientSidebar profile={patient} patientName={patient.name} activePage="basicInfo" />
+        <div className="patient-content-area">
+          <div style={{ backgroundColor: 'white', borderBottom: '1px solid var(--border-light)', padding: '0.75rem 1.5rem' }}>
+            <div style={{ maxWidth: '1600px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <span className="sih-badge sih-badge-teal">
-              Patient Record # {patient.id}
-            </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>
-              ABHA ID: <strong style={{ color: 'var(--primary-navy)' }}>{patient.abhaId}</strong>
-            </span>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {!isEditing ? (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="sih-btn sih-btn-primary"
-                >
-                  ✏️ Edit Profile
-                </button>
-
-                <button
-                  onClick={handlePrint}
-                  className="sih-btn sih-btn-outline"
-                >
-                  🖨️ Print Summary
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handleSave}
-                  className="sih-btn sih-btn-primary"
-                >
-                  💾 Save Changes
-                </button>
-
-                <button
-                  onClick={handleCancel}
-                  className="sih-btn sih-btn-outline"
-                >
-                  Cancel
-                </button>
-              </>
-            )}
-          </div>
-
-        </div>
-      </div>
-
-      {/* MAIN CONTAINER */}
-      <main className="sih-main-layout">
-        <div className="abha-grid" style={{ gridTemplateColumns: '4fr 5fr 3fr' }}>
-
-          {/* LEFT COLUMN: Patient Photo & Card */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-            {/* Profile Card */}
-            <div className="sih-card">
-              <div style={{ background: 'linear-gradient(135deg, var(--primary-navy), var(--teal-primary))', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
                 <span className="sih-badge sih-badge-teal">
-                  Active Patient
+                  Patient Record # {patient.id}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>
+                  ABHA ID: <strong style={{ color: 'var(--primary-navy)' }}>{patient.abhaId}</strong>
                 </span>
               </div>
 
-              <div style={{ padding: '1.25rem' }}>
-                <div style={{ marginTop: '-2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                  <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: 'var(--radius-md)', backgroundColor: '#EAF3FF', border: '3px solid white', boxShadow: 'var(--shadow-md)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 900, color: 'var(--primary-navy)' }}>
-                    {(photoPreview || patient.photoUrl) ? (
-                      <img src={photoPreview || patient.photoUrl} alt="Profile DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      (patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
-                    )}
-                    {isEditing && (
-                      <label htmlFor="avatar-file-input" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer' }}>
-                        📷 Change DP
-                      </label>
-                    )}
-                  </div>
-                  {isEditing && (
-                    <input
-                      id="avatar-file-input"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          setPhotoFile(file);
-                          setPhotoPreview(URL.createObjectURL(file));
-                        }
-                      }}
-                      style={{ display: 'none' }}
-                    />
-                  )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                {!isEditing ? (
+                  <>
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      className="sih-btn sih-btn-primary"
+                    >
+                      ✏️ Edit Profile
+                    </button>
 
-                  <div className="sih-badge sih-badge-teal">
-                    Blood Group: {isEditing ? (
-                      <select
-                        value={formData.bloodGroup}
-                        onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
-                        className="sih-select"
-                        style={{ padding: '0.1rem', fontSize: '0.7rem', width: 'auto', marginLeft: '0.2rem' }}
+                    <button
+                      onClick={handlePrint}
+                      className="sih-btn sih-btn-outline"
+                    >
+                      🖨️ Print Summary
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={handleSave}
+                      className="sih-btn sih-btn-primary"
+                    >
+                      💾 Save Changes
+                    </button>
+
+                    <button
+                      onClick={handleCancel}
+                      className="sih-btn sih-btn-outline"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+              </div>
+
+            </div>
+          </div>
+
+          {/* MAIN CONTAINER */}
+          <main className="sih-main-layout">
+            <div className="abha-grid" style={{ gridTemplateColumns: '4fr 5fr 3fr' }}>
+
+              {/* LEFT COLUMN: Patient Photo & Card */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                {/* Profile Card */}
+                <div className="sih-card">
+                  <div style={{ background: 'linear-gradient(135deg, var(--primary-navy), var(--teal-primary))', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
+                    <span className="sih-badge sih-badge-teal">
+                      Active Patient
+                    </span>
+                  </div>
+
+                  <div style={{ padding: '1.25rem' }}>
+                    <div style={{ marginTop: '-2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                      <div style={{ position: 'relative', width: '80px', height: '80px', borderRadius: 'var(--radius-md)', backgroundColor: '#EAF3FF', border: '3px solid white', boxShadow: 'var(--shadow-md)', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 900, color: 'var(--primary-navy)' }}>
+                        {(photoPreview || patient.photoUrl) ? (
+                          <img src={photoPreview || patient.photoUrl} alt="Profile DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          (patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                        )}
+                        {isEditing && (
+                          <label htmlFor="avatar-file-input" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer' }}>
+                            📷 Change DP
+                          </label>
+                        )}
+                      </div>
+                      {isEditing && (
+                        <input
+                          id="avatar-file-input"
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setPhotoFile(file);
+                              setPhotoPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                          style={{ display: 'none' }}
+                        />
+                      )}
+
+                      <div className="sih-badge sih-badge-teal">
+                        Blood Group: {isEditing ? (
+                          <select
+                            value={formData.bloodGroup}
+                            onChange={(e) => handleInputChange('bloodGroup', e.target.value)}
+                            className="sih-select"
+                            style={{ padding: '0.1rem', fontSize: '0.7rem', width: 'auto', marginLeft: '0.2rem' }}
+                          >
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                          </select>
+                        ) : patient.bloodGroup}
+                      </div>
+                    </div>
+
+                    {!isEditing ? (
+                      <div>
+                        <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--primary-navy)', margin: 0 }}>{patient.name}</h2>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.25rem' }}>
+                          {patient.age} Yrs • {patient.gender} • DOB: {formatDate(patient.dob)}
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                        <div>
+                          <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Full Name</label>
+                          <input
+                            type="text"
+                            value={formData.name}
+                            onChange={(e) => handleInputChange('name', e.target.value)}
+                            className="sih-input"
+                          />
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
+                          <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Age</label>
+                            <input
+                              type="number"
+                              value={formData.age}
+                              onChange={(e) => handleInputChange('age', e.target.value)}
+                              className="sih-input"
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Gender</label>
+                            <select
+                              value={formData.gender}
+                              onChange={(e) => handleInputChange('gender', e.target.value)}
+                              className="sih-select"
+                            >
+                              <option value="Male">Male</option>
+                              <option value="Female">Female</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>DOB</label>
+                            <input
+                              type="date"
+                              value={formData.dob}
+                              onChange={(e) => handleInputChange('dob', e.target.value)}
+                              className="sih-input"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ borderTop: '1px solid var(--border-light)', margin: '1rem 0' }}></div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.75rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Patient ID:</span>
+                        <span style={{ fontWeight: 800, fontFamily: 'monospace', color: 'var(--primary-navy)' }}>{patient.id}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>ABHA Health ID:</span>
+                        <span style={{ fontWeight: 800, color: 'var(--text-main)' }}>{patient.abhaId}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Marital Status:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.maritalStatus}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Occupation:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.occupation}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Language:</span>
+                        <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.primaryLanguage}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '1rem' }}>
+                      <a
+                        href={`tel:${patient.contact.phone}`}
+                        className="sih-btn sih-btn-outline"
+                        style={{ fontSize: '0.75rem', padding: '0.5rem' }}
                       >
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                      </select>
-                    ) : patient.bloodGroup}
+                        📞 Call Patient
+                      </a>
+                      <a
+                        href={`mailto:${patient.contact.email}`}
+                        className="sih-btn sih-btn-outline"
+                        style={{ fontSize: '0.75rem', padding: '0.5rem' }}
+                      >
+                        ✉️ Email Patient
+                      </a>
+                    </div>
+
                   </div>
                 </div>
 
-                {!isEditing ? (
-                  <div>
-                    <h2 style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--primary-navy)', margin: 0 }}>{patient.name}</h2>
-                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, marginTop: '0.25rem' }}>
-                      {patient.age} Yrs • {patient.gender} • DOB: {formatDate(patient.dob)}
-                    </p>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <div>
-                      <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Full Name</label>
-                      <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => handleInputChange('name', e.target.value)}
-                        className="sih-input"
-                      />
+                {/* Vitals Snapshot */}
+                <div className="sih-card" style={{ padding: '1.25rem' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                    Current Vitals Summary
+                  </h3>
+
+                  <div className="vitals-cards-grid">
+                    <div className="vital-card-box">
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Blood Pressure</p>
+                      <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.bp}</p>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
-                      <div>
-                        <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Age</label>
-                        <input
-                          type="number"
-                          value={formData.age}
-                          onChange={(e) => handleInputChange('age', e.target.value)}
-                          className="sih-input"
-                        />
+
+                    <div className="vital-card-box" style={{ borderLeftColor: '#3B82F6' }}>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Heart Rate</p>
+                      <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.heartRate}</p>
+                    </div>
+
+                    <div className="vital-card-box" style={{ borderLeftColor: '#8B5CF6' }}>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Blood Glucose</p>
+                      <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.glucose}</p>
+                    </div>
+
+                    <div className="vital-card-box" style={{ borderLeftColor: '#EC4899' }}>
+                      <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Oxygen (SpO2)</p>
+                      <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.spo2}</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* CENTER COLUMN: Main Content & Tabs */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                {/* Navigation Tabs */}
+                <div className="sih-card" style={{ padding: '0.4rem', display: 'flex', gap: '0.4rem' }}>
+                  <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`tab-nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
+                    style={{ flex: 1, padding: '0.5rem', textAlign: 'center' }}
+                  >
+                    Personal & Contact
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('medications')}
+                    className={`tab-nav-btn ${activeTab === 'medications' ? 'active' : ''}`}
+                    style={{ flex: 1, padding: '0.5rem', textAlign: 'center' }}
+                  >
+                    Medications & Allergies
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('checkups')}
+                    className={`tab-nav-btn ${activeTab === 'checkups' ? 'active' : ''}`}
+                    style={{ flex: 1, padding: '0.5rem', textAlign: 'center' }}
+                  >
+                    Checkup History
+                  </button>
+                </div>
+
+                {/* TAB 1: OVERVIEW */}
+                {activeTab === 'overview' && (
+                  <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                    {/* Contact Section */}
+                    <div>
+                      <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                        Contact Details
+                      </h3>
+
+                      {!isEditing ? (
+                        <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8rem' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                            <div>
+                              <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Phone Number</p>
+                              <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.2rem 0 0 0' }}>{formatPhone(patient.contact.phone)}</p>
+                            </div>
+
+                            <div>
+                              <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Email Address</p>
+                              <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.2rem 0 0 0', wordBreak: 'break-all' }}>{patient.contact.email}</p>
+                            </div>
+                          </div>
+
+                          <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
+                            <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Residential Address</p>
+                            <p style={{ fontWeight: 600, color: 'var(--text-main)', marginTop: '0.2rem', margin: 0 }}>{patient.contact.address}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                          <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Phone</label>
+                            <input
+                              type="text"
+                              value={formData.contact.phone}
+                              onChange={(e) => handleContactChange('phone', e.target.value)}
+                              className="sih-input"
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Email</label>
+                            <input
+                              type="email"
+                              value={formData.contact.email}
+                              onChange={(e) => handleContactChange('email', e.target.value)}
+                              className="sih-input"
+                            />
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Address</label>
+                            <textarea
+                              rows={2}
+                              value={formData.contact.address}
+                              onChange={(e) => handleContactChange('address', e.target.value)}
+                              className="sih-textarea"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Emergency Contact */}
+                    <div>
+                      <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#DC2626', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                        Emergency Contact
+                      </h3>
+
+                      {!isEditing ? (
+                        <div style={{ backgroundColor: '#FEE2E2', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid #FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          <div>
+                            <p style={{ fontWeight: 900, color: 'var(--primary-navy)', fontSize: '0.95rem', margin: 0 }}>
+                              {patient.contact.emergencyContactName || 'Not Specified'}
+                            </p>
+                            <p style={{ fontSize: '0.75rem', color: '#991B1B', fontWeight: 700, margin: '0.2rem 0 0 0' }}>
+                              Relation: {patient.contact.emergencyContactRelation || 'N/A'}
+                            </p>
+                          </div>
+                          {patient.contact.emergencyContactPhone && patient.contact.emergencyContactPhone !== 'N/A' && (
+                            <a
+                              href={`tel:${patient.contact.emergencyContactPhone}`}
+                              className="sih-btn sih-btn-danger"
+                              style={{ fontSize: '0.75rem' }}
+                            >
+                              📞 {formatPhone(patient.contact.emergencyContactPhone)}
+                            </a>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Contact Name"
+                            value={formData.contact.emergencyContactName}
+                            onChange={(e) => handleContactChange('emergencyContactName', e.target.value)}
+                            className="sih-input"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Relation"
+                            value={formData.contact.emergencyContactRelation}
+                            onChange={(e) => handleContactChange('emergencyContactRelation', e.target.value)}
+                            className="sih-input"
+                          />
+                          <input
+                            type="text"
+                            placeholder="Phone"
+                            value={formData.contact.emergencyContactPhone}
+                            onChange={(e) => handleContactChange('emergencyContactPhone', e.target.value)}
+                            className="sih-input"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Medical Conditions */}
+                    <div>
+                      <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                        Medical Conditions & Diagnoses
+                      </h3>
+
+                      <div className="scope-pills-wrap">
+                        {(isEditing ? formData.conditions : patient.conditions).map((cond, idx) => (
+                          <span key={idx} className="sih-badge sih-badge-teal" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}>
+                            {cond}
+                            {isEditing && (
+                              <button onClick={() => handleRemoveCondition(idx)} style={{ color: '#EF4444', fontWeight: 900, marginLeft: '0.2rem' }}>×</button>
+                            )}
+                          </span>
+                        ))}
                       </div>
-                      <div>
-                        <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Gender</label>
-                        <select
-                          value={formData.gender}
-                          onChange={(e) => handleInputChange('gender', e.target.value)}
-                          className="sih-select"
-                        >
-                          <option value="Male">Male</option>
-                          <option value="Female">Female</option>
-                          <option value="Other">Other</option>
-                        </select>
+
+                      {isEditing && (
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Add condition..."
+                            value={newCondition}
+                            onChange={(e) => setNewCondition(e.target.value)}
+                            className="sih-input"
+                          />
+                          <button onClick={handleAddCondition} className="sih-btn sih-btn-primary">Add</button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                )}
+
+                {/* TAB 2: MEDICATIONS */}
+                {activeTab === 'medications' && (
+                  <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+
+                    <div>
+                      <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                        Active Prescribed Medications
+                      </h3>
+
+                      <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                          <thead>
+                            <tr style={{ backgroundColor: 'var(--primary-navy)', color: 'white', textAlign: 'left' }}>
+                              <th style={{ padding: '0.65rem' }}>Medication</th>
+                              <th style={{ padding: '0.65rem' }}>Dosage</th>
+                              <th style={{ padding: '0.65rem' }}>Frequency</th>
+                              <th style={{ padding: '0.65rem' }}>Timing</th>
+                              {isEditing && <th style={{ padding: '0.65rem' }}>Action</th>}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {(isEditing ? formData.medications : patient.medications).map((med) => (
+                              <tr key={med.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                                <td style={{ padding: '0.65rem', fontWeight: 800, color: 'var(--primary-navy)' }}>{med.name}</td>
+                                <td style={{ padding: '0.65rem' }}>{med.dosage}</td>
+                                <td style={{ padding: '0.65rem' }}>{med.frequency}</td>
+                                <td style={{ padding: '0.65rem', color: 'var(--text-muted)' }}>{med.timing}</td>
+                                {isEditing && (
+                                  <td style={{ padding: '0.65rem' }}>
+                                    <button onClick={() => handleRemoveMedication(med.id)} style={{ color: '#EF4444', fontWeight: 800 }}>Delete</button>
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
                       </div>
-                      <div>
-                        <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>DOB</label>
-                        <input
-                          type="date"
-                          value={formData.dob}
-                          onChange={(e) => handleInputChange('dob', e.target.value)}
-                          className="sih-input"
-                        />
+
+                      {isEditing && (
+                        <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                          <p style={{ fontWeight: 800, fontSize: '0.75rem', color: 'var(--primary-navy)', margin: 0 }}>Add New Medication</p>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.4rem' }}>
+                            <input type="text" placeholder="Name" value={newMed.name} onChange={(e) => setNewMed({ ...newMed, name: e.target.value })} className="sih-input" />
+                            <input type="text" placeholder="Dosage" value={newMed.dosage} onChange={(e) => setNewMed({ ...newMed, dosage: e.target.value })} className="sih-input" />
+                            <input type="text" placeholder="Frequency" value={newMed.frequency} onChange={(e) => setNewMed({ ...newMed, frequency: e.target.value })} className="sih-input" />
+                            <input type="text" placeholder="Timing" value={newMed.timing} onChange={(e) => setNewMed({ ...newMed, timing: e.target.value })} className="sih-input" />
+                          </div>
+                          <button onClick={handleAddMedication} className="sih-btn sih-btn-primary" style={{ alignSelf: 'flex-start' }}>+ Add Medication</button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Allergies */}
+                    <div>
+                      <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                        Known Allergies
+                      </h3>
+
+                      <div className="scope-pills-wrap">
+                        {(isEditing ? formData.allergies : patient.allergies).map((allg, idx) => (
+                          <span key={idx} className="sih-badge sih-badge-red" style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}>
+                            ⚠️ {allg}
+                            {isEditing && (
+                              <button onClick={() => handleRemoveAllergy(idx)} style={{ color: '#DC2626', fontWeight: 900, marginLeft: '0.3rem' }}>×</button>
+                            )}
+                          </span>
+                        ))}
                       </div>
+
+                      {isEditing && (
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Add allergy..."
+                            value={newAllergy}
+                            onChange={(e) => setNewAllergy(e.target.value)}
+                            className="sih-input"
+                          />
+                          <button onClick={handleAddAllergy} className="sih-btn sih-btn-danger">Add Allergy</button>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                )}
+
+                {/* TAB 3: CHECKUP HISTORY */}
+                {activeTab === 'checkups' && (
+                  <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', margin: 0 }}>
+                      Recent Checkup Logs
+                    </h3>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      {patient.recentCheckups.map((ck) => (
+                        <div key={ck.id} style={{ backgroundColor: 'var(--mint-bg)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.85rem' }}>{ck.type}</span>
+                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{formatDate(ck.date)}</span>
+                          </div>
+                          <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginTop: '0.3rem', margin: 0 }}>{ck.summary}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
 
-                <div style={{ borderTop: '1px solid var(--border-light)', margin: '1rem 0' }}></div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', fontSize: '0.75rem' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Patient ID:</span>
-                    <span style={{ fontWeight: 800, fontFamily: 'monospace', color: 'var(--primary-navy)' }}>{patient.id}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>ABHA Health ID:</span>
-                    <span style={{ fontWeight: 800, color: 'var(--text-main)' }}>{patient.abhaId}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Marital Status:</span>
-                    <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.maritalStatus}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Occupation:</span>
-                    <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.occupation}</span>
-                  </div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-muted)', fontWeight: 600 }}>Language:</span>
-                    <span style={{ fontWeight: 700, color: 'var(--text-main)' }}>{patient.primaryLanguage}</span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '1rem' }}>
-                  <a
-                    href={`tel:${patient.contact.phone}`}
-                    className="sih-btn sih-btn-outline"
-                    style={{ fontSize: '0.75rem', padding: '0.5rem' }}
-                  >
-                    📞 Call Patient
-                  </a>
-                  <a
-                    href={`mailto:${patient.contact.email}`}
-                    className="sih-btn sih-btn-outline"
-                    style={{ fontSize: '0.75rem', padding: '0.5rem' }}
-                  >
-                    ✉️ Email Patient
-                  </a>
-                </div>
-
               </div>
-            </div>
 
-            {/* Vitals Snapshot */}
-            <div className="sih-card" style={{ padding: '1.25rem' }}>
-              <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                Current Vitals Summary
-              </h3>
+              {/* RIGHT COLUMN: Critical Alerts & Doctor Notes */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
 
-              <div className="vitals-cards-grid">
-                <div className="vital-card-box">
-                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Blood Pressure</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.bp}</p>
-                </div>
-
-                <div className="vital-card-box" style={{ borderLeftColor: '#3B82F6' }}>
-                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Heart Rate</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.heartRate}</p>
-                </div>
-
-                <div className="vital-card-box" style={{ borderLeftColor: '#8B5CF6' }}>
-                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Blood Glucose</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.glucose}</p>
-                </div>
-
-                <div className="vital-card-box" style={{ borderLeftColor: '#EC4899' }}>
-                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 800, textTransform: 'uppercase', margin: 0 }}>Oxygen (SpO2)</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 900, color: 'var(--primary-navy)', margin: '0.2rem 0 0 0' }}>{patient.vitalsSnapshot.spo2}</p>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* CENTER COLUMN: Main Content & Tabs */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-            {/* Navigation Tabs */}
-            <div className="sih-card" style={{ padding: '0.4rem', display: 'flex', gap: '0.4rem' }}>
-              <button
-                onClick={() => setActiveTab('overview')}
-                className={`tab-nav-btn ${activeTab === 'overview' ? 'active' : ''}`}
-                style={{ flex: 1, padding: '0.5rem', textAlign: 'center' }}
-              >
-                Personal & Contact
-              </button>
-
-              <button
-                onClick={() => setActiveTab('medications')}
-                className={`tab-nav-btn ${activeTab === 'medications' ? 'active' : ''}`}
-                style={{ flex: 1, padding: '0.5rem', textAlign: 'center' }}
-              >
-                Medications & Allergies
-              </button>
-
-              <button
-                onClick={() => setActiveTab('checkups')}
-                className={`tab-nav-btn ${activeTab === 'checkups' ? 'active' : ''}`}
-                style={{ flex: 1, padding: '0.5rem', textAlign: 'center' }}
-              >
-                Checkup History
-              </button>
-            </div>
-
-            {/* TAB 1: OVERVIEW */}
-            {activeTab === 'overview' && (
-              <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-                {/* Contact Section */}
-                <div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                    Contact Details
+                {/* Critical Alerts */}
+                <div className="sih-card" style={{ padding: '1.25rem', borderLeft: '4px solid #EF4444' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: '#DC2626', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
+                    Critical Clinical Alerts
                   </h3>
 
-                  {!isEditing ? (
-                    <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8rem' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div>
-                          <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Phone Number</p>
-                          <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.2rem 0 0 0' }}>{formatPhone(patient.contact.phone)}</p>
-                        </div>
-
-                        <div>
-                          <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Email Address</p>
-                          <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.2rem 0 0 0', wordBreak: 'break-all' }}>{patient.contact.email}</p>
-                        </div>
-                      </div>
-
-                      <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '0.75rem' }}>
-                        <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Residential Address</p>
-                        <p style={{ fontWeight: 600, color: 'var(--text-main)', marginTop: '0.2rem', margin: 0 }}>{patient.contact.address}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      <div>
-                        <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Phone</label>
-                        <input
-                          type="text"
-                          value={formData.contact.phone}
-                          onChange={(e) => handleContactChange('phone', e.target.value)}
-                          className="sih-input"
-                        />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Email</label>
-                        <input
-                          type="email"
-                          value={formData.contact.email}
-                          onChange={(e) => handleContactChange('email', e.target.value)}
-                          className="sih-input"
-                        />
-                      </div>
-                      <div>
-                        <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Address</label>
-                        <textarea
-                          rows={2}
-                          value={formData.contact.address}
-                          onChange={(e) => handleContactChange('address', e.target.value)}
-                          className="sih-textarea"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Emergency Contact */}
-                <div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: '#DC2626', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                    Emergency Contact
-                  </h3>
-
-                  {!isEditing ? (
-                    <div style={{ backgroundColor: '#FEE2E2', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid #FCA5A5', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      <div>
-                        <p style={{ fontWeight: 900, color: 'var(--primary-navy)', fontSize: '0.95rem', margin: 0 }}>
-                          {patient.contact.emergencyContactName || 'Not Specified'}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {patient.criticalAlerts.map((alert) => (
+                      <div
+                        key={alert.id}
+                        className={`sih-badge ${alert.severity === 'high' ? 'sih-badge-red' : 'sih-badge-amber'}`}
+                        style={{ padding: '0.65rem 0.75rem', borderRadius: 'var(--radius-md)', display: 'block', textTransform: 'none' }}
+                      >
+                        <p style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.6rem', margin: 0 }}>
+                          {alert.type} • {alert.severity} Severity
                         </p>
-                        <p style={{ fontSize: '0.75rem', color: '#991B1B', fontWeight: 700, margin: '0.2rem 0 0 0' }}>
-                          Relation: {patient.contact.emergencyContactRelation || 'N/A'}
-                        </p>
+                        <p style={{ fontWeight: 700, fontSize: '0.75rem', marginTop: '0.2rem', margin: 0 }}>{alert.text}</p>
                       </div>
-                      {patient.contact.emergencyContactPhone && patient.contact.emergencyContactPhone !== 'N/A' && (
-                        <a
-                          href={`tel:${patient.contact.emergencyContactPhone}`}
-                          className="sih-btn sih-btn-danger"
-                          style={{ fontSize: '0.75rem' }}
-                        >
-                          📞 {formatPhone(patient.contact.emergencyContactPhone)}
-                        </a>
-                      )}
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
-                      <input
-                        type="text"
-                        placeholder="Contact Name"
-                        value={formData.contact.emergencyContactName}
-                        onChange={(e) => handleContactChange('emergencyContactName', e.target.value)}
-                        className="sih-input"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Relation"
-                        value={formData.contact.emergencyContactRelation}
-                        onChange={(e) => handleContactChange('emergencyContactRelation', e.target.value)}
-                        className="sih-input"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Phone"
-                        value={formData.contact.emergencyContactPhone}
-                        onChange={(e) => handleContactChange('emergencyContactPhone', e.target.value)}
-                        className="sih-input"
-                      />
-                    </div>
-                  )}
-                </div>
-
-                {/* Medical Conditions */}
-                <div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                    Medical Conditions & Diagnoses
-                  </h3>
-
-                  <div className="scope-pills-wrap">
-                    {(isEditing ? formData.conditions : patient.conditions).map((cond, idx) => (
-                      <span key={idx} className="sih-badge sih-badge-teal" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}>
-                        {cond}
-                        {isEditing && (
-                          <button onClick={() => handleRemoveCondition(idx)} style={{ color: '#EF4444', fontWeight: 900, marginLeft: '0.2rem' }}>×</button>
-                        )}
-                      </span>
                     ))}
                   </div>
-
-                  {isEditing && (
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <input
-                        type="text"
-                        placeholder="Add condition..."
-                        value={newCondition}
-                        onChange={(e) => setNewCondition(e.target.value)}
-                        className="sih-input"
-                      />
-                      <button onClick={handleAddCondition} className="sih-btn sih-btn-primary">Add</button>
-                    </div>
-                  )}
                 </div>
 
-              </div>
-            )}
-
-            {/* TAB 2: MEDICATIONS */}
-            {activeTab === 'medications' && (
-              <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-                <div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                    Active Prescribed Medications
+                {/* Doctor Quick Actions */}
+                <div className="sih-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
+                    Doctor Quick Actions
                   </h3>
 
-                  <div style={{ overflowX: 'auto', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
-                      <thead>
-                        <tr style={{ backgroundColor: 'var(--primary-navy)', color: 'white', textAlign: 'left' }}>
-                          <th style={{ padding: '0.65rem' }}>Medication</th>
-                          <th style={{ padding: '0.65rem' }}>Dosage</th>
-                          <th style={{ padding: '0.65rem' }}>Frequency</th>
-                          <th style={{ padding: '0.65rem' }}>Timing</th>
-                          {isEditing && <th style={{ padding: '0.65rem' }}>Action</th>}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(isEditing ? formData.medications : patient.medications).map((med) => (
-                          <tr key={med.id} style={{ borderBottom: '1px solid var(--border-light)' }}>
-                            <td style={{ padding: '0.65rem', fontWeight: 800, color: 'var(--primary-navy)' }}>{med.name}</td>
-                            <td style={{ padding: '0.65rem' }}>{med.dosage}</td>
-                            <td style={{ padding: '0.65rem' }}>{med.frequency}</td>
-                            <td style={{ padding: '0.65rem', color: 'var(--text-muted)' }}>{med.timing}</td>
-                            {isEditing && (
-                              <td style={{ padding: '0.65rem' }}>
-                                <button onClick={() => handleRemoveMedication(med.id)} style={{ color: '#EF4444', fontWeight: 800 }}>Delete</button>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {isEditing && (
-                    <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', marginTop: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                      <p style={{ fontWeight: 800, fontSize: '0.75rem', color: 'var(--primary-navy)', margin: 0 }}>Add New Medication</p>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0.4rem' }}>
-                        <input type="text" placeholder="Name" value={newMed.name} onChange={(e) => setNewMed({ ...newMed, name: e.target.value })} className="sih-input" />
-                        <input type="text" placeholder="Dosage" value={newMed.dosage} onChange={(e) => setNewMed({ ...newMed, dosage: e.target.value })} className="sih-input" />
-                        <input type="text" placeholder="Frequency" value={newMed.frequency} onChange={(e) => setNewMed({ ...newMed, frequency: e.target.value })} className="sih-input" />
-                        <input type="text" placeholder="Timing" value={newMed.timing} onChange={(e) => setNewMed({ ...newMed, timing: e.target.value })} className="sih-input" />
-                      </div>
-                      <button onClick={handleAddMedication} className="sih-btn sih-btn-primary" style={{ alignSelf: 'flex-start' }}>+ Add Medication</button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Allergies */}
-                <div>
-                  <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                    Known Allergies
-                  </h3>
-
-                  <div className="scope-pills-wrap">
-                    {(isEditing ? formData.allergies : patient.allergies).map((allg, idx) => (
-                      <span key={idx} className="sih-badge sih-badge-red" style={{ padding: '0.4rem 0.75rem', fontSize: '0.75rem' }}>
-                        ⚠️ {allg}
-                        {isEditing && (
-                          <button onClick={() => handleRemoveAllergy(idx)} style={{ color: '#DC2626', fontWeight: 900, marginLeft: '0.3rem' }}>×</button>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-
-                  {isEditing && (
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <input
-                        type="text"
-                        placeholder="Add allergy..."
-                        value={newAllergy}
-                        onChange={(e) => setNewAllergy(e.target.value)}
-                        className="sih-input"
-                      />
-                      <button onClick={handleAddAllergy} className="sih-btn sih-btn-danger">Add Allergy</button>
-                    </div>
-                  )}
-                </div>
-
-              </div>
-            )}
-
-            {/* TAB 3: CHECKUP HISTORY */}
-            {activeTab === 'checkups' && (
-              <div className="sih-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <h3 style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', margin: 0 }}>
-                  Recent Checkup Logs
-                </h3>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {patient.recentCheckups.map((ck) => (
-                    <div key={ck.id} style={{ backgroundColor: 'var(--mint-bg)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.85rem' }}>{ck.type}</span>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{formatDate(ck.date)}</span>
-                      </div>
-                      <p style={{ fontSize: '0.75rem', color: 'var(--text-main)', marginTop: '0.3rem', margin: 0 }}>{ck.summary}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-          </div>
-
-          {/* RIGHT COLUMN: Critical Alerts & Doctor Notes */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-
-            {/* Critical Alerts */}
-            <div className="sih-card" style={{ padding: '1.25rem', borderLeft: '4px solid #EF4444' }}>
-              <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: '#DC2626', textTransform: 'uppercase', marginBottom: '0.75rem' }}>
-                Critical Clinical Alerts
-              </h3>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {patient.criticalAlerts.map((alert) => (
-                  <div
-                    key={alert.id}
-                    className={`sih-badge ${alert.severity === 'high' ? 'sih-badge-red' : 'sih-badge-amber'}`}
-                    style={{ padding: '0.65rem 0.75rem', borderRadius: 'var(--radius-md)', display: 'block', textTransform: 'none' }}
+                  <button
+                    onClick={() => showNotification('Prescription generator opened.')}
+                    className="sih-btn sih-btn-outline"
+                    style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
                   >
-                    <p style={{ fontWeight: 900, textTransform: 'uppercase', fontSize: '0.6rem', margin: 0 }}>
-                      {alert.type} • {alert.severity} Severity
-                    </p>
-                    <p style={{ fontWeight: 700, fontSize: '0.75rem', marginTop: '0.2rem', margin: 0 }}>{alert.text}</p>
+                    <span>💊 Generate Rx / Order Meds</span>
+                    <span>→</span>
+                  </button>
+
+                  <button
+                    onClick={() => showNotification('Lab test request form opened.')}
+                    className="sih-btn sih-btn-outline"
+                    style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
+                  >
+                    <span>🧪 Request Lab Investigation</span>
+                    <span>→</span>
+                  </button>
+
+                  <button
+                    onClick={() => showNotification('Follow-up appointment scheduled.')}
+                    className="sih-btn sih-btn-outline"
+                    style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
+                  >
+                    <span>📅 Schedule Follow-up Visit</span>
+                    <span>→</span>
+                  </button>
+                </div>
+
+                {/* Doctor Note */}
+                <div style={{ backgroundColor: 'var(--primary-navy)', color: 'white', borderRadius: 'var(--radius-xl)', padding: '1.25rem', fontSize: '0.75rem' }}>
+                  <p style={{ fontWeight: 900, color: 'var(--mint-light)', fontSize: '0.85rem', margin: '0 0 0.5rem 0' }}>Doctor Note</p>
+                  <p style={{ color: '#CBD5E1', lineHeight: '1.5', margin: 0 }}>
+                    No clinical note has been recorded yet.
+                  </p>
+                </div>
+
+                {/* Clinical Directory (Kindle) Button */}
+                <button
+                  onClick={() => navigate('/kindle')}
+                  className="sih-btn sih-btn-primary"
+                  style={{
+                    width: '100%',
+                    padding: '0.85rem 1.25rem',
+                    borderRadius: 'var(--radius-xl)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justify: 'space-between',
+                    fontSize: '0.85rem',
+                    fontWeight: 800,
+                    boxShadow: 'var(--shadow-sm)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.1rem' }}>📖</span>
+                    <span>Clinical Directory (NAMASTE / ICD-11)</span>
                   </div>
-                ))}
+                  <span style={{ fontSize: '1rem' }}>→</span>
+                </button>
+
               </div>
+
             </div>
-
-            {/* Doctor Quick Actions */}
-            <div className="sih-card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <h3 style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--primary-navy)', textTransform: 'uppercase', marginBottom: '0.25rem' }}>
-                Doctor Quick Actions
-              </h3>
-
-              <button
-                onClick={() => showNotification('Prescription generator opened.')}
-                className="sih-btn sih-btn-outline"
-                style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
-              >
-                <span>💊 Generate Rx / Order Meds</span>
-                <span>→</span>
-              </button>
-
-              <button
-                onClick={() => showNotification('Lab test request form opened.')}
-                className="sih-btn sih-btn-outline"
-                style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
-              >
-                <span>🧪 Request Lab Investigation</span>
-                <span>→</span>
-              </button>
-
-              <button
-                onClick={() => showNotification('Follow-up appointment scheduled.')}
-                className="sih-btn sih-btn-outline"
-                style={{ justifyContent: 'space-between', fontSize: '0.75rem' }}
-              >
-                <span>📅 Schedule Follow-up Visit</span>
-                <span>→</span>
-              </button>
-            </div>
-
-            {/* Doctor Note */}
-            <div style={{ backgroundColor: 'var(--primary-navy)', color: 'white', borderRadius: 'var(--radius-xl)', padding: '1.25rem', fontSize: '0.75rem' }}>
-              <p style={{ fontWeight: 900, color: 'var(--mint-light)', fontSize: '0.85rem', margin: '0 0 0.5rem 0' }}>Doctor Note</p>
-              <p style={{ color: '#CBD5E1', lineHeight: '1.5', margin: 0 }}>
-                No clinical note has been recorded yet.
-              </p>
-            </div>
-
-            {/* Clinical Directory (Kindle) Button */}
-            <button
-              onClick={() => navigate('/kindle')}
-              className="sih-btn sih-btn-primary"
-              style={{
-                width: '100%',
-                padding: '0.85rem 1.25rem',
-                borderRadius: 'var(--radius-xl)',
-                display: 'flex',
-                alignItems: 'center',
-                justify: 'space-between',
-                fontSize: '0.85rem',
-                fontWeight: 800,
-                boxShadow: 'var(--shadow-sm)',
-                cursor: 'pointer'
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.1rem' }}>📖</span>
-                <span>Clinical Directory (NAMASTE / ICD-11)</span>
-              </div>
-              <span style={{ fontSize: '1rem' }}>→</span>
-            </button>
-
-          </div>
-
+          </main>
         </div>
-      </main>
+      </div>
 
     </div>
   );

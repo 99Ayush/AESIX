@@ -4,6 +4,7 @@ import "../userPages.css";
 import { userApi } from "../services/userApi";
 import { onDatabaseChange } from "../services/realtime";
 import { useDashboardLanguage } from "../LanguageContext";
+import PatientSidebar from "../components/asidebar";
 import {
   Camera,
   CalendarDays,
@@ -341,12 +342,13 @@ export default function LandingPage() {
   ];
 
   // Known allergies
-  const allergies = (Array.isArray(profile?.allergies) ? profile.allergies : []).map((text, index) => ({
-    text,
-    icon: "✦",
-    bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
-    color: "#F52B91",
-  }));
+  // --------------- causes hydration err -----------------
+  // const allergies = (profile?.allergies || []).map((text, index) => ({
+  //   text,
+  //   icon: "✦",
+  //   bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
+  //   color: "#F52B91",
+  // }));
 
   /* ─── Inline styles ─── */
   const s = {
@@ -689,29 +691,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <nav className="sih-nav-menu">
-            <button onClick={() => navigate("/abha")} className="sih-nav-btn">
-              <span className="sih-nav-icon">🛡</span> ABHA
-            </button>
-            <button
-              onClick={() => navigate("/uploadDoc")}
-              className="sih-nav-btn"
-            >
-              <span className="sih-nav-icon">
-                <FileText size={20} strokeWidth={2} />
-              </span>{" "}
-              Documents
-            </button>
-            <button
-              onClick={() => navigate("/basicInfo")}
-              className="sih-nav-btn"
-            >
-              <span className="sih-nav-icon">
-                <Search size={20} strokeWidth={2} />
-              </span>{" "}
-              Basic Info
-            </button>
-          </nav>
 
           <div className="sih-header-controls">
             <select
@@ -877,8 +856,11 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* ===== MAIN ===== */}
-      <main style={s.main}>
+      <div className="patient-main-container">
+        <PatientSidebar profile={profile} storedUser={storedUser} patientName={patientName} initials={initials} activePage="dashboard" />
+        <div className="patient-content-area">
+          {/* ===== MAIN ===== */}
+          <main style={s.main}>
         {/* Welcome Header */}
         <div style={s.headingRow}>
           <div>
@@ -1295,6 +1277,8 @@ export default function LandingPage() {
           </div>
         </div>
       </main>
+        </div>
+      </div>
 
       {/* ─── Responsive overrides via inline <style> ─── */}
       <style>{`

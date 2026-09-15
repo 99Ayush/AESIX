@@ -2151,6 +2151,174 @@
   margin-top: 0.4rem;
 }
 
+/* ==========================================
+   PATIENT SIDEBAR & DASHBOARD TWO-COLUMN LAYOUT
+   (Matching Doctor Portal Sidebar Design)
+   ========================================== */
+
+.patient-dashboard-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #EFF9F7;
+  color: var(--text-main, #183B56);
+  font-family: var(--font-family, system-ui, sans-serif);
+}
+
+.patient-main-container {
+  display: flex;
+  flex: 1;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.5rem;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.patient-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 80px;
+}
+
+.patient-sidebar-block {
+  background-color: #FFFFFF;
+  border: 1px solid var(--border-light, #E2E8F0);
+  border-radius: var(--radius-md, 14px);
+  padding: 1.2rem;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.06));
+}
+
+.patient-sidebar-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, #64748B);
+  margin-bottom: 0.75rem;
+}
+
+.patient-profile-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.patient-avatar-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #E2F6EE;
+  color: #0C9A9A;
+  font-size: 1.25rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #0C9A9A;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.patient-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.patient-sidebar-info {
+  min-width: 0;
+}
+
+.patient-sidebar-name {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #084766;
+  margin-bottom: 0.15rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.patient-sidebar-spec {
+  font-size: 0.78rem;
+  color: var(--text-muted, #64748B);
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.patient-status-online {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #10B981;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.patient-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.patient-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  color: #084766;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.2s ease;
+  width: 100%;
+  text-align: left;
+}
+
+.patient-sidebar-item:hover {
+  background-color: #E8F7F4;
+  color: #0C9A9A;
+}
+
+.patient-sidebar-item.active {
+  background-color: #12304A;
+  color: #FFFFFF;
+}
+
+.patient-sidebar-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.patient-content-area {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .patient-main-container {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  .patient-sidebar {
+    width: 100%;
+    position: static;
+  }
+}
+
 /* ------------------------------------------
    NAMASTE CODE SEARCH - ENHANCED STYLES
    ------------------------------------------ */
