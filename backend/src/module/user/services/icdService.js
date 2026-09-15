@@ -17,8 +17,14 @@ export async function refreshICDToken() {
 export function getStoredToken() { return storedToken; }
 
 async function whoFetch(url) {
-  const token = getStoredToken() || await refreshICDToken();
-  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, "API-Version": "v2", "Accept-Language": "en" } });
+  let token = getStoredToken() || await refreshICDToken();
+  let response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, "API-Version": "v2", "Accept-Language": "en" } });
+  // Auto-refresh on 401 (expired token) and retry once
+  if (response.status === 401) {
+    storedToken = null;
+    token = await refreshICDToken();
+    response = await fetch(url, { headers: { Authorization: `Bearer ${token}`, "API-Version": "v2", "Accept-Language": "en" } });
+  }
   if (!response.ok) throw new Error(`WHO ICD request failed (${response.status}): ${await response.text()}`);
   return response.json();
 }

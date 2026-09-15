@@ -1,5 +1,315 @@
 [
   {
+    "code": "SI-2.3.14",
+    "systemOfMedicine": "Ayurveda (NAMASTE official catalog)",
+    "ayurvedicTerm": "मधुमेहकुष्ठिनो आस्थापनव्यापदः",
+    "transliteration": "madhumehakuṣṭhino āsthāpanavyāpadaḥ",
+    "englishEquivalent": "nirUhavyApad in diabetes and integumentary disorder",
+    "icd11PrimaryCode": "MG26",
+    "icd11EntityUri": "https://id.who.int/icd/entity/1296093776",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "clinical correlate",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS / NAMASTE SAT-Combined 2026-09-13",
+    "catalogVersion": "NAMASTE Portal SAT-Combined, downloaded 2026-09-13",
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Kashta-Sadhya (difficult to treat) due to dual Dhatugata pathology; requires close clinical observation",
+      "riskLevel": "High; monitor glycemic levels and secondary infections closely"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Kapha",
+        "Vata",
+        "Pitta"
+      ],
+      "srotasInvolved": [
+        "Pakvashaya",
+        "Purishavaha",
+        "Medovaha",
+        "Mutravaha"
+      ],
+      "phenotypeCheck": "In diabetic and dermatological terrain, altered tissue resistance and Apana Vayu irregularity can cause retention or irritation during decoction enema (Asthapana Basti), risking aggravation of underlying Prameha and Kushtha."
+    },
+    "clinicalOverview": {
+      "definition": "the disorder is characterized by vyAdheH punarvRuddhiH [aggravates the clinical features of madhumEha kuShTa]",
+      "cardinalSymptoms": [
+        "Aggravation of metabolic symptoms (Vyatireka)",
+        "Abdominal fullness and colic (Adhmana / Shula)",
+        "Delayed evacuation of enema fluids (Basti-Dharana)",
+        "Cutaneous irritability or burning sensation",
+        "Fatigue and dehydration tendency"
+      ],
+      "redFlags": [
+        "Severe abdominal guarding or signs of bowel perforation",
+        "Severe hypoglycemia or acute hyperglycemic crisis (DKA)",
+        "Systemic sepsis or rapidly spreading skin lesions",
+        "Complete urinary retention or acute kidney injury"
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Fasting & Postprandial Blood Glucose",
+        "Serum Electrolytes (Na+, K+, Cl-)",
+        "Routine & Microscopic Urinalysis (Ketones/Glucose)",
+        "Serum Creatinine & Blood Urea Nitrogen",
+        "Clinical Abdominal Examination"
+      ],
+      "targets": {
+        "Blood Glucose": "Maintain between 110-180 mg/dL",
+        "Hydration": "Maintain normal hemodynamic status and skin turgor"
+      }
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "व्यापद-प्रशमनं यथादोषं संशोधनं संशमनं च। बस्तिव्यापदि वातशामकैरनुलोमनैश्च चिकित्सा विधेया॥ (Manage enema complications according to provoked doshas. Use mild Vatanulomana, abdominal fomentation, and restorative formulations while monitoring glycaemia and skin integrity.)",
+      "classicalFormulations": [
+        "Dashamula Kwatha",
+        "Hingvashtak Churna",
+        "Chandraprabha Vati",
+        "Bilwadi Vati",
+        "Avipattikar Churna",
+        "Phalatrikadi Kashayam"
+      ],
+      "pathya": [
+        "Warm boiled water (Ushnodaka) in frequent small sips",
+        "Diluted roasted green gram soup seasoned with cumin",
+        "Gentle abdominal fomentation (Ushna / Nadi Sveda)",
+        "Quiet bed rest in comfortable non-cold room"
+      ],
+      "apathya": [
+        "Cold water, iced beverages, and refrigerated food",
+        "Forceful straining to expel enema fluid or flatus",
+        "Heavy oily or high-sugar meals",
+        "Suppression of natural urges (Vega Dharana)"
+      ]
+    },
+    "source": "NAMASTE Portal SAT-Combined, downloaded 2026-09-13",
+    "parentCode": "2715",
+    "parsedSymptoms": [
+      {
+        "term": "punarvRuddhiH",
+        "gloss": "aggravates the clinical features of madhumEha kuShTa"
+      }
+    ],
+    "biomedicalSummary": "aggravates the clinical features of madhumeha kushta",
+    "breadcrumb": [
+      {
+        "code": "SI",
+        "englishEquivalent": "disorders due to improper administration of enema",
+        "ayurvedicTerm": "बस्तिकर्म-चिकित्सापचारः"
+      },
+      {
+        "code": "SI-2.3",
+        "englishEquivalent": "complications of inorder administration of nirUha",
+        "ayurvedicTerm": "निरूह-मिथ्यायोग/आस्थापनस्य व्यापदः"
+      }
+    ],
+    "completeness": {
+      "populated": 8,
+      "total": 8,
+      "percentage": 100,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": true,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": true,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
+    "code": "EC-3",
+    "systemOfMedicine": "Ayurveda (NAMASTE official catalog)",
+    "ayurvedicTerm": "ज्वरः",
+    "transliteration": "jvaraḥ",
+    "englishEquivalent": "Fever",
+    "icd11PrimaryCode": "MG26",
+    "icd11EntityUri": "https://id.who.int/icd/entity/1296093776",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS / NAMASTE SAT-Combined 2026-09-13",
+    "catalogVersion": "NAMASTE Portal SAT-Combined, downloaded 2026-09-13",
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Generally Sadhya (curable) when uncomplicated; requires urgent escalation if red flags present",
+      "riskLevel": "Moderate; evaluate temperature trajectory and hydration status"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Pitta",
+        "Vata",
+        "Kapha"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Svedavaha"
+      ],
+      "phenotypeCheck": "Agnimandya causes Ama accumulation in Amashaya, occluding Rasavaha and Svedavaha srotas. Displaced Pachakagni radiates into Shakha, causing fever, anhidrosis, and generalized body ache."
+    },
+    "clinicalOverview": {
+      "definition": "the disorder is characterized by svedAvarodhaH [absence of perspiration], saMtApaH [rise of temperature/agitation], sarvA~ggagrahaNam [generalised body stiffness/pain]",
+      "cardinalSymptoms": [
+        "Rise of body temperature (Santapa)",
+        "Absence of perspiration (Svedavarodha)",
+        "Generalized body ache and stiffness (Sarvangagrahanam)",
+        "Anorexia and altered taste (Aruchi)",
+        "Thirst and restlessness (Trishna)"
+      ],
+      "redFlags": [
+        "Altered sensorium or delirium (Pralapa / Moha)",
+        "Persistent high fever >103°F unresponsive to initial measures",
+        "Dyspnea, tachypnea, or chest pain",
+        "Petechiae, purpura, or spontaneous mucosal bleeding",
+        "Signs of severe dehydration or oliguria"
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC with differential)",
+        "Malarial Antigen / Peripheral Smear for MP",
+        "Dengue NS1 Antigen & IgM/IgG Serology",
+        "Widal Test / Typhidot",
+        "Erythrocyte Sedimentation Rate (ESR) & CRP",
+        "Routine & Microscopic Urinalysis"
+      ],
+      "targets": {
+        "Temperature": "Maintain core temperature < 100°F (37.8°C)",
+        "Hydration": "Maintain clear urine output > 1 ml/kg/hr",
+        "Platelets": "Monitor in endemic arboviral settings (>100,000/µL)"
+      }
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "ज्वरादौ लङ्घनं प्रोक्तं ज्वरमध्ये तु पाचनम्। ज्वरान्ते भेषजं दद्यात् ज्वरमुक्ते विरेचनम्॥ (In early Jvara, adopt Langhana (fasting/light diet) and digestive Deepana-Pachana herbs. Administer classical antipyretic formulations as acute ama clears; mild Virechana for complete convalescence.)",
+      "classicalFormulations": [
+        "Maha Sudarshana Vati",
+        "Tribhuvana Kirti Rasa",
+        "Amritarishta",
+        "Shadanga Paniya",
+        "Sanjivani Vati",
+        "Godanti Bhasma"
+      ],
+      "pathya": [
+        "Warm boiled Shadanga Paniya (herbal water)",
+        "Light roasted green gram soup (Mudga Yusha)",
+        "Parched rice water (Laja Manda / Peya)",
+        "Adequate physical rest and warm environment",
+        "Sponging with lukewarm water if hyperpyrexia"
+      ],
+      "apathya": [
+        "Heavy, unctuous, and deep-fried foods (Guru Ahara)",
+        "Cold showers and exposure to cold wind drafts",
+        "Daytime sleeping (Diva Svapna)",
+        "Curd, cheese, and heavy dairy products",
+        "Strenuous physical exercise and direct sun exposure"
+      ]
+    },
+    "source": "NAMASTE Portal SAT-Combined, downloaded 2026-09-13",
+    "parentCode": "679",
+    "parsedSymptoms": [
+      {
+        "term": "svedAvarodhaH",
+        "gloss": "absence of perspiration"
+      },
+      {
+        "term": "saMtApaH",
+        "gloss": "rise of temperature/agitation"
+      },
+      {
+        "term": "sarvA~ggagrahaNam",
+        "gloss": "generalised body stiffness/pain"
+      }
+    ],
+    "biomedicalSummary": "absence of perspiration, rise of temperature/agitation, generalised body stiffness/pain",
+    "breadcrumb": [
+      {
+        "code": "EC",
+        "englishEquivalent": "disorders of rasavaha srOtas",
+        "ayurvedicTerm": "रसवहस्रोतोविकारः"
+      }
+    ],
+    "completeness": {
+      "populated": 8,
+      "total": 8,
+      "percentage": 100,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": true,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": true,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    }
+  },
+  {
     "code": "EF-2.4.4",
     "systemOfMedicine": "Ayurveda (NAMASTE)",
     "ayurvedicTerm": "Madhumeha",
@@ -71,6 +381,67 @@
         "Sedentary routine",
         "Tobacco",
         "Stopping prescribed medicines without clinician advice"
+      ]
+    },
+    "icd11MappingStatus": "mapped",
+    "parsedSymptoms": null,
+    "breadcrumb": [
+      {
+        "code": "EF",
+        "englishEquivalent": "disorders of medovahasrotas",
+        "ayurvedicTerm": "मेदोवहस्रोतोविकारः"
+      },
+      {
+        "code": "EF-2.4",
+        "englishEquivalent": "prameha due to vAta",
+        "ayurvedicTerm": "वातजप्रमेहः"
+      }
+    ],
+    "completeness": {
+      "populated": 8,
+      "total": 8,
+      "percentage": 100,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": true,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": true,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
       ]
     }
   },
@@ -406,6 +777,314 @@
       "classicalFormulations": [],
       "pathya": [],
       "apathya": []
+    }
+  },
+  {
+    "code": "JA63.2",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "JA63.2",
+    "transliteration": "JA63.2",
+    "englishEquivalent": "JA63.2",
+    "icd11PrimaryCode": "JA63.2",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/1320503631",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Not classified"
+      ],
+      "srotasInvolved": [
+        "Not classified"
+      ],
+      "phenotypeCheck": "Use a qualified clinician's assessment; this is dynamically derived ICD-11 content."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Select tests based on clinical presentation and guideline."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
+      "classicalFormulations": [],
+      "pathya": [],
+      "apathya": []
+    }
+  },
+  {
+    "code": "5A13.4",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "5A13.4",
+    "transliteration": "5A13.4",
+    "englishEquivalent": "5A13.4",
+    "icd11PrimaryCode": "5A13.4",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/388963453",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Not classified"
+      ],
+      "srotasInvolved": [
+        "Not classified"
+      ],
+      "phenotypeCheck": "Use a qualified clinician's assessment; this is dynamically derived ICD-11 content."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Select tests based on clinical presentation and guideline."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
+      "classicalFormulations": [],
+      "pathya": [],
+      "apathya": []
+    }
+  },
+  {
+    "code": "MG26",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "MG26",
+    "transliteration": "MG26",
+    "englishEquivalent": "MG26",
+    "icd11PrimaryCode": "MG26",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/915343154",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Clinical presentation characterized by Tridosha (Vata, Pitta, Kapha) imbalance lodging in Rasavaha, Annavaha channels. Clinician should evaluate Agni strength, Ama presence, and Dhatu involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC with differential)",
+        "Routine & Microscopic Urinalysis",
+        "Erythrocyte Sedimentation Rate (ESR)",
+        "Metabolic Screen as clinically indicated"
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "No NAMASTE treatment layer is available for this dynamically cached ICD-11 result.",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
+    },
+    "breadcrumb": [],
+    "parsedSymptoms": null
+  },
+  {
+    "code": "4A60.0",
+    "systemOfMedicine": "WHO ICD-11 (dynamically cached)",
+    "ayurvedicTerm": "4A60.0",
+    "transliteration": "4A60.0",
+    "englishEquivalent": "4A60.0",
+    "icd11PrimaryCode": "4A60.0",
+    "icd11EntityUri": "http://id.who.int/icd/release/11/2024-01/mms/1373335705",
+    "icd11MappingStatus": "mapped",
+    "icd11EquivalenceType": "exact",
+    "icd11MappingVersion": "ICD-11 2024-01 MMS (live search)",
+    "catalogVersion": null,
+    "lastUpdated": "2026-09-15",
+    "prognosis": {
+      "status": "Requires clinical assessment",
+      "riskLevel": "Determine from WHO entity and patient presentation"
+    },
+    "pathomechanism": {
+      "dominantDosha": [
+        "Tridosha (Vata, Pitta, Kapha)"
+      ],
+      "srotasInvolved": [
+        "Rasavaha",
+        "Annavaha"
+      ],
+      "phenotypeCheck": "Assess metabolic, systemic, and localized dosha involvement."
+    },
+    "clinicalOverview": {
+      "definition": "Dynamically fetched from WHO ICD-11 search.",
+      "cardinalSymptoms": [],
+      "redFlags": [
+        "Follow condition-specific urgent-care guidance."
+      ]
+    },
+    "labCorrelations": {
+      "suggestedTests": [
+        "Complete Blood Count (CBC)",
+        "Routine urinalysis",
+        "Clinical chemistry panel as indicated."
+      ],
+      "targets": {}
+    },
+    "treatmentFramework": {
+      "chikitsaSutra": "दोषप्रत्यानीकचिकित्सा, निदानपरिवर्जनं च। दीपन-पाचन-संशमनैः स्रोतोविशोधनम्॥ (Eliminate etiologic triggers (Nidana Parivarjana), balance aggravated doshas with Deepana-Pachana herbs, and restore physiological channel patency.)",
+      "classicalFormulations": [
+        "Triphala Churna",
+        "Sudarshana Vati",
+        "Dashamula Kashayam",
+        "Arogyavardhini Vati"
+      ],
+      "pathya": [
+        "Light, warm freshly cooked meals (Laghu Ahara)",
+        "Lukewarm boiled water (Ushnodaka) throughout the day",
+        "Green gram soup (Mudga Yusha) and seasonal vegetables",
+        "Adequate physical rest and regular circadian sleep routine"
+      ],
+      "apathya": [
+        "Heavy, cold, unctuous, and deep-fried foods (Guru & Snigdha Ahara)",
+        "Incompatible food combinations (Viruddhahara) and stale leftovers",
+        "Daytime sleeping (Diva Svapna) and erratic meal timings",
+        "Suppression of natural physiological urges (Vega Dharana)"
+      ]
+    },
+    "breadcrumb": [],
+    "completeness": {
+      "populated": 6,
+      "total": 8,
+      "percentage": 75,
+      "fields": [
+        {
+          "key": "definition",
+          "populated": false,
+          "label": "Clinical definition"
+        },
+        {
+          "key": "cardinalSymptoms",
+          "populated": false,
+          "label": "Cardinal symptoms"
+        },
+        {
+          "key": "dominantDosha",
+          "populated": true,
+          "label": "Dominant dosha"
+        },
+        {
+          "key": "srotasInvolved",
+          "populated": true,
+          "label": "Srotas involved"
+        },
+        {
+          "key": "classicalFormulations",
+          "populated": true,
+          "label": "Classical formulations"
+        },
+        {
+          "key": "pathya",
+          "populated": true,
+          "label": "Pathya (beneficial)"
+        },
+        {
+          "key": "apathya",
+          "populated": true,
+          "label": "Apathya (avoid)"
+        },
+        {
+          "key": "suggestedTests",
+          "populated": true,
+          "label": "Lab tests"
+        }
+      ]
     }
   }
 ]
