@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../userPages.css';
 import { fileToBase64, userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
+import { useDashboardLanguage } from '../LanguageContext';
 import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
 import {
@@ -46,7 +47,7 @@ export default function UploadDoc() {
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'disease' | 'prescription' | 'discharge summary'
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest'
   const [searchQuery, setSearchQuery] = useState('');
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
 
   // Upload Modal / Selected File State
@@ -203,7 +204,7 @@ export default function UploadDoc() {
 
 
           <div className="sih-header-controls">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>
               <option value="Bengali">🌐 বাংলা</option>

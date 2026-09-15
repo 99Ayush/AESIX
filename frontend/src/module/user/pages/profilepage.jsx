@@ -4,6 +4,7 @@ import '../userPages.css';
 import { userApi } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
 import PatientSidebar from '../components/asidebar';
+import { useDashboardLanguage } from '../LanguageContext';
 import ChatbotFAB from '../components/ChatbotFAB';
 import {
   FileText,
@@ -39,7 +40,7 @@ export default function ProfilePage() {
 
   const [patientProfile, setPatientProfile] = useState({});
 
-  const [language, setLanguage] = useState('English');
+  const { language, setLanguage } = useDashboardLanguage();
   const [toastMessage, setToastMessage] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
@@ -110,7 +111,7 @@ export default function ProfilePage() {
 
 
           <div className="sih-header-controls">
-            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select">
+            <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>
               <option value="Bengali">🌐 বাংলা</option>

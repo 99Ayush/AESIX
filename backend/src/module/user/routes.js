@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import mongoose from 'mongoose';
 import { Router } from 'express';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -63,7 +64,7 @@ const getCollection = async () => {
     mongoConnecting = new MongoClient(mongoUri, { serverSelectionTimeoutMS: 5000 })
       .connect()
       .then((client) => {
-        mongoCollection = client.db(process.env.MONGODB_DB || 'aesix').collection('users');
+        mongoCollection = client.db(process.env.MONGODB_DB || 'aesix').collection('user_profiles');
         return mongoCollection;
       })
       .catch((error) => {
@@ -81,20 +82,34 @@ const resolveAuthUser = async (req) => {
     const authHeader = req.headers?.authorization;
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7).trim();
-      const session = await UserSession.findOne({ xToken: token }).sort({ createdAt: -1 });
-      if (session?.userId) {
-        const user = await User.findOne({ userId: session.userId });
-        if (user) return user;
+      if (token) {
+        const session = await UserSession.findOne({ xToken: token }).sort({ createdAt: -1 });
+        if (session?.userId) {
+          const user = await User.findOne({ userId: session.userId });
+          if (user) return user;
+        }
       }
     }
-    // Fallback: check most recently verified user session or user
-    const latestSession = await UserSession.findOne().sort({ createdAt: -1 });
-    if (latestSession?.userId) {
-      const user = await User.findOne({ userId: latestSession.userId });
+
+    const headerUserId = req.headers?.['x-user-id'] || req.body?.userId || req.query?.userId;
+    const headerAbha = req.headers?.['x-abha-number'] || req.body?.patientAbha || req.body?.abhaNumber || req.query?.abhaNumber;
+
+    if (headerUserId || headerAbha) {
+      const or = [];
+      if (headerUserId) {
+        or.push({ userId: headerUserId });
+        if (mongoose.Types.ObjectId.isValid(headerUserId)) {
+          or.push({ _id: headerUserId });
+        }
+      }
+      if (headerAbha) {
+        or.push({ abhaNumber: headerAbha });
+      }
+      const user = await User.findOne({ $or: or });
       if (user) return user;
     }
-    const latestUser = await User.findOne().sort({ updatedAt: -1 });
-    return latestUser || null;
+
+    return null;
   } catch (err) {
     console.error('Error resolving authenticated user:', err.message);
     return null;
@@ -133,35 +148,46 @@ const mergeUserWithData = (data, authUser) => {
 
 const read = async (req = null) => {
   const collection = await getCollection();
+  let authUser = null;
+  if (req) {
+    authUser = await resolveAuthUser(req);
+  }
+  const userId = authUser ? (authUser._id?.toString() || authUser.userId) : 'user-1';
+
   let data;
   if (!collection) {
     data = await readMock();
   } else {
-    const stored = await collection.findOne({ _id: 'user-1' });
+    const stored = await collection.findOne({ _id: userId });
     if (stored) {
       const { _id, ...rest } = stored;
       data = rest;
     } else {
       data = copySeed();
-      await collection.insertOne({ _id: 'user-1', ...data, createdAt: new Date() });
+      await collection.insertOne({ _id: userId, ...data, createdAt: new Date() });
     }
   }
 
-  if (req) {
-    const authUser = await resolveAuthUser(req);
+  if (authUser) {
     data = mergeUserWithData(data, authUser);
   }
   return data;
 };
 
-const write = async (data) => {
+const write = async (data, req = null) => {
+  let authUser = null;
+  if (req) {
+    authUser = await resolveAuthUser(req);
+  }
+  const userId = authUser ? (authUser._id?.toString() || authUser.userId) : 'user-1';
+
   const collection = await getCollection();
   if (!collection) {
     await fs.writeFile(dataFile, JSON.stringify(data, null, 2));
   } else {
-    await collection.replaceOne({ _id: 'user-1' }, { _id: 'user-1', ...data, updatedAt: new Date() }, { upsert: true });
+    await collection.replaceOne({ _id: userId }, { _id: userId, ...data, updatedAt: new Date() }, { upsert: true });
   }
-  notifyDatabaseChange('update', 'users', 'user-1');
+  notifyDatabaseChange('update', 'users', userId);
 };
 const respond = (res, data, status = 200) => res.status(status).json({ success: true, data });
 const fail = (res, error, status = 400) => res.status(status).json({ success: false, error });
@@ -232,7 +258,7 @@ router.route('/profile')
       }
       if (photoUrl) data.profile.photoUrl = photoUrl;
 
-      await write(data);
+      await write(data, req);
 
       if (authUser) {
         const nameParts = (bodyData.name || bodyData.fullName || '').trim().split(' ');
@@ -295,19 +321,26 @@ router.get('/abha', async (req, res, next) => {
   }
 });
 
-router.get('/consents', async (req, res, next) => { try { const data = await read(); respond(res, data.consents.filter((item) => !req.query.status || item.status === req.query.status).sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))); } catch (e) { next(e); } });
-router.patch('/consents/:id', async (req, res, next) => { try { if (!['accepted', 'rejected'].includes(req.body.status)) return fail(res, 'status must be accepted or rejected'); const data = await read(); const consent = data.consents.find((item) => item.id === req.params.id); if (!consent) return fail(res, 'Consent not found', 404); consent.status = req.body.status; consent.respondedAt = new Date().toISOString(); await write(data); respond(res, consent); } catch (e) { next(e); } });
-router.get('/documents', async (req, res, next) => { try { const { documents } = await read(); const q = req.query.q?.toLowerCase(); const items = documents.filter((item) => (!req.query.type || item.type === req.query.type) && (!q || item.title.toLowerCase().includes(q) || item.fileName.toLowerCase().includes(q))).sort((a, b) => (req.query.order === 'oldest' ? 1 : -1) * a.createdAt.localeCompare(b.createdAt)).map(({ content, ...item }) => item); respond(res, items); } catch (e) { next(e); } });
-router.post('/documents', async (req, res, next) => { try { const { title, type, fileName, mimeType, size, content } = req.body; if (!title || !fileName || !content || !['disease', 'prescription', 'discharge summary'].includes(type)) return fail(res, 'title, type, fileName, and content are required'); const data = await read(); const item = { id: randomUUID(), title: title.trim(), type, fileName, mimeType: mimeType || 'application/octet-stream', size: Number(size) || 0, content, createdAt: new Date().toISOString() }; data.documents.push(item); await write(data); const { content: _, ...saved } = item; respond(res, saved, 201); } catch (e) { next(e); } });
-router.get('/documents/:id/download', async (req, res, next) => { try { const item = (await read()).documents.find((doc) => doc.id === req.params.id); if (!item) return fail(res, 'Document not found', 404); res.type(item.mimeType).attachment(item.fileName).send(Buffer.from(item.content, 'base64')); } catch (e) { next(e); } });
-router.delete('/documents/:id', async (req, res, next) => { try { const data = await read(); const index = data.documents.findIndex((doc) => doc.id === req.params.id); if (index < 0) return fail(res, 'Document not found', 404); data.documents.splice(index, 1); await write(data); res.status(204).end(); } catch (e) { next(e); } });
+router.get('/consents', async (req, res, next) => { try { const data = await read(req); respond(res, data.consents.filter((item) => !req.query.status || item.status === req.query.status).sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))); } catch (e) { next(e); } });
+router.patch('/consents/:id', async (req, res, next) => { try { if (!['accepted', 'rejected'].includes(req.body.status)) return fail(res, 'status must be accepted or rejected'); const data = await read(req); const consent = data.consents.find((item) => item.id === req.params.id); if (!consent) return fail(res, 'Consent not found', 404); consent.status = req.body.status; consent.respondedAt = new Date().toISOString(); await write(data, req); respond(res, consent); } catch (e) { next(e); } });
+router.get('/documents', async (req, res, next) => { try { const { documents } = await read(req); const q = req.query.q?.toLowerCase(); const items = documents.filter((item) => (!req.query.type || item.type === req.query.type) && (!q || item.title.toLowerCase().includes(q) || item.fileName.toLowerCase().includes(q))).sort((a, b) => (req.query.order === 'oldest' ? 1 : -1) * a.createdAt.localeCompare(b.createdAt)).map(({ content, ...item }) => item); respond(res, items); } catch (e) { next(e); } });
+router.post('/documents', async (req, res, next) => { try { const { title, type, fileName, mimeType, size, content } = req.body; if (!title || !fileName || !content || !['disease', 'prescription', 'discharge summary'].includes(type)) return fail(res, 'title, type, fileName, and content are required'); const data = await read(req); const item = { id: randomUUID(), title: title.trim(), type, fileName, mimeType: mimeType || 'application/octet-stream', size: Number(size) || 0, content, createdAt: new Date().toISOString() }; data.documents.push(item); await write(data, req); const { content: _, ...saved } = item; respond(res, saved, 201); } catch (e) { next(e); } });
+router.get('/documents/:id/download', async (req, res, next) => { try { const item = (await read(req)).documents.find((doc) => doc.id === req.params.id); if (!item) return fail(res, 'Document not found', 404); res.type(item.mimeType).attachment(item.fileName).send(Buffer.from(item.content, 'base64')); } catch (e) { next(e); } });
+router.delete('/documents/:id', async (req, res, next) => { try { const data = await read(req); const index = data.documents.findIndex((doc) => doc.id === req.params.id); if (index < 0) return fail(res, 'Document not found', 404); data.documents.splice(index, 1); await write(data, req); res.status(204).end(); } catch (e) { next(e); } });
 
 // SOCRATES Symptom Assessment & Cloudinary Document Upload
 router.post('/socrates', upload.array('documents', 5), async (req, res, next) => {
   try {
     const authUser = await resolveAuthUser(req);
-    const userId = authUser?._id?.toString() || authUser?.userId || req.body.userId || 'guest_user';
-    const userName = authUser ? `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() : (req.body.userName || 'Patient');
+    if (!authUser) {
+      return res.status(401).json({ success: false, error: 'Authentication required. Please log in to submit a SOCRATES assessment.' });
+    }
+    const data = await read(req);
+    const userObjectId = authUser._id ? authUser._id.toString() : '';
+    const userUuid = authUser.userId || '';
+    const userId = userUuid || userObjectId;
+    const patientAbha = authUser.abhaNumber || req.body?.patientAbha || req.body?.abhaNumber || '';
+    const userName = data.profile.name || `${authUser.firstName || ''} ${authUser.lastName || ''}`.trim() || authUser.fullName || req.body.userName || 'Patient';
 
     const {
       site,
@@ -327,6 +360,7 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
     }
 
     const uploadedDocs = [];
+    const uploadWarnings = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         try {
@@ -339,19 +373,29 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
             uploadedAt: new Date()
           });
         } catch (uploadErr) {
-          console.error(`Failed to upload ${file.originalname} to Cloudinary:`, uploadErr);
-          uploadedDocs.push({
-            name: file.originalname,
-            url: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
-            fileType: file.mimetype,
-            uploadedAt: new Date()
-          });
+          console.error(`Failed to upload ${file.originalname} to Cloudinary:`, uploadErr?.message || uploadErr);
+          const SMALL_FILE_BYTES = 1.5 * 1024 * 1024;
+          if (file.buffer && file.buffer.length <= SMALL_FILE_BYTES) {
+            uploadedDocs.push({
+              name: file.originalname,
+              url: `data:${file.mimetype};base64,${file.buffer.toString('base64')}`,
+              fileType: file.mimetype,
+              uploadedAt: new Date()
+            });
+            uploadWarnings.push(`${file.originalname}: Cloudinary unavailable, stored inline`);
+          } else {
+            uploadWarnings.push(
+              `${file.originalname}: Cloudinary upload failed (${uploadErr?.message || 'upload error'}) — form saved without this file. Fix CLOUDINARY_API_SECRET in backend/.env, then re-upload.`
+            );
+          }
         }
       }
     }
 
     const assessment = new SocratesAssessment({
       userId,
+      userObjectId,
+      patientAbha,
       userName,
       site,
       onset,
@@ -371,7 +415,10 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
 
     res.status(201).json({
       success: true,
-      message: 'SOCRATES assessment saved successfully',
+      message: uploadWarnings.length
+        ? `SOCRATES assessment saved; ${uploadWarnings.length} file(s) not uploaded to Cloudinary`
+        : 'SOCRATES assessment saved successfully',
+      uploadWarnings,
       assessment
     });
   } catch (error) {
@@ -383,9 +430,17 @@ router.post('/socrates', upload.array('documents', 5), async (req, res, next) =>
 router.get('/socrates', async (req, res, next) => {
   try {
     const authUser = await resolveAuthUser(req);
-    const userId = authUser?._id?.toString() || authUser?.userId;
-    const query = userId ? { userId } : {};
-    const assessments = await SocratesAssessment.find(query).sort({ createdAt: -1 });
+    if (!authUser) return res.status(401).json({ success: false, error: 'Not authenticated', assessments: [] });
+    const userObjectId = authUser._id ? authUser._id.toString() : '';
+    const userUuid = authUser.userId || '';
+    const abha = authUser.abhaNumber || '';
+
+    const or = [];
+    if (userUuid) { or.push({ userId: userUuid }); or.push({ userObjectId: userUuid }); }
+    if (userObjectId) { or.push({ userId: userObjectId }); or.push({ userObjectId: userObjectId }); }
+    if (abha) or.push({ patientAbha: abha });
+    const query = or.length ? { $or: or } : { userId: '__none__' };
+    const assessments = await SocratesAssessment.find(query).sort({ createdAt: -1 }).lean();
     res.json({ success: true, assessments });
   } catch (error) {
     next(error);
@@ -394,7 +449,25 @@ router.get('/socrates', async (req, res, next) => {
 
 router.get('/socrates/patient/:userId', async (req, res, next) => {
   try {
-    const assessments = await SocratesAssessment.find({ userId: req.params.userId }).sort({ createdAt: -1 });
+    const pid = String(req.params.userId || '').trim();
+    if (!pid || pid === 'undefined' || pid === 'null') {
+      return res.json({ success: true, assessments: [] });
+    }
+    let user = null;
+    try { user = await User.findById(pid).lean(); } catch (_) {}
+    if (!user) {
+      user = await User.findOne({ $or: [{ userId: pid }, { abhaNumber: pid }] }).lean();
+    }
+    const or = [{ userId: pid }, { userObjectId: pid }, { patientAbha: pid }];
+    if (user) {
+      const oid = user._id ? user._id.toString() : '';
+      const uuid = user.userId || '';
+      const abha = user.abhaNumber || '';
+      if (oid) or.push({ userId: oid }, { userObjectId: oid });
+      if (uuid) or.push({ userId: uuid }, { userObjectId: uuid });
+      if (abha) or.push({ patientAbha: abha });
+    }
+    const assessments = await SocratesAssessment.find({ $or: or }).sort({ createdAt: -1 }).lean();
     res.json({ success: true, assessments });
   } catch (error) {
     next(error);

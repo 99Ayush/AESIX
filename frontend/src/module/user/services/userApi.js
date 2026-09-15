@@ -45,10 +45,16 @@ export const userApi = {
   getDiseaseRecord: (code, entityUri) => request(`/users/cdss/disease/${encodeURIComponent(code)}${entityUri ? `?entityUri=${encodeURIComponent(entityUri)}` : ''}`),
   submitSocratesForm: async (formData) => {
     const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+    const userId = storedUser?.userId || storedUser?.id || storedUser?._id;
+    const abhaNumber = storedUser?.abhaNumber || storedUser?.abhaId;
+
     const response = await fetch(`${baseUrl}/users/socrates`, {
       method: 'POST',
       headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(userId ? { 'x-user-id': userId } : {}),
+        ...(abhaNumber ? { 'x-abha-number': abhaNumber } : {}),
       },
       body: formData
     });
@@ -58,9 +64,15 @@ export const userApi = {
   },
   getSocratesHistory: async () => {
     const token = localStorage.getItem('token');
+    const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+    const userId = storedUser?.userId || storedUser?.id || storedUser?._id;
+    const abhaNumber = storedUser?.abhaNumber || storedUser?.abhaId;
+
     const response = await fetch(`${baseUrl}/users/socrates`, {
       headers: {
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(userId ? { 'x-user-id': userId } : {}),
+        ...(abhaNumber ? { 'x-abha-number': abhaNumber } : {}),
       }
     });
     const body = await response.json();

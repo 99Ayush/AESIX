@@ -10,6 +10,11 @@ const documentSchema = new mongoose.Schema({
 
 const socratesSchema = new mongoose.Schema({
   userId: { type: String, required: true, index: true },
+  // Mongo _id string of the User doc (stable across token refreshes).
+  // Older records only have `userId`; new writes set both so doctor lookups
+  // work whether the caller passes _id or the `userId` UUID.
+  userObjectId: { type: String, default: '', index: true },
+  patientAbha: { type: String, default: '', index: true },
   userName: { type: String, default: '' },
   site: { type: String, required: true },
   onset: { type: String, required: true },
@@ -25,6 +30,10 @@ const socratesSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+socratesSchema.index({ userId: 1, createdAt: -1 });
+socratesSchema.index({ userObjectId: 1, createdAt: -1 });
+socratesSchema.index({ patientAbha: 1, createdAt: -1 });
 
 export const SocratesAssessment = mongoose.model('SocratesAssessment', socratesSchema);
 export default SocratesAssessment;

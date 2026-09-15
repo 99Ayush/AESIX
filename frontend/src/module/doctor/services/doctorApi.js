@@ -1,22 +1,35 @@
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 async function request(path, options = {}) {
+  const { timeoutMs = 10000, signal: externalSignal, ...fetchOptions } = options;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  const onExternalAbort = () => controller.abort();
+  if (externalSignal) {
+    if (externalSignal.aborted) controller.abort();
+    else externalSignal.addEventListener('abort', onExternalAbort, { once: true });
+  }
   try {
     const token = localStorage.getItem('token');
     const response = await fetch(`${baseUrl}${path}`, {
+      signal: controller.signal,
       headers: {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
-      ...options,
+      ...fetchOptions,
     });
     if (response.status === 204) return null;
     const body = await response.json();
     if (!response.ok) throw new Error(body.error || 'Request failed');
     return body.data;
   } catch (err) {
+    if (err?.name === 'AbortError') throw new Error('Search timed out — please retry');
     console.warn(`Doctor API request failed for ${path}`, err);
-    return null;
+    throw err;
+  } finally {
+    clearTimeout(timer);
+    if (externalSignal) externalSignal.removeEventListener?.('abort', onExternalAbort);
   }
 }
 
@@ -24,9 +37,9 @@ export const doctorApi = {
   /**
    * Search patients by ABHA ID from the real database
    */
-  searchByAbha: async (abhaId = '') => {
+  searchByAbha: async (abhaId = '', { signal } = {}) => {
     if (!abhaId || abhaId.trim().length < 2) return [];
-    const result = await request(`/doctor/search-abha?abhaId=${encodeURIComponent(abhaId)}`);
+    const result = await request(`/doctor/search-abha?abhaId=${encodeURIComponent(abhaId)}`, { signal, timeoutMs: 8000 });
     return result || [];
   },
 
@@ -73,9 +86,9 @@ export const doctorApi = {
   /**
    * Legacy: search patients (for directory/search bar)
    */
-  searchPatients: async (query = '') => {
+  searchPatients: async (query = '', { signal } = {}) => {
     // Use ABHA search as primary
-    const results = await request(`/doctor/search-abha?abhaId=${encodeURIComponent(query)}`);
+    const results = await request(`/doctor/search-abha?abhaId=${encodeURIComponent(query)}`, { signal, timeoutMs: 8000 });
     return results || [];
   },
 

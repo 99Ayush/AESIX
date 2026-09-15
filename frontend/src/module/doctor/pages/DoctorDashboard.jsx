@@ -4,11 +4,11 @@ import DoctorHeader from '../components/DoctorHeader';
 import DoctorSidebar from '../components/DoctorSidebar';
 import PatientSearchBar from '../components/PatientSearchBar';
 import PatientProfileCard from '../components/PatientProfileCard';
-import ConsultationResults from '../components/ConsultationResults';
 import AlertsSection from '../components/AlertsSection';
 import PatientDirectoryView from '../components/PatientDirectoryView';
 import SocratesFormsList from '../components/SocratesFormsList';
 import { doctorApi } from '../services/doctorApi';
+import { onDatabaseChange } from '../../user/services/realtime';
 import './DoctorDashboard.css';
 import {
   BarChart3,
@@ -29,7 +29,7 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
     const path = location.pathname;
     if (path.includes('/patient-data')) return 'patient-data';
     if (path.includes('/socrates-forms')) return 'socrates-forms';
-    if (path.includes('/consultations')) return 'consultations';
+    // if (path.includes('/consultations')) return 'consultations';
     if (path.includes('/alerts')) return 'alerts';
     if (path.includes('/directory')) return 'directory';
     return 'patient-data';
@@ -39,6 +39,10 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
   const [loading, setLoading] = useState(false);
   const [patientData, setPatientData] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
+  const searchAbortRef = React.useRef(null);
+  const searchSeqRef = React.useRef(0);
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [patientForms, setPatientForms] = useState([]);
   const [formsLoading, setFormsLoading] = useState(false);
@@ -66,25 +70,31 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
     return () => { isMounted = false; };
   }, [selectedPatientId]);
 
-  // Fetch SOCRATES forms when patient changes or tab is forms
-  const fetchForms = (silent = false) => {
+  // Fetch SOCRATES forms when patient changes.
+  // No aggressive polling — refresh on realtime DB events + manual refresh.
+  // This was hammering the API every 3s and making search feel hung.
+  const fetchForms = React.useCallback(async (silent = false) => {
     if (!selectedPatientId) return;
     if (!silent) setFormsLoading(true);
-    doctorApi.getPatientForms(selectedPatientId).then((data) => {
+    try {
+      const data = await doctorApi.getPatientForms(selectedPatientId);
       setPatientForms(data || []);
+    } catch {
+      if (!silent) setPatientForms([]);
+    } finally {
       if (!silent) setFormsLoading(false);
-    });
-  };
-
-  useEffect(() => {
-    if (selectedPatientId) {
-      fetchForms();
-      const interval = setInterval(() => {
-        fetchForms(true);
-      }, 3000);
-      return () => clearInterval(interval);
     }
   }, [selectedPatientId]);
+
+  useEffect(() => {
+    if (!selectedPatientId) {
+      setPatientForms([]);
+      return;
+    }
+    fetchForms();
+    // Live refresh when a new SOCRATES form / consent lands in the DB.
+    return onDatabaseChange(() => fetchForms(true));
+  }, [selectedPatientId, fetchForms]);
 
   const handleTabSwitch = (tabKey) => {
     setActiveTab(tabKey);
@@ -97,8 +107,33 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
   };
 
   const handleSearch = async (query) => {
-    const results = await doctorApi.searchByAbha(query);
-    setSearchResults(results);
+    const q = (query || '').trim();
+    // Cancel the previous in-flight search so slow responses can't
+    // overwrite newer results ("still no response" / stale UI).
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    if (q.length < 2) {
+      setSearchResults([]);
+      setSearchError('');
+      setSearching(false);
+      return;
+    }
+    const seq = ++searchSeqRef.current;
+    const controller = new AbortController();
+    searchAbortRef.current = controller;
+    setSearching(true);
+    setSearchError('');
+    try {
+      const results = await doctorApi.searchByAbha(q, { signal: controller.signal });
+      if (searchSeqRef.current !== seq) return; // stale — ignore
+      setSearchResults(results || []);
+    } catch (err) {
+      if (searchSeqRef.current !== seq) return;
+      if (err?.name === 'AbortError') return;
+      setSearchResults([]);
+      setSearchError(err?.message || 'Search failed — please retry');
+    } finally {
+      if (searchSeqRef.current === seq) setSearching(false);
+    }
   };
 
   const handleSelectPatient = (id, targetTab) => {
@@ -129,10 +164,12 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
             onSearch={handleSearch}
             searchResults={searchResults}
             onSelectPatient={handleSelectPatient}
+            searching={searching}
+            searchError={searchError}
           />
 
-          {/* VIEW SWITCHER SUB-HEADER PILLS */}
-          <div className="doc-view-switcher-bar">
+
+          {/* <div className="doc-view-switcher-bar">
             <span className="doc-switcher-label">View Mode:</span>
             <button
               className={`doc-view-pill ${activeTab === 'overview' ? 'active' : ''}`}
@@ -155,25 +192,19 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
                 <span className="doc-pill-badge">{patientForms.length}</span>
               )}
             </button>
-            <button
+            {/* <button
               className={`doc-view-pill ${activeTab === 'consultations' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('consultations')}
             >
               <FileText size={17} /> Consultation Results
-            </button>
+            </button> */}
             {/* <button
               className={`doc-view-pill ${activeTab === 'alerts' ? 'active' : ''}`}
               onClick={() => handleTabSwitch('alerts')}
             >
               <TriangleAlert size={17} /> Medical Alerts ({patientData?.alerts?.length || 0})
             </button> */}
-            <button
-              className={`doc-view-pill ${activeTab === 'directory' ? 'active' : ''}`}
-              onClick={() => handleTabSwitch('directory')}
-            >
-              <ClipboardList size={17} /> Patient Directory
-            </button>
-          </div>
+         
 
           {/* NO PATIENT SELECTED STATE */}
           {!selectedPatientId && activeTab !== 'directory' ? (
@@ -233,12 +264,12 @@ export const DoctorDashboard = ({ activeTabDefault }) => {
                 </div>
               )}
 
-              {/* VIEW 4: DEDICATED CONSULTATION RESULTS */}
+              {/* VIEW 4: DEDICATED CONSULTATION RESULTS
               {activeTab === 'consultations' && (
                 <div className="doc-single-view-full">
                   <ConsultationResults consultations={patientData?.consultationResults} />
                 </div>
-              )}
+              )} */}
 
               {/* VIEW 5: DEDICATED MEDICAL ALERTS */}
               {activeTab === 'alerts' && (

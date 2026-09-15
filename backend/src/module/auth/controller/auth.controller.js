@@ -130,7 +130,7 @@ async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod, ci
       user._id,
       {
         fullName,
-        email: user.email || profile.email || `${user.userId}@example.com`,
+        ...(user.email || profile.email ? { email: user.email || profile.email } : {}),
         phone: user.mobile || mobile || profile.mobile || '',
         dateOfBirth: user.dob ? new Date(user.dob) : (profile.dob ? new Date(profile.dob) : undefined),
         ...(genderLabel ? { gender: genderLabel } : {}),

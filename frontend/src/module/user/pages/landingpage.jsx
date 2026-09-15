@@ -353,6 +353,7 @@ export default function LandingPage() {
   ];
 
   // Known allergies
+  // --------------- causes hydration err -----------------
   // const allergies = (profile?.allergies || []).map((text, index) => ({
   //   text,
   //   icon: "✦",
@@ -707,19 +708,13 @@ export default function LandingPage() {
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
               className="sih-lang-select"
+              data-no-translate
+              translate="no"
             >
-              <option value="English">
-                <Globe size={18} strokeWidth={2} />🌐 English
-              </option>
-              <option value="Hindi">
-                <Globe size={18} strokeWidth={2} />🌐 हिंदी
-              </option>
-              <option value="Bengali">
-                <Globe size={18} strokeWidth={2} />🌐 বাংলা
-              </option>
-              <option value="Tamil">
-                <Globe size={18} strokeWidth={2} />🌐தமிழ்
-              </option>
+              <option value="English">🌐 English</option>
+              <option value="Hindi">🌐 हिंदी</option>
+              <option value="Bengali">🌐 বাংলা</option>
+              <option value="Tamil">🌐 தமிழ்</option>
             </select>
             <div style={{ position: "relative" }} ref={notifRef}>
               <button
@@ -1170,8 +1165,10 @@ export default function LandingPage() {
                     YOUR ALLERGIES
                   </div>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {(profile?.allergies && profile.allergies.length > 0
+                    {(Array.isArray(profile?.allergies) && profile.allergies.length > 0
                       ? profile.allergies
+                      : typeof profile?.allergies === "string" && profile.allergies.trim() !== ""
+                      ? profile.allergies.split(",").map((a) => a.trim())
                       : ["Peanut Allergy", "Shellfish Allergy", "Pollen Allergy"]
                     ).map((allergy, idx) => (
                       <span
@@ -1189,8 +1186,8 @@ export default function LandingPage() {
                         </span>
                         {allergy}
                       </span>
-                    ))} 
-                    {(!profile?.allergies || profile.allergies.length === 0) && (
+                    ))}
+                    {(!profile?.allergies || (Array.isArray(profile.allergies) && profile.allergies.length === 0)) && (
                       <span style={{ fontSize: "0.78rem", color: "#94A3B8", fontStyle: "italic" }}>
                        
                       </span>

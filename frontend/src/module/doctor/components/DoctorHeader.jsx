@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LanguageSelect } from '../../user/LanguageContext';
 
 export const DoctorHeader = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export const DoctorHeader = () => {
 
         {/* Right Doctor Profile Avatar */}
         <div className="doc-header-right">
+          <LanguageSelect className="doc-lang-select" />
           <div className="doc-avatar-badge" title="Dr. Anirudh Kanwat (MD)">
             <span>A</span>
           </div>
