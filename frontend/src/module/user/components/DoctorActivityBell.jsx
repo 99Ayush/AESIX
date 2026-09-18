@@ -62,6 +62,16 @@ export default function DoctorActivityBell() {
 
   const goConsent = () => { setOpen(false); navigate('/consent'); };
 
+  const goCompleteProfile = () => {
+    setOpen(false);
+    const highlightFields = missingFields.map((field) => field.key);
+    try {
+      sessionStorage.setItem('profile-highlight-fields', JSON.stringify(highlightFields));
+    } catch { /* ignore storage errors */ }
+    navigate('/basicInfo', { state: { autoEdit: true, highlightFields, fromNotification: true } });
+  };
+
+
   return (
     <div ref={bellRef} style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
       <button
@@ -89,7 +99,7 @@ export default function DoctorActivityBell() {
           </h4>
 
           {isIncomplete && (
-            <button onClick={() => { setOpen(false); navigate('/basicInfo'); }} style={{ width: '100%', textAlign: 'left', padding: '0.7rem', marginBottom: '0.75rem', borderRadius: '8px', background: '#FEF2F2', border: '1px solid #FECACA', cursor: 'pointer' }}>
+            <button onClick={goCompleteProfile} style={{ width: '100%', textAlign: 'left', padding: '0.7rem', marginBottom: '0.75rem', borderRadius: '8px', background: '#FEF2F2', border: '1px solid #FECACA', cursor: 'pointer' }}>
               <div style={{ color: '#B91C1C', fontSize: '0.8rem', fontWeight: 800 }}>Complete your profile</div>
               <div style={{ color: '#991B1B', fontSize: '0.72rem', marginTop: '0.2rem' }}>Missing: {missingFields.map((field) => field.label).join(', ')}. Tap to update.</div>
             </button>
