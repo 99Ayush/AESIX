@@ -69,14 +69,23 @@ async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod, ci
   }
   // In mock mode the ABHANumber is always the same dummy value.
   // Try matching by the real identifier the user typed (abhaAddress or mobile).
+  // Also try matching by profile.mobile since ABDM mock always returns a consistent mobile.
   if (!user && abhaIdentifier) {
     user = await User.findOne({
       $or: [
         { abhaAddress: abhaIdentifier },
         { mobile: abhaIdentifier },
         { abhaNumber: abhaIdentifier },
+        { mobile: profile.mobile },
       ],
     });
+  }
+
+  // Last resort: try matching by profile.mobile even without an explicit abhaIdentifier
+  // This handles the case where a user registered with Aadhaar and logs in via ABHA
+  // (ABHA numbers differ between mock registration and login, but mobile stays consistent)
+  if (!user && profile.mobile) {
+    user = await User.findOne({ mobile: profile.mobile });
   }
 
   // Check if assigning profile.ABHANumber would collide with another user
