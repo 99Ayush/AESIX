@@ -7,6 +7,7 @@ import PatientSidebar from '../components/asidebar';
 import ChatbotFAB from '../components/ChatbotFAB';
 import DoctorActivityBell from '../components/DoctorActivityBell';
 import BrandLogo from '../../../shared/BrandLogo';
+import SocratesVoiceControl from '../components/SocratesVoiceControl';
 import {
   FileText,
   RefreshCw,
@@ -82,7 +83,7 @@ export default function SocratesForm() {
   // Form State
   const [site, setSite] = useState('');
   const [onset, setOnset] = useState('');
-  const [onsetType, setOnsetType] = useState('Gradual (Over hours/days)');
+  const [onsetType, setOnsetType] = useState('');
   const [character, setCharacter] = useState([]);
   const [customCharacter, setCustomCharacter] = useState('');
   const [radiation, setRadiation] = useState('');
@@ -90,7 +91,7 @@ export default function SocratesForm() {
   const [customAssociation, setCustomAssociation] = useState('');
   const [timeCourse, setTimeCourse] = useState('');
   const [exacerbatingFactors, setExacerbatingFactors] = useState('');
-  const [severity, setSeverity] = useState(5);
+  const [severity, setSeverity] = useState(0);
   const [priorHistory, setPriorHistory] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
 
@@ -103,6 +104,35 @@ export default function SocratesForm() {
   // History state
   const [history, setHistory] = useState([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+
+  // Card refs & Voice state for SocratesVoiceControl
+  const q1Ref = useRef(null);
+  const q2Ref = useRef(null);
+  const q3Ref = useRef(null);
+  const q4Ref = useRef(null);
+  const q5Ref = useRef(null);
+  const q6Ref = useRef(null);
+  const q7Ref = useRef(null);
+  const q8Ref = useRef(null);
+  const q9Ref = useRef(null);
+  const q10Ref = useRef(null);
+
+  const [activeVoiceId, setActiveVoiceId] = useState(null);
+
+  const getCardText = (ref) => () => {
+    if (!ref.current) return '';
+    const label = ref.current.querySelector('label')?.innerText || '';
+    const p = ref.current.querySelector('p')?.innerText || '';
+    const optionButtons = Array.from(ref.current.querySelectorAll('button:not(.socrates-voice-btn)'))
+      .map(b => b.innerText.replace(/^[✓+]\s*/, '').trim())
+      .filter(Boolean);
+
+    let text = `${label}. ${p}`;
+    if (optionButtons.length > 0) {
+      text += `. Available options: ${optionButtons.join(', ')}.`;
+    }
+    return text;
+  };
 
   useEffect(() => {
     if (activeTab === 'history') {
@@ -130,6 +160,26 @@ export default function SocratesForm() {
     } else {
       setCharacter([...character, opt]);
     }
+  };
+
+  const handleOnsetSelect = (type) => {
+    const isSelecting = onsetType !== type;
+    const newType = isSelecting ? type : '';
+    setOnsetType(newType);
+
+    setOnset(prev => {
+      let rest = prev || '';
+      for (const ot of ONSET_TYPES) {
+        if (rest.startsWith(`${ot}: `)) {
+          rest = rest.replace(`${ot}: `, '');
+          break;
+        } else if (rest.startsWith(`${ot}:`)) {
+          rest = rest.replace(`${ot}:`, '').trim();
+          break;
+        }
+      }
+      return newType ? (rest ? `${newType}: ${rest}` : `${newType}: `) : rest;
+    });
   };
 
   const handleAssociationToggle = (opt) => {
@@ -213,6 +263,7 @@ export default function SocratesForm() {
         // Reset form
         setSite('');
         setOnset('');
+        setOnsetType('');
         setCharacter([]);
         setCustomCharacter('');
         setRadiation('');
@@ -220,7 +271,7 @@ export default function SocratesForm() {
         setCustomAssociation('');
         setTimeCourse('');
         setExacerbatingFactors('');
-        setSeverity(5);
+        setSeverity(0);
         setPriorHistory('');
         setAdditionalNotes('');
         setFiles([]);
@@ -241,6 +292,7 @@ export default function SocratesForm() {
   };
 
   const getSeverityColor = (val) => {
+    if (val === 0) return '#94A3B8'; // Slate gray for 0/None
     if (val <= 3) return '#10B981'; // Green
     if (val <= 6) return '#F59E0B'; // Amber
     if (val <= 8) return '#EF4444'; // Red
@@ -322,10 +374,20 @@ export default function SocratesForm() {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               
               {/* Question 1: SITE */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  1. Site (S) — Where is the pain / symptom located? <span style={{ color: '#EF4444' }}>*</span>
-                </label>
+              <div className="sih-card" ref={q1Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    1. Site (S) — Where is the pain / symptom located? <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q1"
+                    getQuestionText={getCardText(q1Ref)}
+                    value={site}
+                    onValueChange={(val) => setSite(val)}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Specify the exact body location where you feel the discomfort (e.g. Center of chest, Upper right abdomen, Left forehead).
                 </p>
@@ -347,10 +409,22 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 2: ONSET */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  2. Onset (O) — When and how did it start? <span style={{ color: '#EF4444' }}>*</span>
-                </label>
+              <div className="sih-card" ref={q2Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    2. Onset (O) — When and how did it start? <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q2"
+                    getQuestionText={getCardText(q2Ref)}
+                    value={onset}
+                    onValueChange={(val) => setOnset(val)}
+                    options={ONSET_TYPES}
+                    onOptionToggle={handleOnsetSelect}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Select the onset type and describe what you were doing when it started.
                 </p>
@@ -359,7 +433,7 @@ export default function SocratesForm() {
                     <button
                       key={type}
                       type="button"
-                      onClick={() => setOnsetType(type)}
+                      onClick={() => handleOnsetSelect(type)}
                       style={{
                         padding: '0.6rem 0.8rem',
                         borderRadius: '8px',
@@ -395,10 +469,25 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 3: CHARACTER */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  3. Character (C) — What is the pain / symptom like? <span style={{ color: '#EF4444' }}>*</span>
-                </label>
+              <div className="sih-card" ref={q3Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    3. Character (C) — What is the pain / symptom like? <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q3"
+                    getQuestionText={getCardText(q3Ref)}
+                    value={customCharacter}
+                    onValueChange={(val) => {
+                      setCustomCharacter(val);
+                      if (!character.includes('Other')) setCharacter([...character, 'Other']);
+                    }}
+                    options={CHARACTER_OPTIONS}
+                    onOptionToggle={handleCharacterToggle}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Select all descriptor terms that match what you are feeling.
                 </p>
@@ -444,10 +533,20 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 4: RADIATION */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  4. Radiation (R) — Does the pain spread anywhere else?
-                </label>
+              <div className="sih-card" ref={q4Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    4. Radiation (R) — Does the pain spread anywhere else?
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q4"
+                    getQuestionText={getCardText(q4Ref)}
+                    value={radiation}
+                    onValueChange={(val) => setRadiation(val)}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Does the sensation travel to other areas? (e.g., Radiates to left arm, neck, upper back, or stays in one place).
                 </p>
@@ -467,10 +566,22 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 5: ASSOCIATIONS */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  5. Associations (A) — Are there any associated symptoms?
-                </label>
+              <div className="sih-card" ref={q5Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    5. Associations (A) — Are there any associated symptoms?
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q5"
+                    getQuestionText={getCardText(q5Ref)}
+                    value={customAssociation}
+                    onValueChange={(val) => setCustomAssociation(val)}
+                    options={COMMON_ASSOCIATIONS}
+                    onOptionToggle={handleAssociationToggle}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Select any additional symptoms occurring alongside the main issue.
                 </p>
@@ -514,10 +625,20 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 6: TIME COURSE */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  6. Time Course (T) — How does the symptom behave over time? <span style={{ color: '#EF4444' }}>*</span>
-                </label>
+              <div className="sih-card" ref={q6Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    6. Time Course (T) — How does the symptom behave over time? <span style={{ color: '#EF4444' }}>*</span>
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q6"
+                    getQuestionText={getCardText(q6Ref)}
+                    value={timeCourse}
+                    onValueChange={(val) => setTimeCourse(val)}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Is it continuous, constant, or coming in waves? How long does each episode last?
                 </p>
@@ -538,10 +659,20 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 7: EXACERBATING & RELIEVING FACTORS */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  7. Exacerbating & Relieving Factors (E) — What makes it better or worse?
-                </label>
+              <div className="sih-card" ref={q7Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    7. Exacerbating & Relieving Factors (E) — What makes it better or worse?
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q7"
+                    getQuestionText={getCardText(q7Ref)}
+                    value={exacerbatingFactors}
+                    onValueChange={(val) => setExacerbatingFactors(val)}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   e.g., Worsened by deep inspiration or bending over; Relieved by antacids or lying flat.
                 </p>
@@ -562,48 +693,64 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 8: SEVERITY */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem' }}>
-                    8. Severity (S) — Pain / Discomfort Rating (1 to 10) <span style={{ color: '#EF4444' }}>*</span>
+              <div className="sih-card" ref={q8Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    8. Severity (S) — Pain / Discomfort Rating (0 to 10) <span style={{ color: '#EF4444' }}>*</span>
                   </label>
-                  <div 
-                    style={{ 
-                      padding: '0.4rem 1rem', 
-                      borderRadius: '20px', 
-                      background: getSeverityColor(severity), 
-                      color: '#fff', 
-                      fontWeight: 900, 
-                      fontSize: '1.1rem' 
-                    }}
-                  >
-                    {severity} / 10
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                    <SocratesVoiceControl
+                      questionId="q8"
+                      getQuestionText={getCardText(q8Ref)}
+                      value={severity}
+                      onValueChange={(val) => setSeverity(val)}
+                      isNumberField={true}
+                      activeVoiceId={activeVoiceId}
+                      setActiveVoiceId={setActiveVoiceId}
+                    />
+                    <div 
+                      style={{ 
+                        padding: '0.4rem 1rem', 
+                        borderRadius: '20px', 
+                        background: getSeverityColor(severity), 
+                        color: '#fff', 
+                        fontWeight: 900, 
+                        fontSize: '1.1rem' 
+                      }}
+                    >
+                      {severity} / 10
+                    </div>
                   </div>
                 </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '1.2rem' }}>
-                  Slide to indicate severity (1 = Mild noticeable discomfort, 10 = Worst unbearable emergency pain).
+                  Slide to indicate severity (0 = None, 1 = Mild noticeable discomfort, 10 = Worst unbearable emergency pain).
                 </p>
                 <input
                   type="range"
-                  min="1"
+                  min="0"
                   max="10"
                   value={severity}
                   onChange={(e) => setSeverity(Number(e.target.value))}
                   style={{ width: '100%', accentColor: getSeverityColor(severity), cursor: 'pointer', height: '8px' }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: '#94A3B8', marginTop: '0.4rem', fontWeight: 600 }}>
-                  <span>1 (Mild)</span>
-                  <span>5 (Moderate)</span>
-                  <span>8 (Severe)</span>
-                  <span>10 (Unbearable)</span>
-                </div>
+               
               </div>
 
               {/* Question 9: PRIOR HISTORY */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  9. Previous History — Have you experienced similar symptoms before?
-                </label>
+              <div className="sih-card" ref={q9Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    9. Previous History — Have you experienced similar symptoms before?
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q9"
+                    getQuestionText={getCardText(q9Ref)}
+                    value={priorHistory}
+                    onValueChange={(val) => setPriorHistory(val)}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Mention previous episodes, diagnosed conditions, or relevant family history.
                 </p>
@@ -624,10 +771,20 @@ export default function SocratesForm() {
               </div>
 
               {/* Question 10: ADDITIONAL NOTES & DOCUMENT UPLOAD */}
-              <div className="sih-card" style={{ padding: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>
-                  10. Doctor Notes & Medical Document Upload
-                </label>
+              <div className="sih-card" ref={q10Ref} style={{ padding: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.8rem', marginBottom: '0.4rem' }}>
+                  <label style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '1.05rem', margin: 0, flex: 1 }}>
+                    10. Doctor Notes & Medical Document Upload
+                  </label>
+                  <SocratesVoiceControl
+                    questionId="q10"
+                    getQuestionText={getCardText(q10Ref)}
+                    value={additionalNotes}
+                    onValueChange={(val) => setAdditionalNotes(val)}
+                    activeVoiceId={activeVoiceId}
+                    setActiveVoiceId={setActiveVoiceId}
+                  />
+                </div>
                 <p style={{ fontSize: '0.82rem', color: '#64748B', marginBottom: '0.8rem' }}>
                   Add any extra details for the doctor and attach medical reports, lab results, or scans (stored securely on Cloudinary).
                 </p>

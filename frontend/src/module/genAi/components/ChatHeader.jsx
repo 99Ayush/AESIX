@@ -32,7 +32,7 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
           <div>
             <h2 className="header-title">Medical AI Chatbot</h2>
             <p className="header-subtitle">
-              Powered by Groq | Emergency • Consultation • Daily Med Talk
+              Powered by Groq | Emergency • Consultation • Daily 
             </p>
           </div>
         </div>
