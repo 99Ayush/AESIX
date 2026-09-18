@@ -8,10 +8,10 @@ export default defineConfig({
     host: '::',
     port: 3000,
     strictPort: false,
+    allowedHosts: true,
   },
   plugins: [
     react(),
     tailwindcss(),
   ],
 });
-

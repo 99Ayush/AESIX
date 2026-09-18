@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import '../userPages.css';
 import { userApi, readLocalJSON } from '../services/userApi';
 import { onDatabaseChange } from '../services/realtime';
@@ -53,6 +53,7 @@ const formatPhone = (phone) => {
 
 export default function BasicInfo() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const emptyPatient = {
     id: '', abhaId: '', name: '', age: '', gender: '', dob: '', bloodGroup: '', maritalStatus: '', occupation: '', primaryLanguage: '', photo: null,
@@ -70,6 +71,9 @@ export default function BasicInfo() {
   const [toastMessage, setToastMessage] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  // Fields flagged as missing via notification redirect (keys: name, dob, gender, bloodGroup, phone, email)
+  const [highlightFields, setHighlightFields] = useState([]);
+  const [showCompleteBanner, setShowCompleteBanner] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -80,6 +84,65 @@ export default function BasicInfo() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // ── Notification redirect: auto-open edit mode + highlight missing cells ──
+  // DoctorActivityBell navigates with state { autoEdit, highlightFields } and
+  // also persists to sessionStorage so a refresh keeps the highlight.
+  useEffect(() => {
+    const fromState = location.state?.highlightFields;
+    let fromStorage = null;
+    try {
+      const raw = sessionStorage.getItem('profile-highlight-fields');
+      if (raw) fromStorage = JSON.parse(raw);
+    } catch { /* ignore */ }
+    const fields = Array.isArray(fromState) && fromState.length > 0 ? fromState : (Array.isArray(fromStorage) ? fromStorage : []);
+    if (location.state?.autoEdit || location.state?.fromNotification || fields.length > 0) {
+      if (fields.length > 0) {
+        setHighlightFields(fields);
+        setShowCompleteBanner(true);
+        setActiveTab('overview');
+      }
+      if (location.state?.autoEdit) {
+        setIsEditing(true);
+        // Clear router state so back/forward doesn't re-trigger
+        navigate(location.pathname, { replace: true });
+      }
+    }
+  }, []);
+
+  // Scroll to the first missing field once edit mode is open
+  useEffect(() => {
+    if (isEditing && highlightFields.length > 0) {
+      const t = setTimeout(() => {
+        const el = document.getElementById(`field-${highlightFields[0]}`);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 350);
+      return () => clearTimeout(t);
+    }
+  }, [isEditing, highlightFields]);
+
+  const isMissing = (key) => highlightFields.includes(key);
+  const missingClass = (key) => (isMissing(key) ? ' sih-field-missing' : '');
+  const clearHighlightIfFilled = (key, val) => {
+    if (val && String(val).trim() !== '' && String(val).trim() !== 'N/A') {
+      setHighlightFields((prev) => {
+        const next = prev.filter((k) => k !== key);
+        if (next.length === 0) {
+          setShowCompleteBanner(false);
+          try { sessionStorage.removeItem('profile-highlight-fields'); } catch { /* ignore */ }
+        }
+        return next;
+      });
+    }
+  };
+  const missingLabel = (text, key) => (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+      {text}
+      {isMissing(key) && (
+        <span className="sih-required-dot" title="Required to complete profile">● Required</span>
+      )}
+    </span>
+  );
 
   // Form State for Edit Mode
   const [formData, setFormData] = useState({ ...patient });
@@ -151,6 +214,7 @@ export default function BasicInfo() {
 
   const handleInputChange = (field, val) => {
     setFormData(prev => ({ ...prev, [field]: val }));
+    clearHighlightIfFilled(field, val);
   };
 
   const handleContactChange = (field, val) => {
@@ -158,6 +222,8 @@ export default function BasicInfo() {
       ...prev,
       contact: { ...prev.contact, [field]: val }
     }));
+    // phone/email keys in highlightFields map directly to contact sub-fields
+    clearHighlightIfFilled(field, val);
   };
 
   const handleAddMedication = () => {
@@ -215,6 +281,7 @@ export default function BasicInfo() {
         payload = new FormData();
         payload.append('photo', photoFile);
         Object.keys(formData).forEach(key => {
+          if (key === 'age') return;
           if (key === 'contact') {
             Object.keys(formData.contact).forEach(ckey => {
               payload.append(`contact[${ckey}]`, formData.contact[ckey]);
@@ -226,7 +293,8 @@ export default function BasicInfo() {
           }
         });
       } else {
-        payload = formData;
+        const { age: _age, ...rest } = formData;
+        payload = rest;
       }
 
       const saved = await userApi.saveProfile(payload);
@@ -236,6 +304,9 @@ export default function BasicInfo() {
       setPhotoFile(null);
       setPhotoPreview(null);
       setIsEditing(false);
+      setHighlightFields([]);
+      setShowCompleteBanner(false);
+      try { sessionStorage.removeItem('profile-highlight-fields'); } catch { /* ignore */ }
 
       const storedProfile = readLocalJSON('user_profile', {});
       const updatedStored = {
@@ -389,6 +460,32 @@ export default function BasicInfo() {
           {/* MAIN CONTAINER — Vertical Stack Layout */}
           <main className="sih-main-layout">
 
+            {/* Notification-redirect banner: tells user which cells to fill first */}
+            {showCompleteBanner && highlightFields.length > 0 && (
+              <div className="sih-complete-banner" role="alert">
+                <div style={{ fontSize: '0.85rem', fontWeight: 900, color: '#B91C1C' }}>
+                  ⚠️ Complete your profile — {highlightFields.length} field{highlightFields.length > 1 ? 's' : ''} missing
+                </div>
+                <div style={{ fontSize: '0.75rem', color: '#991B1B', marginTop: '0.25rem' }}>
+                  Please fill the highlighted cells below first. The red notification will clear once these are saved.
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginTop: '0.5rem' }}>
+                  {highlightFields.map((k) => (
+                    <button
+                      key={k}
+                      onClick={() => {
+                        const el = document.getElementById(`field-${k}`);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }}
+                      className="sih-complete-chip"
+                    >
+                      {k === 'name' ? 'Full Name' : k === 'dob' ? 'Date of Birth' : k === 'gender' ? 'Gender' : k === 'bloodGroup' ? 'Blood Group' : k === 'phone' ? 'Phone Number' : k === 'email' ? 'Email Address' : k} →
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ═══ 1. PATIENT PROFILE CARD — Full Width ═══ */}
             <div className="sih-card" style={{ marginBottom: '1.25rem' }}>
               <div style={{ background: 'linear-gradient(135deg, var(--primary-navy), var(--teal-primary))', padding: '1rem 1.25rem', display: 'flex', justifyContent: 'flex-end' }}>
@@ -440,26 +537,27 @@ export default function BasicInfo() {
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          <div>
-                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Full Name</label>
-                            <input type="text" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} className="sih-input" />
+                          <div id="field-name">
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{missingLabel('Full Name', 'name')}</label>
+                            <input id="field-name-input" type="text" value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} className={`sih-input${missingClass('name')}`} placeholder={isMissing('name') ? '⚠️ Required — enter full name' : ''} />
                           </div>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.4rem' }}>
                             <div>
-                              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Age</label>
-                              <input type="number" value={formData.age} onChange={(e) => handleInputChange('age', e.target.value)} className="sih-input" />
+                              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Age (locked)</label>
+                              <input type="number" value={formData.age} disabled className="sih-input" style={{ backgroundColor: 'var(--mint-bg)', opacity: 0.7, cursor: 'not-allowed' }} title="Age is locked from Aadhaar/ABHA registration and cannot be changed here" />
                             </div>
-                            <div>
-                              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Gender</label>
-                              <select value={formData.gender} onChange={(e) => handleInputChange('gender', e.target.value)} className="sih-select">
+                            <div id="field-gender">
+                              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>{missingLabel('Gender', 'gender')}</label>
+                              <select id="field-gender-input" value={formData.gender} onChange={(e) => handleInputChange('gender', e.target.value)} className={`sih-select${missingClass('gender')}`}>
+                                <option value="">Select…</option>
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Other">Other</option>
                               </select>
                             </div>
-                            <div>
-                              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>DOB</label>
-                              <input type="date" value={formData.dob} onChange={(e) => handleInputChange('dob', e.target.value)} className="sih-input" />
+                            <div id="field-dob">
+                              <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>{missingLabel('DOB', 'dob')}</label>
+                              <input id="field-dob-input" type="date" value={formData.dob} onChange={(e) => handleInputChange('dob', e.target.value)} className={`sih-input${missingClass('dob')}`} />
                             </div>
                           </div>
                         </div>
@@ -477,11 +575,12 @@ export default function BasicInfo() {
                       <p style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>ABHA Health ID</p>
                       <p style={{ fontWeight: 800, color: 'var(--text-main)', fontSize: '0.85rem', margin: '0.15rem 0 0 0' }}>{patient.abhaId}</p>
                     </div>
-                    <div style={{ backgroundColor: 'var(--mint-bg)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-light)' }}>
-                      <p style={{ fontSize: '0.6rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Blood Group</p>
+                    <div id="field-bloodGroup" style={{ backgroundColor: isMissing('bloodGroup') ? '#FEF2F2' : 'var(--mint-bg)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)', border: isMissing('bloodGroup') ? '2px solid #F87171' : '1px solid var(--border-light)' }} className={isMissing('bloodGroup') ? 'sih-cell-missing' : ''}>
+                      <p style={{ fontSize: '0.6rem', fontWeight: 800, color: isMissing('bloodGroup') ? '#B91C1C' : 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>{missingLabel('Blood Group', 'bloodGroup')}</p>
                       <p style={{ fontWeight: 900, color: 'var(--teal-primary)', fontSize: '0.85rem', margin: '0.15rem 0 0 0' }}>
                         {isEditing ? (
-                          <select value={formData.bloodGroup} onChange={(e) => handleInputChange('bloodGroup', e.target.value)} className="sih-select" style={{ padding: '0.1rem', fontSize: '0.75rem', width: 'auto' }}>
+                          <select id="field-bloodGroup-input" value={formData.bloodGroup} onChange={(e) => handleInputChange('bloodGroup', e.target.value)} className={`sih-select${missingClass('bloodGroup')}`} style={{ padding: '0.1rem', fontSize: '0.75rem', width: 'auto' }}>
+                            <option value="">Select…</option>
                             <option value="A+">A+</option><option value="A-">A-</option><option value="B+">B+</option><option value="B-">B-</option>
                             <option value="O+">O+</option><option value="O-">O-</option><option value="AB+">AB+</option><option value="AB-">AB-</option>
                           </select>
@@ -558,13 +657,13 @@ export default function BasicInfo() {
                       {!isEditing ? (
                         <div style={{ backgroundColor: 'var(--mint-bg)', padding: '1rem', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-light)', display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.8rem' }}>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div>
-                              <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Phone Number</p>
+                            <div id="field-phone" className={isMissing('phone') ? 'sih-cell-missing' : ''} style={isMissing('phone') ? { backgroundColor: '#FEF2F2', border: '2px solid #F87171', borderRadius: '8px', padding: '0.5rem' } : undefined}>
+                              <p style={{ fontSize: '0.65rem', fontWeight: 800, color: isMissing('phone') ? '#B91C1C' : 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>{missingLabel('Phone Number', 'phone')}</p>
                               <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.2rem 0 0 0' }}>{formatPhone(patient.contact.phone)}</p>
                             </div>
 
-                            <div>
-                              <p style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>Email Address</p>
+                            <div id="field-email" className={isMissing('email') ? 'sih-cell-missing' : ''} style={isMissing('email') ? { backgroundColor: '#FEF2F2', border: '2px solid #F87171', borderRadius: '8px', padding: '0.5rem' } : undefined}>
+                              <p style={{ fontSize: '0.65rem', fontWeight: 800, color: isMissing('email') ? '#B91C1C' : 'var(--text-muted)', textTransform: 'uppercase', margin: 0 }}>{missingLabel('Email Address', 'email')}</p>
                               <p style={{ fontWeight: 800, color: 'var(--primary-navy)', fontSize: '0.9rem', margin: '0.2rem 0 0 0', wordBreak: 'break-all' }}>{patient.contact.email}</p>
                             </div>
                           </div>
@@ -576,22 +675,26 @@ export default function BasicInfo() {
                         </div>
                       ) : (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                          <div>
-                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Phone</label>
+                          <div id="field-phone">
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: isMissing('phone') ? '#B91C1C' : 'var(--text-muted)' }}>{missingLabel('Phone', 'phone')}</label>
                             <input
+                              id="field-phone-input"
                               type="text"
                               value={formData.contact.phone}
                               onChange={(e) => handleContactChange('phone', e.target.value)}
-                              className="sih-input"
+                              className={`sih-input${missingClass('phone')}`}
+                              placeholder={isMissing('phone') ? '⚠️ Required — enter phone number' : ''}
                             />
                           </div>
-                          <div>
-                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)' }}>Email</label>
+                          <div id="field-email">
+                            <label style={{ fontSize: '0.65rem', fontWeight: 800, color: isMissing('email') ? '#B91C1C' : 'var(--text-muted)' }}>{missingLabel('Email', 'email')}</label>
                             <input
+                              id="field-email-input"
                               type="email"
                               value={formData.contact.email}
                               onChange={(e) => handleContactChange('email', e.target.value)}
-                              className="sih-input"
+                              className={`sih-input${missingClass('email')}`}
+                              placeholder={isMissing('email') ? '⚠️ Required — enter email address' : ''}
                             />
                           </div>
                           <div>
