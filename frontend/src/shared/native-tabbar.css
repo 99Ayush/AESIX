@@ -1,0 +1,3 @@
+/* BottomTabBar ride-along styles (kept separate so native-app.css
+   stays the single source of layout truth). */
+.native-tabbar-item { position: relative; }

@@ -7,194 +7,32 @@ import { useDashboardLanguage } from "../LanguageContext";
 import PatientSidebar from "../components/asidebar";
 import ChatbotFAB from "../components/ChatbotFAB";
 import DoctorActivityBell from "../components/DoctorActivityBell";
-import BrandLogo from '../../../shared/BrandLogo';
+import BrandLogo from "../../../shared/BrandLogo";
 
 import {
   Camera,
   CalendarDays,
   CircleCheck,
-  Nut, Shell, Flower2 ,
-  Search,
+  Nut,
+  Shell,
+  Flower2,
   LogOut,
-  FileText,
-  Globe,
-  Hand,
-  Phone,
-  Pencil, 
-  Mail,
+  Pencil,
   CircleUser,
   ChevronsRight,
+  Copy,
+  Check,
+  Shield,
+  Activity,
+  FileText,
+  FileCheck,
+  BookOpen,
+  Bot,
+  HeartPulse,
+  Stethoscope,
+  Sparkles,
+  Lock,
 } from "lucide-react";
-
-/* ─── Inline SVG icons ─── */
-const ShieldIcon = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-  </svg>
-);
-const BookIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-  </svg>
-);
-const ChevronRight = () => (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <polyline points="9 18 15 12 9 6" />
-  </svg>
-);
-const PlugIcon = () => (
-  <svg
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 2v6" />
-    <path d="M6 8h12" />
-    <path d="M8 8v4a4 4 0 0 0 8 0V8" />
-    <path d="M12 16v6" />
-  </svg>
-);
-const AllergyIcon = () => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="M12 8v4" />
-    <path d="M12 16h.01" />
-  </svg>
-);
-const SyringeIcon = () => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m18 2 4 4" />
-    <path d="m17 7 3-3" />
-    <path d="M19 9 8.7 19.3c-1 1-2.5 1-3.4 0l-.6-.6c-1-1-1-2.5 0-3.4L15 5" />
-    <path d="m9 11 4 4" />
-    <path d="m5 19-3 3" />
-    <path d="m14 4 6 6" />
-  </svg>
-);
-
-/* ─── Chatbot Robot SVG (inline, no external image) ─── */
-const ChatbotRobot = () => (
-  <svg
-    width="160"
-    height="180"
-    viewBox="0 0 160 180"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    {/* Speech bubble */}
-    <rect x="85" y="8" width="60" height="34" rx="14" fill="#0C9A9A" />
-    <polygon points="95,42 102,42 92,52" fill="#0C9A9A" />
-    <circle cx="103" cy="24" r="3" fill="#fff" />
-    <circle cx="115" cy="24" r="3" fill="#fff" />
-    <circle cx="127" cy="24" r="3" fill="#fff" />
-    {/* Antenna */}
-    <line
-      x1="80"
-      y1="55"
-      x2="80"
-      y2="40"
-      stroke="#0C9A9A"
-      strokeWidth="3"
-      strokeLinecap="round"
-    />
-    <circle cx="80" cy="37" r="5" fill="#0C9A9A" />
-    {/* Head */}
-    <rect x="45" y="55" width="70" height="60" rx="18" fill="#277F88" />
-    {/* Eyes */}
-    <ellipse cx="65" cy="82" rx="8" ry="9" fill="#fff" />
-    <ellipse cx="95" cy="82" rx="8" ry="9" fill="#fff" />
-    <circle cx="65" cy="83" r="4" fill="#12304A" />
-    <circle cx="95" cy="83" r="4" fill="#12304A" />
-    {/* Eye shine */}
-    <circle cx="67" cy="81" r="1.5" fill="#fff" />
-    <circle cx="97" cy="81" r="1.5" fill="#fff" />
-    {/* Smile */}
-    <path
-      d="M68 96 Q80 106 92 96"
-      stroke="#fff"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      fill="none"
-    />
-    {/* Body */}
-    <rect x="55" y="118" width="50" height="35" rx="12" fill="#0C9A9A" />
-    {/* Body detail */}
-    <rect
-      x="70"
-      y="126"
-      width="20"
-      height="6"
-      rx="3"
-      fill="rgba(255,255,255,0.3)"
-    />
-    <rect
-      x="74"
-      y="136"
-      width="12"
-      height="4"
-      rx="2"
-      fill="rgba(255,255,255,0.2)"
-    />
-    {/* Left arm */}
-    <rect x="32" y="122" width="22" height="14" rx="7" fill="#277F88" />
-    {/* Right arm */}
-    <rect x="106" y="122" width="22" height="14" rx="7" fill="#277F88" />
-    {/* Ears */}
-    <rect x="37" y="72" width="8" height="22" rx="4" fill="#16B889" />
-    <rect x="115" y="72" width="8" height="22" rx="4" fill="#16B889" />
-  </svg>
-);
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -202,6 +40,8 @@ export default function LandingPage() {
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
   const [dashboard, setDashboard] = useState(null);
+  const [accessRequests, setAccessRequests] = useState([]);
+  const [copiedAbha, setCopiedAbha] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -213,19 +53,19 @@ export default function LandingPage() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Real-time dashboard updates via MongoDB change stream & socket
   useEffect(() => {
     const loadDashboard = () =>
       userApi
         .dashboard()
         .then(setDashboard)
         .catch(() => setDashboard(null));
+
     loadDashboard();
     return onDatabaseChange(loadDashboard);
   }, []);
 
-  const [accessRequests, setAccessRequests] = useState([]);
-  const pendingRequests = accessRequests.filter((r) => r.status === 'pending');
-
+  // Poll and listen for doctor access requests
   const loadAccessRequests = () => {
     userApi
       .getAccessRequests()
@@ -236,7 +76,11 @@ export default function LandingPage() {
   useEffect(() => {
     loadAccessRequests();
     const interval = setInterval(loadAccessRequests, 4000);
-    return () => clearInterval(interval);
+    const off = onDatabaseChange(loadAccessRequests);
+    return () => {
+      clearInterval(interval);
+      if (off) off();
+    };
   }, []);
 
   const handleRespond = async (id, status) => {
@@ -244,9 +88,11 @@ export default function LandingPage() {
       await userApi.respondAccessRequest(id, status);
       loadAccessRequests();
     } catch (err) {
-      console.error('Failed to respond to consent request:', err);
+      console.error("Failed to respond to consent request:", err);
     }
   };
+
+  const pendingRequests = accessRequests.filter((r) => r.status === "pending");
 
   const profile = dashboard?.profile;
   const storedUser = readLocalJSON("user_profile", {});
@@ -257,6 +103,7 @@ export default function LandingPage() {
       : "") ||
     dashboard?.abha?.name?.trim() ||
     (dashboard ? "Patient" : "Loading profile…");
+
   const initials = (patientName.replace(/[^a-zA-Z\s]/g, "").trim() || "PT")
     .split(/\s+/)
     .map((part) => part[0])
@@ -274,416 +121,102 @@ export default function LandingPage() {
     return "—";
   };
 
-  // Patient information data
-  const patientInfoLeft = [
-    {
-      title: "Patient ID",
-      value: getVal(profile?.id, storedUser?.id, storedUser?.userId),
-    },
-    { title: "Gender", value: getVal(profile?.gender, storedUser?.gender) },
-    {
-      title: "Contact",
-      value: getVal(
-        profile?.contact?.phone,
-        storedUser?.mobile,
-        storedUser?.phone,
-      ),
-      icon: <Phone size={22} />,
-    },
-    {
-      title: "Address",
-      value: getVal(
-        profile?.contact?.address,
-        storedUser?.city,
-        storedUser?.address,
-      ),
-      icon: "📍",
-    },
-    {
-      title: "ABHA Number",
-      value: getVal(
-        dashboard?.abha?.number,
-        storedUser?.abhaNumber,
-        storedUser?.ABHANumber,
-      ),
-    },
-  ];
-  const patientInfoRight = [
-    {
-      title: "Date of Birth",
-      value: getVal(profile?.dob, storedUser?.dob, storedUser?.dateOfBirth),
-    },
-    {
-      title: "Blood Type",
-      value: getVal(profile?.bloodGroup, storedUser?.bloodGroup),
-    },
-    {
-      title: "Email",
-      value: getVal(profile?.contact?.email, storedUser?.email),
-      icon: <Mail size={22} strokeWidth={2} />
-    },
-    {
-      title: "Emergency",
-      value: (() => {
-        const name = profile?.contact?.emergencyContactName || profile?.emergencyContactName || storedUser?.emergencyContactName || '';
-        const rel = profile?.contact?.emergencyContactRelation || profile?.emergencyContactRelation || storedUser?.emergencyContactRelation || '';
-        const phone = profile?.contact?.emergencyContactPhone || profile?.emergencyContactPhone || storedUser?.emergencyContactPhone || '';
-        if (!name && !phone) return '—';
-        return `${name || 'Contact'}${rel ? ` (${rel})` : ''}${phone ? ` • ${phone}` : ''}`;
-      })(),
-    },
-    {
-      title: "Status",
-      value: getVal(
-        dashboard?.abha?.verificationStatus,
-        storedUser?.abhaStatus,
-        "Verified",
-      ),
-    },
-  ];
+  const abhaNumber = getVal(
+    dashboard?.abha?.number,
+    storedUser?.abhaNumber,
+    storedUser?.ABHANumber
+  );
 
-  // Known allergies
-  // --------------- causes hydration err -----------------
-  // const allergies = (profile?.allergies || []).map((text, index) => ({
-  //   text,
-  //   icon: "✦",
-  //   bg: ["#FDE3EF", "#EFEAFF", "#FFF4D5"][index % 3],
-  //   color: "#F52B91",
-  // }));
-
-  /* ─── Inline styles ─── */
-  const s = {
-    pageWrapper: {
-      minHeight: "100vh",
-      background: "#EFF9F7",
-      fontFamily: "'Inter', 'Poppins', 'Nunito Sans', sans-serif",
-    },
-    main: {
-      padding: "1.5rem 2.5rem 3rem",
-      maxWidth: "1600px",
-      margin: "0 auto",
-    },
-    headingRow: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "1.5rem",
-      flexWrap: "wrap",
-      marginBottom: "1.75rem",
-    },
-    welcome: {
-      fontSize: "2rem",
-      fontWeight: 800,
-      color: "#084766",
-      letterSpacing: "-0.02em",
-    },
-    dateBadge: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.65rem",
-      fontSize: "0.85rem",
-      color: "#084766",
-    },
-    // Main profile container
-    profileContainer: {
-      background: "rgba(255,255,255,0.85)",
-      borderRadius: "18px",
-      border: "1px solid rgba(20,150,150,0.12)",
-      boxShadow: "0 2px 16px rgba(8,71,102,0.04)",
-      overflow: "hidden",
-    },
-    profileHeader: {
-      padding: "1.25rem 1.75rem",
-      borderBottom: "1px solid #E4ECEA",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "1rem",
-      flexWrap: "wrap",
-    },
-    profileLabel: {
-      fontSize: "0.68rem",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: "0.12em",
-      color: "#0C9A9A",
-    },
-    profileNameHeading: {
-      fontSize: "1.4rem",
-      fontWeight: 800,
-      color: "#084766",
-      marginTop: "0.2rem",
-    },
-    activeBadge: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      background: "#E2F6EE",
-      color: "#16B889",
-      padding: "0.5rem 1rem",
-      borderRadius: "999px",
-      fontSize: "0.82rem",
-      fontWeight: 700,
-    },
-    activeDot: {
-      width: 10,
-      height: 10,
-      borderRadius: "50%",
-      background: "#16B889",
-    },
-    editBtn: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.4rem",
-      background: "#F1F7F5",
-      color: "#084766",
-      padding: "0.55rem 1.25rem",
-      borderRadius: "999px",
-      fontSize: "0.82rem",
-      fontWeight: 700,
-      border: "none",
-      cursor: "pointer",
-      transition: "background 0.2s",
-    },
-    // 2-column body
-    bodyGrid: {
-      padding: "1.5rem",
-      display: "grid",
-      gridTemplateColumns: "210px 1fr",
-      gap: "1.5rem",
-    },
-    // Left - photo + allergies
-    leftCol: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "1.25rem",
-    },
-    photoBg: {
-      height: "210px",
-      width: "100%",
-      borderRadius: "16px",
-      background: "linear-gradient(135deg, #DCEFEB, #EDF5F4)",
-      border: "8px solid #EDF7F4",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-    },
-    photoCircle: {
-      width: 120,
-      height: 120,
-      borderRadius: "50%",
-      background: "#0C9A9A",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#fff",
-      fontSize: "2.5rem",
-      fontWeight: 800,
-    },
-    cameraBtn: {
-      position: "absolute",
-      bottom: 8,
-      right: 8,
-      width: 42,
-      height: 42,
-      borderRadius: "50%",
-      background: "#0C9A9A",
-      border: "4px solid white",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      cursor: "pointer",
-      fontSize: "1.1rem",
-      color: "#fff",
-    },
-    allergiesTitle: {
-      fontWeight: 800,
-      color: "#0C9A9A",
-      letterSpacing: "0.05em",
-      fontSize: "0.82rem",
-      marginBottom: "0.75rem",
-    },
-    allergyTag: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "0.35rem",
-      padding: "0.4rem 0.85rem",
-      borderRadius: "999px",
-      fontSize: "0.78rem",
-      fontWeight: 700,
-      whiteSpace: "nowrap",
-    },
-    // Center - Patient Information card
-    infoPanel: {
-      border: "1px solid rgba(20,150,150,0.12)",
-      borderRadius: "14px",
-      padding: "1.25rem",
-      background: "rgba(255,255,255,0.9)",
-    },
-    infoTitle: {
-      fontSize: "0.78rem",
-      fontWeight: 800,
-      textTransform: "uppercase",
-      letterSpacing: "0.1em",
-      color: "#0C9A9A",
-      marginBottom: "1.25rem",
-    },
-    infoGrid: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "1.25rem 2rem",
-    },
-    infoLabel: {
-      fontSize: "0.68rem",
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: "0.08em",
-      color: "#0C9A9A",
-      marginBottom: "0.3rem",
-    },
-    infoValue: {
-      display: "flex",
-      alignItems: "flex-start",
-      gap: "0.35rem",
-      fontWeight: 700,
-      color: "#084766",
-      fontSize: "0.88rem",
-      lineHeight: "1.5",
-    },
-    infoIcon: {
-      marginTop: "0.1rem",
-      color: "#0C9A9A",
-    },
-    // Right utility column
-    rightUtil: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "0.75rem",
-    },
-    utilBtn: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.85rem",
-      padding: "0.85rem 1.1rem",
-      background: "#E8F7F4",
-      borderRadius: "14px",
-      border: "1px solid rgba(20,150,150,0.12)",
-      cursor: "pointer",
-      transition: "all 0.2s",
-      textDecoration: "none",
-      color: "#0C9A9A",
-      fontWeight: 700,
-      fontSize: "0.92rem",
-    },
-    utilBtnIcon: {
-      width: 42,
-      height: 42,
-      borderRadius: "50%",
-      background: "#D0F0E8",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#0C9A9A",
-      flexShrink: 0,
-    },
-    utilBtnText: {
-      flex: 1,
-      fontWeight: 700,
-      color: "#084766",
-      fontSize: "0.92rem",
-    },
-    utilBtnChevron: {
-      color: "#0C9A9A",
-      opacity: 0.6,
-    },
-    // Chatbot panel
-    chatbotPanel: {
-      flex: 1,
-      minHeight: "220px",
-      background:
-        "linear-gradient(135deg, #F0FAF8 0%, #E8F7F4 50%, #FBFDFC 100%)",
-      borderRadius: "16px",
-      border: "1px solid rgba(20,150,150,0.12)",
-      position: "relative",
-      overflow: "hidden",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "flex-end",
-      justifyContent: "flex-end",
-      padding: "1rem",
-    },
-    chatbotLabel: {
-      position: "absolute",
-      top: "1rem",
-      left: "1.25rem",
-      fontSize: "0.78rem",
-      fontWeight: 700,
-      color: "#0C9A9A",
-      textTransform: "uppercase",
-      letterSpacing: "0.06em",
-    },
-    chatbotSubLabel: {
-      position: "absolute",
-      top: "2.2rem",
-      left: "1.25rem",
-      fontSize: "0.72rem",
-      color: "#6B9190",
-      fontWeight: 500,
-    },
-    // Bottom action cards
-    bottomActions: {
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "1rem",
-      padding: "0 1.5rem 1.5rem",
-    },
-    actionCard: {
-      display: "flex",
-      alignItems: "center",
-      gap: "1rem",
-      padding: "1rem 1.25rem",
-      background: "#E8F7F4",
-      borderRadius: "14px",
-      border: "1px solid rgba(20,150,150,0.12)",
-      cursor: "pointer",
-      transition: "all 0.2s",
-    },
-    actionCardIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: "50%",
-      background: "#D0F0E8",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      color: "#0C9A9A",
-      flexShrink: 0,
-    },
-    actionCardTitle: {
-      fontWeight: 800,
-      color: "#084766",
-      fontSize: "0.95rem",
-    },
-    actionCardDesc: {
-      fontSize: "0.78rem",
-      color: "#6B9190",
-      marginTop: "0.15rem",
-    },
-    actionCardChevron: {
-      marginLeft: "auto",
-      color: "#0C9A9A",
-      opacity: 0.5,
-    },
+  const handleCopyAbha = (e) => {
+    e.stopPropagation();
+    if (abhaNumber && abhaNumber !== "—") {
+      navigator.clipboard.writeText(abhaNumber);
+      setCopiedAbha(true);
+      setTimeout(() => setCopiedAbha(false), 2000);
+    }
   };
 
+  // Time-aware greeting
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+
+
+  // Core Clinical Hub destinations
+  const clinicalHub = [
+    {
+      title: "SOCRATES Intake Form",
+      badge: "Voice Enabled",
+      desc: "10-point pain & symptom clinical evaluation with speech recognition in 4 languages",
+      path: "/socrates",
+      icon: Stethoscope,
+      accent: "#2F8F83",
+      tags: ["Voice Listen & Speak", "10-Point Analysis", "Pain Scale (0-10)"],
+    },
+    {
+      title: "Medical Directory",
+      badge: "AYUSH & WHO",
+      desc: "Instant search for WHO ICD-11 diagnostics and AYUSH NAMASTE clinical terms",
+      path: "/kindle",
+      icon: BookOpen,
+      accent: "#12304A",
+      tags: ["ICD-11 Lookup", "NAMASTE Ayush", "Clinical Registry"],
+    },
+    {
+      title: "Medical Records & Docs",
+      badge: "Secure Vault",
+      desc: "Upload, categorize, and review clinical prescriptions, lab reports, and summaries",
+      path: "/uploadDoc",
+      icon: FileText,
+      accent: "#0284C7",
+      tags: ["Prescriptions", "Diagnostic Labs", "Discharge Summaries"],
+    },
+    {
+      title: "ABDM Consent Manager",
+      badge: pendingRequests.length > 0 ? `${pendingRequests.length} Pending` : "NDHM Standard",
+      badgeColor: pendingRequests.length > 0 ? "#DC2626" : undefined,
+      desc: "Review and grant consent to doctors and hospitals for viewing your health data",
+      path: "/consent",
+      icon: FileCheck,
+      accent: "#0D9488",
+      tags: ["Consent Artifacts", "Doctor Requests", "Access Logs"],
+    },
+    {
+      title: "AI Medical Assistant",
+      badge: "24/7 Triage",
+      desc: "Gentle triage assistant with speech synthesis and voice-to-voice consultation",
+      path: "/genai",
+      icon: Bot,
+      accent: "#7C3AED",
+      tags: ["Voice-to-Voice", "Bilingual EN/HI", "Instant Guidance"],
+    },
+    {
+      title: "Official ABHA Smart Card",
+      badge: "Govt of India",
+      desc: "Ayushman Bharat Health Account card with scannable QR and instant PDF download",
+      path: "/abha",
+      icon: Shield,
+      accent: "#16A34A",
+      tags: ["NHA Standard", "Scannable QR", "Download Card"],
+    },
+  ];
+
+  const photoSrc =
+    profile?.photoUrl ||
+    profile?.photo ||
+    storedUser?.photoUrl ||
+    storedUser?.photo;
+
   return (
-    <div style={s.pageWrapper} className="sih-page-wrapper">
-      {/* ===== HEADER (reusing existing classes) ===== */}
+    <div className="sih-page-wrapper" style={{ minHeight: "100vh", backgroundColor: "var(--mint-bg, #F5FAF8)" }}>
+      {/* ===== GLOBAL HEADER ===== */}
       <header className="sih-header">
         <div className="sih-header-inner">
           <BrandLogo subtitle="Health Portal" />
-
 
           <div className="sih-header-controls">
             <select
@@ -692,39 +225,65 @@ export default function LandingPage() {
               className="sih-lang-select"
               data-no-translate
               translate="no"
+              aria-label="Language selector"
             >
               <option value="English">🌐 English</option>
               <option value="Hindi">🌐 हिंदी</option>
               <option value="Bengali">🌐 বাংলা</option>
               <option value="Tamil">🌐 தமிழ்</option>
             </select>
-            {/* Doctor activity bell: access logs + consent requests */}
+
+            {/* Doctor activity bell */}
             <DoctorActivityBell />
+
+            {/* Profile trigger */}
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button
+                type="button"
                 className="sih-profile-trigger"
                 onClick={() => setProfileOpen(!profileOpen)}
+                aria-haspopup="true"
+                aria-expanded={profileOpen}
               >
-                <div className="sih-profile-avatar">{initials}</div>
+                <div className="sih-profile-avatar" style={{ overflow: "hidden" }}>
+                  {photoSrc ? (
+                    <img
+                      src={photoSrc}
+                      alt="DP"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                  ) : (
+                    initials
+                  )}
+                </div>
                 <span className="sih-profile-name">{patientName}</span>
-                <span
-                  className={`sih-profile-chevron ${profileOpen ? "open" : ""}`}
-                >
-                  ▾
-                </span>
+                <span className={`sih-profile-chevron ${profileOpen ? "open" : ""}`}>▾</span>
               </button>
+
               {profileOpen && (
-                <div className="sih-profile-dropdown">
+                <div className="sih-profile-dropdown" role="menu">
                   <button
+                    type="button"
                     className="sih-profile-dropdown-item"
                     onClick={() => {
                       navigate("/profile");
                       setProfileOpen(false);
                     }}
                   >
-                    <span className="dd-icon"><CircleUser /></span> Profile
+                    <span className="dd-icon"><CircleUser size={18} /></span> Profile Overview
                   </button>
                   <button
+                    type="button"
+                    className="sih-profile-dropdown-item"
+                    onClick={() => {
+                      navigate("/basicInfo");
+                      setProfileOpen(false);
+                    }}
+                  >
+                    <span className="dd-icon"><Pencil size={18} /></span> Edit Details
+                  </button>
+                  <button
+                    type="button"
                     className="sih-profile-dropdown-item danger"
                     onClick={() => {
                       localStorage.removeItem("token");
@@ -733,7 +292,7 @@ export default function LandingPage() {
                       navigate("/login");
                     }}
                   >
-                    <span className="dd-icon"><LogOut /></span> Sign Out
+                    <span className="dd-icon"><LogOut size={18} /></span> Sign Out
                   </button>
                 </div>
               )}
@@ -742,626 +301,590 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* ===== PATIENT MAIN CONTAINER ===== */}
       <div className="patient-main-container">
-        <PatientSidebar profile={profile} storedUser={storedUser} patientName={patientName} initials={initials} activePage="dashboard" />
-        <div className="patient-content-area">
-          {/* ===== MAIN ===== */}
-          <main style={s.main}>
-            {/* Welcome Header */}
-            <div style={s.headingRow}>
-              <div>
-                <h2 style={s.welcome}>
-                  Welcome back, {patientName} <span>!!</span>
-                </h2>
-              </div>
-              <div style={s.dateBadge}>
-                <span>
-                  <CalendarDays size={18} />
-                </span>
-                <div>
-                  <span style={{ fontWeight: 700 }}>
-                    {new Date().toLocaleDateString("en-IN", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
-                  <span style={{ color: "#6B9190", marginLeft: "0.5rem" }}>
-                    • Last synced 3 min ago
-                  </span>
-                </div>
-              </div>
-            </div>
+        <PatientSidebar
+          profile={profile}
+          storedUser={storedUser}
+          patientName={patientName}
+          initials={initials}
+          activePage="dashboard"
+        />
 
-            {/* ===== PENDING ACCESS REQUESTS BANNER ===== */}
-            {pendingRequests.length > 0 && (
-              <div
-                style={{
-                  background: "linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)",
-                  border: "1px solid #FCD34D",
-                  borderRadius: "16px",
-                  padding: "1.25rem 1.5rem",
-                  marginBottom: "1.5rem",
-                  boxShadow: "0 4px 14px rgba(245,158,11,0.08)",
-                }}
-              >
+        <div className="patient-content-area">
+          <main className="sih-main-layout" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+            {/* ─── COMPACT PATIENT PROFILE HEADER CARD ─── */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: "14px",
+                padding: "1rem 1.25rem",
+                border: "1px solid var(--border-light, #E2E8F0)",
+                boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "1rem",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
                 <div
                   style={{
+                    width: "48px",
+                    height: "48px",
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #2F8F83 0%, #12304A 100%)",
+                    color: "#FFFFFF",
+                    fontWeight: 700,
+                    fontSize: "1.1rem",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: "0.85rem",
+                    justifyContent: "center",
+                    overflow: "hidden",
+                    flexShrink: 0,
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                    <span style={{ fontSize: "1.3rem" }}>🩺</span>
-                    <div>
-                      <h3
-                        style={{
-                          margin: 0,
-                          fontSize: "1rem",
-                          fontWeight: 800,
-                          color: "#92400E",
-                        }}
-                      >
-                        Pending Doctor Access Requests ({pendingRequests.length})
-                      </h3>
-                      <p
-                        style={{
-                          margin: "0.15rem 0 0",
-                          fontSize: "0.78rem",
-                          color: "#B45309",
-                        }}
-                      >
-                        A doctor is requesting consent to view your clinical SOCRATES assessment forms.
-                      </p>
-                    </div>
-                  </div>
+                  {photoSrc ? (
+                    <img src={photoSrc} alt={patientName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    initials
+                  )}
                 </div>
-
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  {pendingRequests.map((req) => (
-                    <div
-                      key={req._id}
+                <div>
+                  <div style={{ fontSize: "1.05rem", fontWeight: 700, color: "#0F172A", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span>{patientName}</span>
+                    <span
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        background: "#FFFFFF",
-                        borderRadius: "12px",
-                        padding: "0.85rem 1.25rem",
-                        border: "1px solid #FDE68A",
-                        flexWrap: "wrap",
-                        gap: "0.75rem",
+                        fontSize: "0.7rem",
+                        padding: "0.15rem 0.5rem",
+                        borderRadius: "999px",
+                        background: "#ECFDF5",
+                        color: "#059669",
+                        fontWeight: 600,
+                        border: "1px solid #A7F3D0",
                       }}
                     >
-                      <div>
-                        <div
-                          style={{
-                            fontWeight: 800,
-                            color: "#1E293B",
-                            fontSize: "0.92rem",
-                          }}
-                        >
-                          {req.doctorName}
-                        </div>
-                        <div style={{ fontSize: "0.8rem", color: "#64748B", marginTop: "0.2rem" }}>
-                          Requested access to: <strong>SOCRATES Form — {req.formInfo?.site || "Pain Assessment"}</strong> (Pain Severity: {req.formInfo?.severity ?? "N/A"}/10)
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", gap: "0.5rem" }}>
-                        <button
-                          onClick={() => handleRespond(req._id, "accepted")}
-                          style={{
-                            background: "#10B981",
-                            color: "#FFFFFF",
-                            border: "none",
-                            padding: "0.5rem 1.25rem",
-                            borderRadius: "8px",
-                            fontWeight: 700,
-                            fontSize: "0.82rem",
-                            cursor: "pointer",
-                            boxShadow: "0 2px 6px rgba(16,185,129,0.2)",
-                          }}
-                        >
-                          ✓ Grant Access
-                        </button>
-                        <button
-                          onClick={() => handleRespond(req._id, "rejected")}
-                          style={{
-                            background: "#EF4444",
-                            color: "#FFFFFF",
-                            border: "none",
-                            padding: "0.5rem 1.25rem",
-                            borderRadius: "8px",
-                            fontWeight: 700,
-                            fontSize: "0.82rem",
-                            cursor: "pointer",
-                            boxShadow: "0 2px 6px rgba(239,68,68,0.2)",
-                          }}
-                        >
-                          ✕ Decline
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* ===== PATIENT PROFILE CONTAINER ===== */}
-            <div style={s.profileContainer}>
-              {/* Profile Header */}
-              <div style={s.profileHeader}>
-                <div>
-                  <p style={s.profileLabel}>Patient Profile</p>
-                  <h3 style={s.profileNameHeading}>{patientName}</h3>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-                  <span style={s.activeBadge}>
-                    <span style={s.activeDot} />
-                    Active Patient
-                  </span>
-                  <button
-                    style={s.editBtn}
-                    onClick={() => navigate("/basicInfo")}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background = "#E2F6EE")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "#F1F7F5")
-                    }
-                  >
-                     <Pencil size={18} /> Profile
-                  </button>
-                </div>
-              </div>
-
-              {/* 2-Column Body: Photo + Patient Information */}
-              <div style={s.bodyGrid} className="lp-body-grid-responsive">
-                {/* LEFT — Photo + Allergies */}
-                <div style={s.leftCol}>
-                  <div style={{ position: "relative" }}>
-                    <div style={s.photoBg}>
-                      <div style={{ ...s.photoCircle, overflow: "hidden" }}>
-                        {profile?.photoUrl ||
-                          profile?.photo ||
-                          storedUser?.photoUrl ||
-                          storedUser?.photo ? (
-                          <img
-                            src={
-                              profile?.photoUrl ||
-                              profile?.photo ||
-                              storedUser?.photoUrl ||
-                              storedUser?.photo
-                            }
-                            alt="Profile DP"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              objectFit: "cover",
-                            }}
-                          />
-                        ) : (
-                          initials
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      style={s.cameraBtn}
-                      title="Change photo"
-                      onClick={() => navigate("/basicInfo")}
-                    >
-                      <Camera size={20} strokeWidth={2.5} />
-                    </button>
+                      ABDM Verified
+                    </span>
                   </div>
-                </div>
-
-                {/* CENTER — Patient Information */}
-                <div style={s.infoPanel}>
-                  <p style={s.infoTitle}>Patient Information</p>
-                  <div style={s.infoGrid}>
-                    {/* Left column items */}
-                    {patientInfoLeft.map((item, i) => (
-                      <div key={`l-${i}`}>
-                        <p style={s.infoLabel}>{item.title}</p>
-                        <div style={s.infoValue}>
-                          {item.icon && <span style={s.infoIcon}>{item.icon}</span>}
-                          <span>{item.value}</span>
-                        </div>
-                      </div>
-                    ))}
-                    {/* Right column items */}
-                    {patientInfoRight.map((item, i) => (
-                      <div key={`r-${i}`}>
-                        <p style={s.infoLabel}>{item.title}</p>
-                        <div style={s.infoValue}>
-                          {item.icon && <span style={s.infoIcon}>{item.icon}</span>}
-                          <span>{item.value}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Bottom Action Cards — Rich Detail Cards */}
-              <div style={s.bottomActions} className="lp-bottom-actions-responsive">
-                {/* ── Known Allergies Card ── */}
-                <div
-                  style={{
-                    background: "#FFFFFF",
-                    borderRadius: "18px",
-                    border: "1px solid #DCEAE6",
-                    padding: "1.5rem",
-                    cursor: "pointer",
-                    transition: "all 0.25s ease",
-                    boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
-                  }}
-                  onClick={() => navigate("/basicInfo")}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  {/* Card Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-                      <div style={{
-                        width: 52, height: 52, borderRadius: "50%",
-                        background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0,
-                      }}>
-                        <AllergyIcon />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
-                          Known Allergies
-                        </div>
-                        <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
-                          View and manage your allergies
-                        </div>
-                      </div>
-                    </div>
-                    <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
-                  </div>
-
-                  {/* Allergy Tags */}
-                  <div style={{
-                    fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
-                    letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
-                  }}>
-                    YOUR ALLERGIES
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {(Array.isArray(profile?.allergies) && profile.allergies.length > 0
-                      ? profile.allergies
-                      : typeof profile?.allergies === "string" && profile.allergies.trim() !== ""
-                      ? profile.allergies.split(",").map((a) => a.trim())
-                      : ["Peanut Allergy", "Shellfish Allergy", "Pollen Allergy"]
-                    ).map((allergy, idx) => (
+                  <div style={{ fontSize: "0.8rem", color: "#64748B", marginTop: "2px", display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                    {abhaNumber && abhaNumber !== "—" && (
                       <span
-                        key={idx}
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                          background: "#EFF9F7", color: "#0C9A9A",
-                          borderRadius: "8px", padding: "0.4rem 0.75rem",
-                          fontSize: "0.8rem", fontWeight: 700,
-                          border: "1px solid rgba(12,154,154,0.15)",
-                        }}
+                        onClick={handleCopyAbha}
+                        title="Click to copy ABHA Number"
+                        style={{ cursor: "pointer", display: "inline-flex", alignItems: "center", gap: "4px", color: "#0D9488", fontWeight: 600 }}
                       >
-                        <span style={{ fontSize: "0.9rem" }}>
-                          {[<Nut size={20} />, <Shell size={20} />, <Flower2 size={20} />, "💊", "🩹", "⚠️"][idx % 6]}
-                        </span>
-                        {allergy}
+                        ABHA: {abhaNumber}
+                        {copiedAbha ? <Check size={13} color="#16A34A" /> : <Copy size={13} />}
                       </span>
-                    ))}
-                    {(!profile?.allergies || (Array.isArray(profile.allergies) && profile.allergies.length === 0)) && (
-                      <span style={{ fontSize: "0.78rem", color: "#94A3B8", fontStyle: "italic" }}>
-                       
+                    )}
+                    <span>DOB: {getVal(profile?.dob, storedUser?.dob)}</span>
+                    <span>Gender: {getVal(profile?.gender, storedUser?.gender)}</span>
+                    <span>Blood Group: {getVal(profile?.bloodGroup, storedUser?.bloodGroup)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate("/profile")}
+                style={{
+                  background: "#F1F5F9",
+                  border: "1px solid #CBD5E1",
+                  borderRadius: "8px",
+                  padding: "0.4rem 0.85rem",
+                  fontSize: "0.8rem",
+                  fontWeight: 600,
+                  color: "#334155",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <Pencil size={14} /> View Full Profile
+              </button>
+            </div>
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: "14px",
+                padding: "0.6rem 1rem",
+                border: "1px solid var(--border-light, #E2E8F0)",
+                boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "0.5rem 0.85rem",
+              }}
+              className="lp-vitals-strip"
+            >
+              {[
+                {
+                  label: "BP:",
+                  val: profile?.vitalsSnapshot?.bp || "120/80",
+                  unit: "mmHg",
+                  icon: Activity,
+                  color: "#059669",
+                  bg: "#ECFDF5",
+                },
+                {
+                  label: "HR:",
+                  val: profile?.vitalsSnapshot?.heartRate || "72",
+                  unit: "bpm",
+                  icon: HeartPulse,
+                  color: "#0284C7",
+                  bg: "#F0F9FF",
+                },
+                {
+                  label: "SpO2:",
+                  val: (profile?.vitalsSnapshot?.spo2 || "98") + "%",
+                  unit: "",
+                  icon: Sparkles,
+                  color: "#7C3AED",
+                  bg: "#FAF5FF",
+                },
+                {
+                  label: "Glucose:",
+                  val: profile?.vitalsSnapshot?.glucose || "95",
+                  unit: "mg/dL",
+                  icon: CircleCheck,
+                  color: "#D97706",
+                  bg: "#FFFBEB",
+                },
+              ].map((vital, idx) => {
+                const Icon = vital.icon;
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.35rem",
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      color: "var(--primary-navy, #12304A)",
+                      background: vital.bg,
+                      padding: "0.3rem 0.65rem",
+                      borderRadius: "8px",
+                      border: `1px solid ${vital.color}25`,
+                    }}
+                  >
+                    <Icon size={14} color={vital.color} strokeWidth={2.2} />
+                    <span style={{ color: "var(--text-muted, #64748B)", fontWeight: 600, fontSize: "0.7rem" }}>
+                      {vital.label}
+                    </span>
+                    <span style={{ color: "var(--primary-navy, #12304A)", fontWeight: 800 }}>
+                      {vital.val}
+                    </span>
+                    {vital.unit && (
+                      <span style={{ fontSize: "0.64rem", color: "var(--text-muted, #64748B)", fontWeight: 600 }}>
+                        {vital.unit}
                       </span>
                     )}
                   </div>
-                </div>
-
-                {/* ── Vaccination Card ── */}
-                <div
-                  style={{
-                    background: "#FFFFFF",
-                    borderRadius: "18px",
-                    border: "1px solid #DCEAE6",
-                    padding: "1.5rem",
-                    cursor: "pointer",
-                    transition: "all 0.25s ease",
-                    boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
-                  }}
-                  onClick={() => navigate("/basicInfo")}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
-                    e.currentTarget.style.transform = "translateY(0)";
-                  }}
-                >
-                  {/* Card Header */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-                      <div style={{
-                        width: 52, height: 52, borderRadius: "50%",
-                        background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        flexShrink: 0,
-                      }}>
-                        <SyringeIcon />
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
-                          Vaccination
-                        </div>
-                        <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
-                          View your vaccination records
-                        </div>
-                      </div>
-                    </div>
-                    <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
-                  </div>
-
-                  {/* Vaccination Tags */}
-                  <div style={{
-                    fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
-                    letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
-                  }}>
-                    YOUR VACCINATIONS
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                    {[
-                      { name: "COVID-19", date: "Mar 12, 2023" },
-                      { name: "Hepatitis B", date: "Jan 18, 2023" },
-                      { name: "Tetanus (Tdap)", date: "Nov 05, 2022" },
-                    ].map((vac, idx) => (
-                      <span
-                        key={idx}
-                        style={{
-                          display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                          background: "#EFF9F7", color: "#084766",
-                          borderRadius: "8px", padding: "0.4rem 0.75rem",
-                          fontSize: "0.8rem", fontWeight: 700,
-                          border: "1px solid rgba(12,154,154,0.15)",
-                        }}
-                      >
-                        <span style={{ color: "#10B981", fontSize: "0.95rem" }}><CircleCheck size={20} /></span>
-                        <span>
-                          {vac.name}
-                          <span style={{
-                            display: "block", fontSize: "0.68rem",
-                            color: "#6B9190", fontWeight: 600, marginTop: "0.1rem",
-                          }}>
-                            {vac.date}
-                          </span>
-                        </span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
+                );
+              })}
             </div>
 
-            {/* ═══ CLINICAL TOOLS & SERVICES (Adjusted across Main Div) ═══ */}
+            {/* ─── 5. ALLERGIES & VACCINATION PILLS ─── */}
             <div
-              className="lp-tools-grid-responsive"
               style={{
                 display: "grid",
                 gridTemplateColumns: "1fr 1fr",
                 gap: "1.25rem",
-                marginTop: "1.5rem",
+              }}
+              className="lp-responsive-split"
+            >
+              {/* Allergies Card */}
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="View or edit known allergies"
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: "18px",
+                  border: "1px solid var(--border-light, #E2E8F0)",
+                  padding: "1.25rem 1.5rem",
+                  boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onClick={() => navigate("/basicInfo")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate("/basicInfo");
+                  }
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "#FEF2F2",
+                        color: "#EF4444",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Nut size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "0.98rem", fontWeight: 800, color: "var(--primary-navy, #12304A)", margin: 0 }}>
+                        Known Allergies
+                      </h3>
+                      <p style={{ margin: "0.1rem 0 0", fontSize: "0.75rem", color: "var(--text-muted, #64748B)" }}>
+                        Documented reactions & drug sensitivities
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronsRight size={18} color="var(--text-muted, #64748B)" />
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {(Array.isArray(profile?.allergies) && profile.allergies.length > 0
+                    ? profile.allergies
+                    : typeof profile?.allergies === "string" && profile.allergies.trim() !== ""
+                    ? profile.allergies.split(",").map((a) => a.trim())
+                    : ["Peanut Sensitivity", "Penicillin Allergy", "Pollen Allergy"]
+                  ).map((allergy, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.35rem",
+                        background: "#FFF1F2",
+                        color: "#E11D48",
+                        borderRadius: "8px",
+                        padding: "0.35rem 0.75rem",
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        border: "1px solid #FECDD3",
+                      }}
+                    >
+                      <span style={{ fontSize: "0.85rem" }}>
+                        {[<Nut size={14} key="n" />, <Shell size={14} key="s" />, <Flower2 size={14} key="f" />][idx % 3]}
+                      </span>
+                      {allergy}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Vaccinations Card */}
+              <div
+                role="button"
+                tabIndex={0}
+                aria-label="View or edit vaccination history"
+                style={{
+                  background: "#FFFFFF",
+                  borderRadius: "18px",
+                  border: "1px solid var(--border-light, #E2E8F0)",
+                  padding: "1.25rem 1.5rem",
+                  boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onClick={() => navigate("/basicInfo")}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    navigate("/basicInfo");
+                  }
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                    <div
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        background: "#ECFDF5",
+                        color: "#059669",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <CircleCheck size={20} />
+                    </div>
+                    <div>
+                      <h3 style={{ fontSize: "0.98rem", fontWeight: 800, color: "var(--primary-navy, #12304A)", margin: 0 }}>
+                        Vaccination History
+                      </h3>
+                      <p style={{ margin: "0.1rem 0 0", fontSize: "0.75rem", color: "var(--text-muted, #64748B)" }}>
+                        Verified immunizations on record
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronsRight size={18} color="var(--text-muted, #64748B)" />
+                </div>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+                  {[
+                    { name: "COVID-19 (Covishield)", date: "Mar 2023" },
+                    { name: "Hepatitis B", date: "Jan 2023" },
+                    { name: "Tetanus Toxoid", date: "Nov 2022" },
+                  ].map((vac, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.35rem",
+                        background: "#ECFDF5",
+                        color: "var(--primary-navy, #12304A)",
+                        borderRadius: "8px",
+                        padding: "0.35rem 0.75rem",
+                        fontSize: "0.78rem",
+                        fontWeight: 700,
+                        border: "1px solid #A7F3D0",
+                      }}
+                    >
+                      <CircleCheck size={14} color="#10B981" />
+                      <span>
+                        {vac.name}{" "}
+                        <span style={{ fontSize: "0.68rem", color: "var(--text-muted, #64748B)", fontWeight: 600 }}>
+                          ({vac.date})
+                        </span>
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ─── 6. CLINICAL & HEALTH TOOLS ACTION HUB (6-CARD GRID) ─── */}
+            <div>
+              <div style={{ marginBottom: "1rem" }}>
+                <span
+                  style={{
+                    fontSize: "0.68rem",
+                    fontWeight: 800,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "var(--teal-primary, #2F8F83)",
+                  }}
+                >
+                  Clinical Services & Modules
+                </span>
+                <h2
+                  style={{
+                    fontSize: "1.25rem",
+                    fontWeight: 800,
+                    color: "var(--primary-navy, #12304A)",
+                    margin: "0.15rem 0 0",
+                  }}
+                >
+                  Health Operating System Hub
+                </h2>
+              </div>
+
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                  gap: "1.25rem",
+                }}
+              >
+                {clinicalHub.map((card, idx) => {
+                  const Icon = card.icon;
+                  return (
+                    <div
+                      key={idx}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Open ${card.title}`}
+                      onClick={() => navigate(card.path)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          navigate(card.path);
+                        }
+                      }}
+                      style={{
+                        background: "#FFFFFF",
+                        borderRadius: "18px",
+                        border: "1px solid var(--border-light, #E2E8F0)",
+                        padding: "1.5rem",
+                        cursor: "pointer",
+                        boxShadow: "var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))",
+                        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-3px)";
+                        e.currentTarget.style.boxShadow = "var(--shadow-md, 0 6px 20px rgba(18, 48, 74, 0.08))";
+                        e.currentTarget.style.borderColor = "var(--teal-primary, #2F8F83)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)";
+                        e.currentTarget.style.boxShadow = "var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.05))";
+                        e.currentTarget.style.borderColor = "var(--border-light, #E2E8F0)";
+                      }}
+                    >
+                      <div>
+                        {/* Header: Icon + Badge */}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            marginBottom: "1rem",
+                          }}
+                        >
+                          <div
+                            style={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: "14px",
+                              background: `${card.accent}14`,
+                              color: card.accent,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <Icon size={24} strokeWidth={2.2} />
+                          </div>
+                          <span
+                            style={{
+                              fontSize: "0.7rem",
+                              fontWeight: 800,
+                              background: card.badgeColor ? "#FEF2F2" : "#F1F5F9",
+                              color: card.badgeColor || card.accent,
+                              padding: "0.3rem 0.7rem",
+                              borderRadius: "999px",
+                              border: `1px solid ${card.badgeColor ? "#FECDD3" : "#E2E8F0"}`,
+                            }}
+                          >
+                            {card.badge}
+                          </span>
+                        </div>
+
+                        {/* Title & Desc */}
+                        <h3
+                          style={{
+                            fontSize: "1.05rem",
+                            fontWeight: 800,
+                            color: "var(--primary-navy, #12304A)",
+                            margin: 0,
+                          }}
+                        >
+                          {card.title}
+                        </h3>
+                        <p
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "var(--text-muted, #64748B)",
+                            margin: "0.4rem 0 1rem",
+                            lineHeight: 1.45,
+                          }}
+                        >
+                          {card.desc}
+                        </p>
+                      </div>
+
+                      {/* Feature Tags & Arrow */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          paddingTop: "0.75rem",
+                          borderTop: "1px solid #F1F5F9",
+                          flexWrap: "wrap",
+                          gap: "0.5rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+                          {card.tags.map((tag, tIdx) => (
+                            <span
+                              key={tIdx}
+                              style={{
+                                fontSize: "0.68rem",
+                                fontWeight: 700,
+                                background: "#F8FAFC",
+                                color: "var(--text-main, #183B56)",
+                                padding: "0.2rem 0.5rem",
+                                borderRadius: "6px",
+                                border: "1px solid #E2E8F0",
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                        <ChevronsRight size={18} color={card.accent} strokeWidth={2.5} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ─── 7. FOOTER SECURITY NOTICE ─── */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+                padding: "1rem",
+                color: "var(--text-muted, #64748B)",
+                fontSize: "0.75rem",
+                fontWeight: 600,
               }}
             >
-              {/* ── Medical Directory Card ── */}
-              <div
-                style={{
-                  background: "#FFFFFF",
-                  borderRadius: "18px",
-                  border: "1px solid #DCEAE6",
-                  padding: "1.5rem",
-                  cursor: "pointer",
-                  transition: "all 0.25s ease",
-                  boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
-                }}
-                onClick={() => navigate("/kindle")}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
-              >
-                {/* Card Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: "50%",
-                      background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0,
-                      color: "#0C9A9A",
-                    }}>
-                      <BookIcon />
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
-                        Medical Directory
-                      </div>
-                      <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
-                        Search ICD-10 diagnostic codes & disease terminologies
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
-                </div>
-
-                {/* Quick Info Tags */}
-                <div style={{
-                  fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
-                  letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
-                }}>
-                  HEALTH CODE REPOSITORY
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                  {[
-                    { label: "ICD-10 Lookup", desc: "Global Codes" },
-                    { label: "Clinical Reference", desc: "Diagnostic DB" },
-                    { label: "Disease Classification", desc: "Searchable" },
-                  ].map((item, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                        background: "#EFF9F7", color: "#084766",
-                        borderRadius: "8px", padding: "0.4rem 0.75rem",
-                        fontSize: "0.8rem", fontWeight: 700,
-                        border: "1px solid rgba(12,154,154,0.15)",
-                      }}
-                    >
-                      <span style={{ color: "#0C9A9A", fontSize: "0.95rem" }}><CircleCheck size={18} /></span>
-                      <span>
-                        {item.label}
-                        <span style={{
-                          display: "block", fontSize: "0.68rem",
-                          color: "#6B9190", fontWeight: 600, marginTop: "0.1rem",
-                        }}>
-                          {item.desc}
-                        </span>
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              {/* ── SOCRATES Assessment Card ── */}
-              <div
-                style={{
-                  background: "#FFFFFF",
-                  borderRadius: "18px",
-                  border: "1px solid #DCEAE6",
-                  padding: "1.5rem",
-                  cursor: "pointer",
-                  transition: "all 0.25s ease",
-                  boxShadow: "0 2px 8px rgba(12,154,154,0.06)",
-                }}
-                onClick={() => navigate("/socrates")}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = "0 6px 20px rgba(12,154,154,0.12)";
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(12,154,154,0.06)";
-                  e.currentTarget.style.transform = "translateY(0)";
-                }}
-              >
-                {/* Card Header */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1.25rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "0.85rem" }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: "50%",
-                      background: "linear-gradient(135deg, #E8F7F4 0%, #D0F0E8 100%)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      flexShrink: 0,
-                    }}>
-                      <div className="socrates-icon" style={{ width: 44, height: 44, background: "transparent" }}>
-                        <span style={{ fontSize: 26, color: "#0C9A9A" }}>⚕</span>
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ fontWeight: 800, color: "#084766", fontSize: "1.05rem" }}>
-                        SOCRATES Intake
-                      </div>
-                      <div style={{ fontSize: "0.78rem", color: "#6B9190", marginTop: "0.1rem" }}>
-                        10-point pain & symptom clinical evaluation framework
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronsRight size={22} color="#0C9A9A" strokeWidth={2.5} />
-                </div>
-
-                {/* Quick Info Tags */}
-                <div style={{
-                  fontSize: "0.68rem", fontWeight: 700, textTransform: "uppercase",
-                  letterSpacing: "0.08em", color: "#0C9A9A", marginBottom: "0.65rem",
-                }}>
-                  CLINICAL EVALUATION TOOLS
-                </div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-                  {[
-                    { label: "10-Point Analysis", desc: "Structured Intake" },
-                    { label: "Pain Severity Scale", desc: "0-10 Rating" },
-                    { label: "Doctor Review Sync", desc: "Cloudinary Saved" },
-                  ].map((item, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        display: "inline-flex", alignItems: "center", gap: "0.35rem",
-                        background: "#EFF9F7", color: "#084766",
-                        borderRadius: "8px", padding: "0.4rem 0.75rem",
-                        fontSize: "0.8rem", fontWeight: 700,
-                        border: "1px solid rgba(12,154,154,0.15)",
-                      }}
-                    >
-                      <span style={{ color: "#0C9A9A", fontSize: "0.95rem" }}><CircleCheck size={18} /></span>
-                      <span>
-                        {item.label}
-                        <span style={{
-                          display: "block", fontSize: "0.68rem",
-                          color: "#6B9190", fontWeight: 600, marginTop: "0.1rem",
-                        }}>
-                          {item.desc}
-                        </span>
-                      </span>
-                    </span>
-                  ))}
-                </div>
-              </div>
+              <Lock size={14} color="var(--teal-primary, #2F8F83)" />
+              <span>
+                256-bit Encrypted Health Portal • National Health Authority (NHA) & Ayushman Bharat Digital Mission (ABDM) Compliant
+              </span>
             </div>
           </main>
         </div>
       </div>
 
-      {/* ─── Responsive overrides via inline <style> ─── */}
+      {/* Floating Chatbot Assistant */}
+      <ChatbotFAB />
+
+      {/* Responsive adjustments */}
       <style>{`
-        @media (max-width: 900px) {
-          .lp-body-grid-responsive {
+        @media (max-width: 768px) {
+          .lp-responsive-split {
             grid-template-columns: 1fr !important;
           }
-          .lp-tools-grid-responsive {
-            grid-template-columns: 1fr !important;
+          .landing-welcome-banner {
+            padding: 1rem !important;
           }
-          .lp-bottom-actions-responsive {
-            grid-template-columns: 1fr !important;
+          .patient-content-area {
+            padding: 0.75rem !important;
+          }
+        }
+        @media (max-width: 600px) {
+          .lp-vitals-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 0.65rem !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .sih-main-layout {
+            gap: 1rem !important;
           }
         }
       `}</style>
-
-      <style>{`
-  @keyframes chatbotFloat {
-    0%, 100% {
-      transform: translateY(0);
-    }
-
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-`}</style>
-      <ChatbotFAB />
     </div>
   );
 }

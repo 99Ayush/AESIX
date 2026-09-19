@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { GenAiBot } from '../module/genAi';
 import BasicInfo from '../module/user/pages/basicInfo';
 import UploadDoc from '../module/user/pages/uploadDoc';
@@ -15,10 +15,24 @@ import KindleMain from '../module/user/pages/kindleMain';
 import NamasteCode from '../module/user/pages/namasteCode';
 import ICDCode from '../module/user/pages/ICD-Code';
 import SocratesForm from '../module/user/pages/SocratesForm';
+import BottomTabBar from '../shared/BottomTabBar';
+import PwaStatusBanner from '../shared/PwaStatusBanner';
+
+/* Native-style route transition: every navigation slides the new screen in. */
+const RouteScreen = ({ children }) => {
+  const { pathname } = useLocation();
+  return (
+    <div key={pathname} className="native-route">
+      {children}
+    </div>
+  );
+};
 
 export const AppRoutes = () => {
   return (
     <Router>
+      <BottomTabBar />
+      <RouteScreen>
       <Routes>
         {/* Auth routes */}
         <Route path="/login" element={<Login />} />
@@ -59,6 +73,7 @@ export const AppRoutes = () => {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+      </RouteScreen>
     </Router>
   );
 };

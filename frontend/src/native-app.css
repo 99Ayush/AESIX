@@ -1,0 +1,592 @@
+/* ==========================================================
+   MedIksha NATIVE-APP FOUNDATION (additive, mobile-first PWA)
+   Loaded after all module CSS. Desktop styles untouched;
+   everything below is scoped to small screens except the
+   tap/scroll/feel primitives marked GLOBAL.
+   ========================================================== */
+
+/* ---------- GLOBAL feel primitives ---------- */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+  --tabbar-h: 64px;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+body {
+  overscroll-behavior-y: contain;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button, a, [role="button"] {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input, select, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Native press feedback for primary actions */
+.sih-btn:active,
+.mv-tab-btn:active,
+.patient-sidebar-item:active,
+.doc-sidebar-item:active,
+.native-tabbar-item:active {
+  transform: scale(0.97);
+}
+
+/* Visible focus for keyboard / accessibility users */
+.sih-btn:focus-visible,
+.patient-sidebar-item:focus-visible,
+.doc-sidebar-item:focus-visible,
+.native-tabbar-item:focus-visible,
+.mv-input:focus-visible {
+  outline: 2px solid var(--teal-primary, #2F8F83);
+  outline-offset: 2px;
+}
+
+/* Skeleton shimmer (add class="native-skeleton" to loading blocks) */
+.native-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #E8EEF2 !important;
+  color: transparent !important;
+  pointer-events: none;
+  border-radius: 8px;
+  min-height: 1rem;
+}
+.native-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: native-shimmer 1.4s infinite;
+}
+.native-skeleton * { visibility: hidden; }
+@keyframes native-shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+
+/* Route enter animation (applied to main content wrappers) */
+.patient-content-area,
+.doc-dashboard-page main,
+.mv-auth-card {
+  animation: native-enter 0.22s ease-out;
+}
+@keyframes native-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .patient-content-area,
+  .doc-dashboard-page main,
+  .mv-auth-card { animation: none; }
+  .native-skeleton::after { animation: none; }
+}
+
+/* ---------- Bottom tab bar (mobile only) ---------- */
+.native-tabbar {
+  display: none;
+}
+@media (max-width: 768px) {
+  .native-tabbar {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    height: calc(var(--tabbar-h) + var(--sab));
+    padding-bottom: var(--sab);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid var(--border-light, #E2E8F0);
+    box-shadow: 0 -4px 20px rgba(18, 48, 74, 0.08);
+  }
+  .native-tabbar-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 100%;
+    color: var(--text-muted, #64748B);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    transition: color 0.15s ease;
+  }
+  .native-tabbar-item svg { width: 22px; height: 22px; }
+  .native-tabbar-item.active { color: var(--teal-primary, #2F8F83); }
+  .native-tabbar-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 32px;
+    height: 3px;
+    border-radius: 0 0 4px 4px;
+    background: var(--teal-primary, #2F8F83);
+  }
+}
+
+/* ---------- Patient section on mobile ---------- */
+@media (max-width: 768px) {
+  /* Sidebar becomes the tab bar's job — hide the rail */
+  .patient-sidebar { display: none; }
+
+  /* Every patient page root (GenAI, forms, profile, docs…) clears the tab bar */
+  .sih-page-wrapper {
+    padding-bottom: calc(var(--tabbar-h) + var(--sab) + 1rem) !important;
+  }
+
+  .patient-main-container {
+    padding: 1rem 1rem calc(var(--tabbar-h) + var(--sab) + 1rem) !important;
+  }
+  .sih-main-layout {
+    padding: 1rem 1rem calc(var(--tabbar-h) + var(--sab) + 1rem);
+  }
+
+  /* Content never hides under the tab bar */
+  .patient-content-area { padding-bottom: 0.5rem; }
+
+  /* Touch targets */
+  .sih-btn { min-height: 44px; font-size: 0.9rem; }
+  .patient-sidebar-item { min-height: 44px; }
+
+  /* Prevent iOS auto-zoom on focus */
+  input, select, textarea { font-size: 16px !important; }
+
+  /* Wide tables scroll instead of breaking layout */
+  .sih-card { overflow-x: auto; }
+  table { min-width: 560px; }
+
+  /* Chatbot FAB floats above the tab bar */
+  .lp-chatbot-fab {
+    bottom: calc(var(--tabbar-h) + var(--sab) + 12px) !important;
+    right: 14px !important;
+  }
+}
+
+/* ---------- Auth (login/register) on mobile ---------- */
+@media (max-width: 900px) {
+  .mv-auth-hero { display: none; }
+  .mv-auth-container { min-height: 100dvh; }
+  .mv-auth-main {
+    flex: 1;
+    padding: 1.25rem 1rem calc(1.5rem + var(--sab)) !important;
+    align-items: flex-start !important;
+  }
+  .mv-auth-card {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 20px;
+  }
+  .mv-input { font-size: 16px !important; min-height: 48px; }
+  .mv-tab-btn { min-height: 44px; }
+}
+
+/* ---------- Doctor dashboard on mobile ---------- */
+@media (max-width: 900px) {
+  .doc-main-container {
+    flex-direction: column;
+    padding: 1rem 1rem calc(1.5rem + var(--sab)) !important;
+  }
+  .doc-sidebar { display: none; }
+  .doc-header-inner { height: 56px; padding: 0 1rem; }
+  .doc-sidebar-item { min-height: 44px; }
+  input, select, textarea { font-size: 16px !important; }
+}
+
+/* Doctor horizontal sub-nav (rendered by BottomTabBar in doctor mode) */
+.native-docnav {
+  display: none;
+}
+@media (max-width: 900px) {
+  .native-docnav {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.6rem 1rem;
+    position: sticky;
+    top: 56px;
+    z-index: 40;
+    background: var(--mint-bg, #F5FAF8);
+    scrollbar-width: none;
+  }
+  .native-docnav::-webkit-scrollbar { display: none; }
+  .native-docnav-item {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.9rem;
+    min-height: 40px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main, #183B56);
+    background: #fff;
+    border: 1px solid var(--border-light, #E2E8F0);
+    white-space: nowrap;
+  }
+  .native-docnav-item.active {
+    background: var(--primary-navy, #12304A);
+    border-color: var(--primary-navy, #12304A);
+    color: #fff;
+  }
+}
+
+/* ---------- Compact native header ---------- */
+@media (max-width: 768px) {
+  .sih-header-inner {
+    height: 56px !important;
+    padding: 0 0.85rem !important;
+    gap: 0.5rem !important;
+  }
+  .sih-logo-badge { width: 32px !important; height: 32px !important; font-size: 0.9rem !important; }
+  .sih-brand-title { font-size: 0.88rem !important; }
+  .sih-brand-subtitle { display: none !important; }
+  .sih-nav-menu { display: none !important; }
+  .sih-header-controls { gap: 0.4rem !important; }
+  .sih-lang-select {
+    font-size: 0.7rem !important;
+    padding: 0.4rem 0.55rem !important;
+    max-width: 118px;
+  }
+  .sih-notif-bell { width: 36px !important; height: 36px !important; }
+  /* Avatar-only profile trigger: tap still opens the menu */
+  .sih-profile-name { display: none !important; }
+  .sih-profile-chevron { display: none !important; }
+  .sih-profile-trigger { padding: 0.2rem !important; border-color: transparent !important; }
+  .sih-profile-avatar { width: 32px !important; height: 32px !important; }
+
+  /* Dashboard grids go single/double column */
+  .landing-stats-row { grid-template-columns: repeat(2, 1fr) !important; gap: 0.75rem !important; }
+  .landing-actions-grid { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+  .landing-action-card { padding: 1.1rem 1.2rem !important; }
+  .landing-action-icon { width: 44px !important; height: 44px !important; }
+}
+
+/* ---------- Touch devices: no sticky hover states ---------- */
+@media (hover: none) {
+  .landing-action-card:hover { transform: none; box-shadow: var(--shadow-sm); }
+  .landing-action-card:hover .landing-action-icon { transform: none; }
+  .patient-sidebar-item:hover { background-color: transparent; }
+  .sih-btn:hover { filter: none; }
+  .landing-action-card:active { transform: scale(0.98); background-color: var(--mint-bg); }
+}
+@media (max-width: 380px) {
+  .sih-main-layout { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .native-tabbar-item { font-size: 0.56rem; }
+  .native-tabbar-item svg { width: 20px; height: 20px; }
+}
+
+/* ---------- Native sticky headers ---------- */
+@media (max-width: 768px) {
+  .sih-header {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding-top: var(--sat);
+  }
+  .doc-header {
+    padding-top: var(--sat);
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+  .native-docnav { top: calc(56px + var(--sat)); }
+}
+
+/* ---------- Bottom sheets instead of centered modals ---------- */
+@media (max-width: 768px) {
+  .sih-modal-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .sih-modal-card {
+    max-width: 100%;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: var(--sab);
+    max-height: 92dvh;
+    animation: native-sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  }
+  .sih-modal-card::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: #CBD5E1;
+    margin: 0.6rem auto 0;
+  }
+  .sih-modal-body { max-height: 70dvh; }
+  @keyframes native-sheet-up {
+    from { opacity: 0.5; transform: translateY(48px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* ---------- PWA Floating Status & Install Banner ---------- */
+.pwa-network-banner {
+  position: fixed;
+  top: max(8px, var(--sat));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  animation: pwa-slide-down 0.25s ease-out;
+}
+.pwa-network-offline {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FCA5A5;
+}
+.pwa-network-online {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid #6EE7B7;
+}
+
+.pwa-install-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: linear-gradient(135deg, #12304A 0%, #2F8F83 100%);
+  color: #FFFFFF;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(47, 143, 131, 0.25);
+  transition: all 0.2s ease;
+}
+.pwa-install-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(47, 143, 131, 0.35);
+}
+
+.tabbar-badge-dot {
+  position: absolute;
+  top: 6px;
+  right: calc(50% - 14px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #EF4444;
+  border: 1.5px solid #FFFFFF;
+}
+
+@keyframes pwa-slide-down {
+  from { opacity: 0; transform: translate(-50%, -12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ---------- Navigation drawer (the one menu, all screens) ---------- */
+/* The in-page sidebar rail is retired — the hamburger owns nav everywhere. */
+.patient-sidebar { display: none !important; }
+.patient-main-container { display: block !important; }
+
+.native-navdrawer { position: relative; display: inline-flex; }
+
+.sih-mobile-menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--navbar-border, #E1ECE8);
+  background: #fff;
+  color: var(--primary-navy, #12304A);
+  transition: background 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+.sih-mobile-menu-btn:hover { background: var(--mint-light, #E4F5EF); }
+.sih-mobile-menu-btn:active { transform: scale(0.94); }
+
+.native-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 48, 74, 0.45);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease;
+  z-index: 998;
+}
+.native-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+
+.native-drawer-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 86vw);
+  z-index: 999;
+  background: var(--mint-bg, #F5FAF8);
+  box-shadow: 8px 0 32px rgba(18, 48, 74, 0.18);
+  padding: calc(1rem + var(--sat)) 1rem calc(1.25rem + var(--sab));
+  padding-left: calc(1rem + var(--sal));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(-106%);
+  transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+  visibility: hidden;
+}
+.native-drawer-panel.open {
+  transform: none;
+  visibility: visible;
+}
+/* Sidebar content adopts drawer sizing */
+.native-drawer-panel .patient-sidebar {
+  display: flex !important;
+  width: 100% !important;
+  position: static !important;
+}
+
+/* ---------- Dashboard declutter ---------- */
+.patient-content-area > main { gap: 1.1rem !important; }
+.landing-welcome-banner { gap: 0.75rem !important; }
+@media (max-width: 768px) {
+  .patient-content-area > main { gap: 0.9rem !important; }
+  .landing-welcome-banner {
+    padding: 1rem 1.1rem !important;
+    border-radius: 14px !important;
+  }
+}
+
+/* ==========================================================
+   ANDROID-NATIVE DESIGN LAYER
+   ========================================================== */
+
+/* No sideways drift — a website scrolls sideways, an app never does */
+html, body { overflow-x: clip; max-width: 100%; }
+img, svg, video { max-width: 100%; }
+
+/* Route transition: new screen slides in like a native push */
+.native-route { animation: native-route-in 0.24s cubic-bezier(0.32, 0.72, 0, 1); }
+@keyframes native-route-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Native form system — tall, thumb-sized, full-bleed confidence */
+.sih-input, .sih-select, .sih-textarea, .mv-input {
+  min-height: 52px !important;
+  font-size: 16px !important;
+  border-radius: 14px !important;
+  padding: 0.8rem 1rem !important;
+}
+.sih-input:focus, .sih-select:focus, .sih-textarea:focus, .mv-input:focus {
+  border-color: var(--teal-primary, #2F8F83) !important;
+  box-shadow: 0 0 0 4px rgba(47, 143, 131, 0.16) !important;
+}
+select.sih-input, select.sih-select, select.mv-input, select.mv-lang-select, select.doc-lang-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.9rem center;
+  padding-right: 2.5rem !important;
+}
+
+/* Native buttons — chunky, rounded, full-width primaries on phones */
+.sih-btn, .mv-btn-outline, .mv-tab-btn {
+  min-height: 48px;
+  border-radius: 14px !important;
+}
+@media (max-width: 768px) {
+  .patient-content-area .sih-btn-primary,
+  .sih-card .sih-btn-primary,
+  .mv-auth-card .sih-btn-primary {
+    width: 100%;
+    min-height: 52px;
+    font-size: 1rem;
+    border-radius: 16px !important;
+  }
+}
+
+/* Segmented controls read as native selectors */
+.mv-tab-switcher {
+  background: var(--mv-bg-page, #EBF7F5) !important;
+  border-radius: 16px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+}
+.mv-tab-switcher .mv-tab-btn { border-radius: 12px !important; box-shadow: none !important; }
+.mv-tab-switcher .mv-tab-btn.active { box-shadow: 0 2px 8px rgba(18, 48, 74, 0.14) !important; }
+.tab-nav-btn { min-height: 44px; border-radius: 12px !important; }
+
+/* Flatter cards, bigger rhythm — apps breathe, websites box */
+@media (max-width: 768px) {
+  .sih-card { border-radius: 18px !important; box-shadow: none !important; }
+  .landing-vital-value { font-size: 1.35rem !important; }
+  .landing-action-title { font-size: 1rem !important; }
+  .landing-action-desc { font-size: 0.85rem !important; }
+  .patient-sidebar-name { font-size: 1rem !important; }
+}
+
+/* Toasts become bottom snackbars above the tab bar */
+@media (max-width: 768px) {
+  .sih-toast {
+    top: auto !important;
+    right: 1rem !important;
+    left: 1rem !important;
+    bottom: calc(var(--tabbar-h) + var(--sab) + 12px) !important;
+    border-radius: 14px !important;
+    justify-content: center;
+    animation: native-snack-in 0.28s cubic-bezier(0.32, 0.72, 0, 1) forwards !important;
+  }
+  @keyframes native-snack-in {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+}
+
+/* Dropdown rows are finger-sized */
+.sih-profile-dropdown-item { min-height: 48px; }
+.native-docnav-item { min-height: 44px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .native-route { animation: none; }
+}
+
