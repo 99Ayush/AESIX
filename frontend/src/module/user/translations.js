@@ -787,14 +787,20 @@ export function translated(text, language) {
   return translatedFromEnglish(englishSource, language);
 }
 
-// Backend AI answers only in English/Hindi; map the 4 global UI languages
-// onto the 2 conversation codes so one click drives the chatbot too.
+// Backend AI answers in English, Hindi, Bengali, or Tamil. Map global UI languages
+// onto the conversation codes so language switching works across the chatbot too.
 export function convoCodeForGlobal(globalLanguage) {
-  return globalLanguage === 'Hindi' ? 'hi' : 'en';
+  if (globalLanguage === 'Hindi') return 'hi';
+  if (globalLanguage === 'Bengali') return 'bn';
+  if (globalLanguage === 'Tamil') return 'ta';
+  return 'en';
 }
 
 export function globalForConvoCode(code) {
-  return code === 'hi' ? 'Hindi' : 'English';
+  if (code === 'hi') return 'Hindi';
+  if (code === 'bn') return 'Bengali';
+  if (code === 'ta') return 'Tamil';
+  return 'English';
 }
 
 // Resolve the canonical English source for a live DOM string.

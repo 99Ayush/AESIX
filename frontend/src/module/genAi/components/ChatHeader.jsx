@@ -32,7 +32,7 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
           <div>
             <h2 className="header-title">Medical AI Chatbot</h2>
             <p className="header-subtitle">
-              Powered by Groq | Emergency • Consultation • Daily 
+              Powered by Groq | Emergency • Consultation • Daily
             </p>
           </div>
         </div>
@@ -47,17 +47,31 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
           <div className="lang-segmented-control">
             <button
               type="button"
-              className={`lang-segment-btn ${!isHindi ? 'active' : ''}`}
+              className={`lang-segment-btn ${language === 'en' ? 'active' : ''}`}
               onClick={() => handleSelectLang('en')}
             >
               EN English
             </button>
             <button
               type="button"
-              className={`lang-segment-btn ${isHindi ? 'active' : ''}`}
+              className={`lang-segment-btn ${language === 'hi' ? 'active' : ''}`}
               onClick={() => handleSelectLang('hi')}
             >
-              IN हिन्दी
+              HI हिन्दी
+            </button>
+            <button
+              type="button"
+              className={`lang-segment-btn ${language === 'bn' ? 'active' : ''}`}
+              onClick={() => handleSelectLang('bn')}
+            >
+              BN বাংলা
+            </button>
+            <button
+              type="button"
+              className={`lang-segment-btn ${language === 'ta' ? 'active' : ''}`}
+              onClick={() => handleSelectLang('ta')}
+            >
+              TA தமிழ்
             </button>
           </div>
         </div>
@@ -76,7 +90,7 @@ export const ChatHeader = ({ onOpenVoiceToVoice, language = 'en', onToggleLangua
         )}
         <div className="header-status">
           <span className="status-indicator"></span>
-          <span>Groq Active</span>
+          <span>Bhashini</span>
         </div>
       </div>
     </header>
