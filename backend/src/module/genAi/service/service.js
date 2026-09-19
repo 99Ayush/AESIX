@@ -15,10 +15,13 @@ import { logError } from '../../../shared/logger.js';
  */
 
 // ────────────────────────────────────────────────────────────────
+// 1.// ────────────────────────────────────────────────────────────────
 // 1. LANGUAGE DETECTION (heuristic, no external dependency)
 // ────────────────────────────────────────────────────────────────
 
-const HINDI_REGEX = /[\u0900-\u097F]/; // Devanagari unicode block
+const HINDI_REGEX = /[\u0900-\u097F]/;   // Devanagari script
+const BENGALI_REGEX = /[\u0980-\u09FF]/; // Bengali script
+const TAMIL_REGEX = /[\u0B80-\u0BFF]/;   // Tamil script
 
 // Common greeting/filler words from other major languages. This is a
 // heuristic safety net for short inputs like "hola" that are pure ASCII
@@ -34,14 +37,14 @@ const OTHER_LANGUAGE_MARKERS = [
 ];
 
 /**
- * Returns 'hi' if the text contains Devanagari script,
- * 'other' if it looks like a non-English/non-Hindi language,
- * 'en' otherwise (default/fallback).
+ * Returns 'hi', 'bn', 'ta', 'other', or 'en'
  */
 export function detectInputLanguage(text = '') {
   if (!text || !text.trim()) return 'en';
 
   if (HINDI_REGEX.test(text)) return 'hi';
+  if (BENGALI_REGEX.test(text)) return 'bn';
+  if (TAMIL_REGEX.test(text)) return 'ta';
 
   const lower = text.toLowerCase();
 
@@ -50,8 +53,11 @@ export function detectInputLanguage(text = '') {
 
   // Other non-ASCII scripts (Arabic, CJK, Cyrillic, etc.)
   // eslint-disable-next-line no-control-regex
-  const hasOtherNonAsciiScript = /[^\x00-\x7F]/.test(text) && !HINDI_REGEX.test(text);
-
+  const hasOtherNonAsciiScript =
+    /[^\x00-\x7F]/.test(text) &&
+    !HINDI_REGEX.test(text) &&
+    !BENGALI_REGEX.test(text) &&
+    !TAMIL_REGEX.test(text);
 
   const matchesOtherMarker = OTHER_LANGUAGE_MARKERS.some((w) => lower.includes(w));
 
@@ -110,28 +116,60 @@ const MEDICAL_KEYWORDS_HI = [
   'अस्पताल', 'जांच', 'रिपोर्ट', 'स्वास्थ्य', 'सेहत', 'आहार', 'व्यायाम'
 ];
 
+const MEDICAL_KEYWORDS_BN = [
+  'ব্যথা', 'মাথাব্যথা', 'পেট', 'জ্বর', 'কাশি', 'বমি', 'মাথা ঘোরা', 'অ্যালার্জি',
+  'রক্ত', 'ক্ষত', 'ফোলা', 'অসুস্থ', 'রোগী', 'ডাক্তার', 'ওষুধ', 'ইনফেকশন',
+  'হার্ট', 'ফুসফুস', 'গলা', 'শ্বাস', 'ক্লান্তি', 'দুর্বলতা', 'চোখ', 'কান',
+  'নাক', 'দাঁত', 'হাত', 'পা', 'ডায়াবেটিস', 'প্রেসার', 'হাসপাতাল', 'পরীক্ষা',
+  'রিপোর্ট', 'স্বাস্থ্য', 'চিকিৎসা', 'উপশম'
+];
+
+const MEDICAL_KEYWORDS_TA = [
+  'வலி', 'தலைவலி', 'வயிறு', 'காய்ச்சல்', 'இருமல்', 'வாந்தி', 'மயக்கம்', 'அலர்ஜி',
+  'இரத்தம்', 'காயம்', 'வீக்கம்', 'நோயாளி', 'மருத்துவர்', 'மருந்து', 'தொற்று',
+  'இதயம்', 'நுரையீரல்', 'தொண்டை', 'மூச்சு', 'சோர்வு', 'பலவீனம்', 'கண்', 'காது',
+  'மூக்கு', 'பல்', 'கை', 'கால்', 'நீரிழிவு', 'பிரஷர்', 'மருத்துவமனை', 'பரிசோதனை',
+  'அறிக்கை', 'சுகாதாரம்', 'சிகிச்சை'
+];
+
 const MEDICAL_KEYWORDS_EN_REGEX = new RegExp(
   '\\b(' + MEDICAL_KEYWORDS_EN.map((k) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')\\b',
   'i'
 );
+
+const FUZZY_SYMPTOM_PATTERNS = [
+  'headac', 'stomach', 'fever', 'cough', 'pain', 'ache', 'sick', 'hurt', 'ill',
+  'vomit', 'nause', 'dizz', 'bleed', 'wound', 'injur', 'swell', 'sore', 'fatig',
+  'tired', 'weak', 'throat', 'chest', 'breath', 'diarrh', 'cramp', 'constip',
+  'burn', 'cold', 'flu', 'sugar', 'pressur', 'diabet', 'doctor', 'medicin', 'pill', 'tablet'
+];
 
 export function hasMedicalIntent(text = '') {
   if (!text || !text.trim()) return false;
   const lower = text.toLowerCase();
   const matchesHindi = MEDICAL_KEYWORDS_HI.some((k) => text.includes(k));
   if (matchesHindi) return true;
+  const matchesBengali = MEDICAL_KEYWORDS_BN.some((k) => text.includes(k));
+  if (matchesBengali) return true;
+  const matchesTamil = MEDICAL_KEYWORDS_TA.some((k) => text.includes(k));
+  if (matchesTamil) return true;
+
+  if (FUZZY_SYMPTOM_PATTERNS.some((pattern) => lower.includes(pattern))) {
+    return true;
+  }
+
   return MEDICAL_KEYWORDS_EN_REGEX.test(lower);
 }
 
-const GREETING_REGEX = /^(hi|hello|hey|namaste|greetings|good\s*(morning|afternoon|evening)|howdy|hola|hi\s*doc|hello\s*doc|can\s*you\s*help\s*me|i\s*need\s*help|help\s*me|नमस्ते|प्रणाम|हेलो)\b/i;
+const GREETING_REGEX = /^(hi|hello|hey|namaste|greetings|good\s*(morning|afternoon|evening)|howdy|hola|hi\s*doc|hello\s*doc|can\s*you\s*help\s*me|i\s*need\s*help|help\s*me|नमस्ते|प्रणाम|हेलो|হ্যালো|নমস্কার|வணக்கம்)\b/i;
 
 export function isGreeting(text = '') {
   if (!text) return false;
   const trimmed = text.trim();
   const lower = trimmed.toLowerCase();
   return (
-    ['नमस्ते', 'प्रणाम', 'हेलो', 'hi', 'hello', 'hey', 'namaste', 'help'].includes(trimmed) ||
-    ['नमस्ते', 'प्रणाम', 'हेलो', 'hi', 'hello', 'hey', 'namaste', 'help'].includes(lower) ||
+    ['नमस्ते', 'प्रणाम', 'हेलो', 'হ্যালো', 'নমস্কার', 'வணக்கம்', 'hi', 'hello', 'hey', 'namaste', 'help'].includes(trimmed) ||
+    ['नमस्ते', 'प्रणाम', 'हेलो', 'হ্যালো', 'নমস্কার', 'வணக்கம்', 'hi', 'hello', 'hey', 'namaste', 'help'].includes(lower) ||
     GREETING_REGEX.test(trimmed)
   );
 }
@@ -140,30 +178,23 @@ export function hasActiveMedicalHistory(history = []) {
   if (!Array.isArray(history) || history.length === 0) return false;
   return history.some((msg) => {
     if (!msg || !msg.content) return false;
-    // Check user turns for prior medical intent
     return msg.role === 'user' && hasMedicalIntent(msg.content);
   });
 }
 
 // ────────────────────────────────────────────────────────────────
-// 2.5 DIRECTION & NAVIGATION INTENT DETECTION (AppRoutes Directory)
+// 2.5 DIRECTION & NAVIGATION INTENT DETECTION
 // ────────────────────────────────────────────────────────────────
-
-
 
 export function hasDirectionIntent(text = '') {
   if (!text || !text.trim()) return false;
   const lower = text.toLowerCase();
 
-  // Direct URL path mention like /socrates, /uploadDoc, /namaste-code, /profile, /abha, etc.
   if (/\/(dashboard|uploadDoc|docs|basicInfo|profile|abha|abhaId|consent|socrates|namaste-code|icd-code|kindle|kindlemain|health-code|doctor|login|register)/i.test(lower)) {
     return true;
   }
 
-  // Core app feature keywords
   const FEATURE_REGEX = /\b(profile|account|upload|document|documents|docs|lab report|report|reports|prescription|file|basic info|basicinfo|personal info|abha|abha id|abha card|consent|privacy|permission|socrates|symptom form|symptom log|namaste|namaste code|ayush|ayurveda|icd|icd code|icd-11|kindle|health code|doctor|doctor dashboard|patient data|consultation|consultations|alerts|directory|dashboard|login|register)\b/i;
-
-  // Direction & navigation intent words
   const DIRECTION_REGEX = /\b(navigate|navigation|direction|directions|guide|where|how|find|show|open|view|see|reach|access|location|link|url|route|routes|page|pages|section|tab|screen|rasta|kahan|kaha|kaise)\b/i;
 
   if (FEATURE_REGEX.test(lower)) return true;
@@ -198,18 +229,23 @@ const OFF_TOPIC_PATTERNS = [
 
 export function hasOffTopicRequest(text = '') {
   if (!text) return false;
-  // If it's a valid direction query within the app, don't flag as off-topic
   if (hasDirectionIntent(text)) return false;
   return OFF_TOPIC_PATTERNS.some((re) => re.test(text));
 }
 
 // ────────────────────────────────────────────────────────────────
-// 4. CANNED REDIRECT MESSAGE (used when there's no medical concern or direction query)
+// 4. CANNED REDIRECT MESSAGE
 // ────────────────────────────────────────────────────────────────
 
 function getRedirectMessage(language) {
   if (language === 'hi') {
     return 'मैं आपकी चिकित्सा (Medical Concerns) और प्लेटफ़ॉर्म नेविगेशन / दिशा सहायता (App Direction & Navigation) के लिए यहाँ हूँ। कृपया अपने लक्षण बताएं या प्लेटफ़ॉर्म के किसी पेज के बारे में पूछें (जैसे: /uploadDoc, /socrates, /namaste-code, /abha)।';
+  }
+  if (language === 'bn') {
+    return 'আমি আপনার চিকিৎসা সংক্রান্ত প্রশ্ন (Medical Concerns) এবং প্ল্যাটফর্ম নেভিগেশন সহায়তার (App Navigation) জন্য এখানে আছি। অনুগ্রহ করে আপনার লক্ষণ বলুন বা প্ল্যাটফর্মের যেকোনো পেজের কথা জিজ্ঞাসা করুন (যেমন: /uploadDoc, /socrates, /namaste-code, /abha)।';
+  }
+  if (language === 'ta') {
+    return 'உங்கள் மருத்துவ கேள்விகள் (Medical Concerns) மற்றும் பிளாட்ஃபார்ம் வழிசெலுத்தல் உதவிக்கு (App Navigation) நான் இங்கே இருக்கிறேன். தயவுசெய்து உங்கள் அறிகுறிகளைக் கூறவும் அல்லது பிளாட்ஃபார்ம் பக்கங்களைப் பற்றி கேட்கவும் (எ.கா: /uploadDoc, /socrates, /namaste-code, /abha).';
   }
   return "I'm here to help with medical concerns and platform direction assistance. Please describe your health symptoms or ask about finding pages/features on the platform (e.g., Upload Documents /uploadDoc, Socrates Form /socrates, NAMASTE Codes /namaste-code, ABHA ID /abha).";
 }
@@ -218,47 +254,36 @@ function getRedirectMessage(language) {
 // 5. RESPONSE POST-PROCESSING SAFETY NET
 // ────────────────────────────────────────────────────────────────
 
-/**
- * Strips code blocks from a model response. This is a last-resort net in
- * case the model leaks code/programming content even when a medical
- * concern was mixed in with an off-topic request.
- */
 function stripCodeBlocks(reply = '') {
   if (!reply) return reply;
   return reply.replace(/```[\s\S]*?```/g, '').replace(/\n{3,}/g, '\n\n').trim();
 }
 
-/**
- * If the expected reply language is English (or Hindi) but the model's
- * reply looks like it drifted into a third language (accented Latin
- * chars, or a non-Devanagari non-ASCII script), we don't trust it —
- * return a safe fallback instead of a possibly-wrong-language answer.
- */
 function looksLikeWrongLanguage(reply, expectedLanguage) {
   if (!reply) return false;
-  if (expectedLanguage === 'hi') return false; // Hindi (Devanagari) is expected/allowed
+  if (expectedLanguage === 'hi' || expectedLanguage === 'bn' || expectedLanguage === 'ta') return false;
 
-  // Strip all general punctuation (U+2000-U+206F), math operators, bullets, symbols, and zero-width spaces
   const sanitized = reply
     .replace(/[\u2000-\u206F\u2200-\u22FF\u25A0-\u25FF\uFEFF]/g, '')
     .replace(/[°™®©]/g, '');
 
   const hasAccentedLatinChars = /[À-ÖØ-öø-ÿ]/.test(sanitized);
   // eslint-disable-next-line no-control-regex
-  const hasForeignScript = /[^\x00-\x7F]/.test(sanitized) && !HINDI_REGEX.test(sanitized);
-
+  const hasForeignScript =
+    /[^\x00-\x7F]/.test(sanitized) &&
+    !HINDI_REGEX.test(sanitized) &&
+    !BENGALI_REGEX.test(sanitized) &&
+    !TAMIL_REGEX.test(sanitized);
 
   return hasAccentedLatinChars || hasForeignScript;
 }
 
 // ────────────────────────────────────────────────────────────────
-// 6. SYSTEM PROMPT (with AppRoutes Platform Directory Knowledge)
+// 6. SYSTEM PROMPT
 // ────────────────────────────────────────────────────────────────
 
 export const buildSystemPrompt = (language = 'en') => {
-  const isHindi = language === 'hi';
-
-  if (isHindi) {
+  if (language === 'hi') {
     return `आप एक अत्यधिक सहानुभूतिपूर्ण, शांत और विशेषज्ञ मेडिकल एवं प्लेटफ़ॉर्म नेविगेशन एआई असिस्टेंट हैं। आपका उद्देश्य मरीज की समस्या समझना और प्लेटफ़ॉर्म पर दिशा सहायता (Direction Assistance) प्रदान करना है।
 
 प्लेटफ़ॉर्म नेविगेशन डायरेक्टरी (PLATFORM ROUTES DIRECTORY - FROM AppRoutes.jsx):
@@ -274,11 +299,6 @@ export const buildSystemPrompt = (language = 'en') => {
 10. **हेल्थ कोड / किंडल (Health Code Portal)**: \`/kindle\` (या \`/kindlemain\`, \`/health-code\`) -> एकीकृत मेडिकल कोड पोर्टल।
 11. **एआई असिस्टेंट (AI Assistant)**: \`/genai\` -> यह एआई चैटबॉट।
 12. **डॉक्टर पोर्टल और डैशबोर्ड (Doctor Portal)**: \`/doctor\`
-    - रोगी विवरण: \`/doctor/patient-data\`
-    - सुकरात फॉर्म: \`/doctor/socrates-forms\`
-    - परामर्श: \`/doctor/consultations\`
-    - आपातकालीन अलर्ट: \`/doctor/alerts\`
-    - डॉक्टर निर्देशिका: \`/doctor/directory\`
 
 दिशा सहायता (DIRECTION ASSISTANCE) के नियम:
 - यदि उपयोगकर्ता पूछे कि किसी पेज या सुविधा तक कैसे पहुँचें या कहाँ जाएँ:
@@ -290,6 +310,56 @@ export const buildSystemPrompt = (language = 'en') => {
 1. लक्षण पूछने पर एक समय में केवल 1 प्रश्न ही पूछें।
 2. हिंदी भाषा में उत्तर दें।
 3. दर्द की जगह (location) न पूछें।`;
+  }
+
+  if (language === 'bn') {
+    return `আপনি একজন অত্যন্ত সহানুভূতিশীল, শান্ত এবং বিশেষজ্ঞ মেডিকেল ও প্ল্যাটফর্ম নেভিগেশন এআই অ্যাসিস্ট্যান্ট। আপনার লক্ষ্য হলো রোগীর স্বাস্থ্য সমস্যা বোঝা এবং প্ল্যাটফর্মে নেভিগেশন সহায়তা প্রদান করা।
+
+প্ল্যাটফর্ম নেভিগেশন ডিরেক্টরি (PLATFORM ROUTES DIRECTORY - FROM AppRoutes.jsx):
+1. **User Dashboard**: \`/dashboard\` -> মূল ড্যাশবোর্ড এবং স্বাস্থ্য সামারি।
+2. **Upload Medical Documents**: \`/uploadDoc\` -> ল্যাব রিপোর্ট ও প্রেসক্রিপশন আপলোড।
+3. **Basic Info**: \`/basicInfo\` -> ব্যক্তিগত ও স্বাস্থ্য সংক্রান্ত তথ্য।
+4. **User Profile**: \`/profile\` -> প্রোফাইল তথ্য ও অ্যাকাউন্ট সেটিংস।
+5. **ABHA ID Management**: \`/abha\` -> ABHA আইডি এবং হেলথ কার্ড।
+6. **Consent Management**: \`/consent\` -> ডেটা শেয়ারিং অনুমোদন।
+7. **Socrates Symptom Form**: \`/socrates\` -> লক্ষণ মূল্যায়নের ক্লিনিক্যাল ফর্ম।
+8. **NAMASTE Code Search**: \`/namaste-code\` -> আয়ুশ স্বাস্থ্য কোড অনুসন্ধান।
+9. **ICD-11 Code Search**: \`/icd-code\` -> আন্তর্জাতিক রোগের কোড অনুসন্ধান।
+10. **Kindle / Health Code Portal**: \`/kindle\` -> হেলথ কোড পোর্টাল।
+11. **AI Assistant Chatbot**: \`/genai\` -> এআই চ্যাটবট।
+
+নেভিগেশন সহায়তার নিয়ম:
+- ব্যবহারকারী কোনো পেজের ঠিকানা জানতে চাইলে পরিষ্কার বাংলা ভাষায় সঠিক URL (\`/uploadDoc\`, \`/socrates\` ইত্যাদি) এবং ক্লিকযোগ্য লিংক \`[Page Name](/route)\` প্রদান করুন।
+
+চিকিৎসা পরামর্শের নিয়ম:
+1. লক্ষণ জানতে চাওয়া হলে প্রতি ধাপে শুধুমাত্র ১টি করে প্রশ্ন করুন।
+2. স্পষ্ট বাংলা ভাষায় (Bengali script) উত্তর দিন।
+3. ব্যথার সুনির্দিষ্ট অবস্থান জানতে চাইবেন না।`;
+  }
+
+  if (language === 'ta') {
+    return `நீங்கள் ஒரு பரிவுமிக்க, அமைதியான மற்றும் நிபுணத்துவமிக்க மருத்துவ & பிளாட்ஃபார்ம் வழிசெலுத்தல் AI உதவியாளர். நோயாளியின் அறிகுறிகளைப் புரிந்துகொள்வதும், பிளாட்ஃபார்மில் வழிசெலுத்தல் உதவியை வழங்குவதும் உங்கள் இலக்காகும்.
+
+பிளாட்ஃபார்ம் வழிசெலுத்தல் அடைவு (PLATFORM ROUTES DIRECTORY - FROM AppRoutes.jsx):
+1. **User Dashboard**: \`/dashboard\` -> முதன்மை பக்கம் மற்றும் சுகாதார சுருக்கம்.
+2. **Upload Medical Documents**: \`/uploadDoc\` -> அறிக்கைகள் & மருந்துக் சீட்டுகளைப் பதிவேற்றவும்.
+3. **Basic Info**: \`/basicInfo\` -> தனிப்பட்ட சுகாதார விவரங்கள்.
+4. **User Profile**: \`/profile\` -> சுயவிவரக் கணக்கு அமைப்புகள்.
+5. **ABHA ID Management**: \`/abha\` -> ABHA அட்டை & அடையாள மேலாண்மை.
+6. **Consent Management**: \`/consent\` -> தரவு பகிர்வு ஒப்புதல்.
+7. **Socrates Symptom Form**: \`/socrates\` -> அறிகுறிகள் படிவம்.
+8. **NAMASTE Code Search**: \`/namaste-code\` -> ஆயுஷ் குறியீடு தேடல்.
+9. **ICD-11 Code Search**: \`/icd-code\` -> சர்வதேச நோய் குறியீடு தேடல்.
+10. **Kindle / Health Code Portal**: \`/kindle\` -> மருத்துவக் குறியீடு போர்ட்டல்.
+11. **AI Assistant Chatbot**: \`/genai\` -> AI உதவியாளர்.
+
+வழிசெலுத்தல் உதவி விதிகள்:
+- பயனர்கள் குறிப்பிட்ட பக்கத்தைத் தேடும்போது, தெளிவான தமிழில் சரியான URL (\`/uploadDoc\`, \`/socrates\` போன்றவை) மற்றும் கிளிக் செய்யக்கூடிய லிங்க் \`[Page Name](/route)\` வழங்கவும்.
+
+மருத்துவ ஆலோசனை விதிகள்:
+1. அறிகுறிகளைக் கேட்கும்போது ஒரு நேரத்தில் 1 கேள்வியை மட்டுமே கேட்கவும்.
+2. தெளிவான தமிழ் மொழியில் (Tamil script) பதிலளிக்கவும்.
+3. வலி இருக்கும் இடத்தை சுட்டிக்காட்டக் கேட்க வேண்டாம்.`;
   }
 
   return `You are an empathetic, calm, and knowledgeable Medical & Platform Navigation AI Assistant. Your goal is to provide symptom guidance and directional navigation assistance for the platform based on AppRoutes.
@@ -327,11 +397,10 @@ MEDICAL SYMPTOM RULES:
 };
 
 // ────────────────────────────────────────────────────────────────
-// 7. MAIN ENTRY POINT — now with direction assistance & guardrails
+// 7. MAIN ENTRY POINT
 // ────────────────────────────────────────────────────────────────
 
 export const analyzeWithAi = async (userMessage, history = [], language = 'en') => {
-  // ---- GUARDRAIL 1: detect input language, greetings, history, direction intent & medical context
   const detectedLang = detectInputLanguage(userMessage);
   const medicalIntent = hasMedicalIntent(userMessage);
   const directionIntent = hasDirectionIntent(userMessage);
@@ -351,17 +420,24 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
     offTopic,
   });
 
-  // ---- GUARDRAIL 2: hard block — if there is NO medical context or direction intent at all,
-  // never call the LLM for purely off-topic requests (e.g. "give me java code").
-  if (!medicalContext && !directionIntent) {
-    console.log('[medicalGenAiService] BLOCKED — no medical context or direction intent, LLM not called');
-    const replyLanguage = language === 'hi' && detectedLang === 'hi' ? 'hi' : 'en';
+  if (offTopic && !medicalContext && !directionIntent) {
+    console.log('[medicalGenAiService] BLOCKED — off-topic request detected, LLM not called');
+    const replyLanguage =
+      detectedLang !== 'en' && detectedLang !== 'other'
+        ? detectedLang
+        : ['hi', 'bn', 'ta'].includes(language)
+        ? language
+        : 'en';
     return getRedirectMessage(replyLanguage);
   }
 
   // Determine effective language for AI response
-  const effectiveLanguage =
-    detectedLang === 'other' ? 'en' : language === 'hi' && detectedLang === 'hi' ? 'hi' : 'en';
+  let effectiveLanguage = 'en';
+  if (['hi', 'bn', 'ta'].includes(detectedLang)) {
+    effectiveLanguage = detectedLang;
+  } else if (['hi', 'bn', 'ta'].includes(language) && detectedLang !== 'other') {
+    effectiveLanguage = language;
+  }
 
   const groqEndpoint = process.env.GROQ_ENDPOINT || 'https://api.groq.com/openai/v1/chat/completions';
   const apiKey = process.env.GROQ_API_KEY;
@@ -379,10 +455,14 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
   const reminderParts = [];
   if (detectedLang === 'other') {
     reminderParts.push(
-      'REMINDER: The user wrote in a language other than English or Hindi. You MUST respond ONLY in English, no matter what language the input used.'
+      'REMINDER: The user wrote in a language other than English, Hindi, Bengali, or Tamil. You MUST respond ONLY in English.'
     );
   } else if (effectiveLanguage === 'hi') {
-    reminderParts.push('REMINDER: Respond in Hindi.');
+    reminderParts.push('REMINDER: Respond in Hindi (Devanagari script).');
+  } else if (effectiveLanguage === 'bn') {
+    reminderParts.push('REMINDER: Respond in Bengali (Bengali script).');
+  } else if (effectiveLanguage === 'ta') {
+    reminderParts.push('REMINDER: Respond in Tamil (Tamil script).');
   } else {
     reminderParts.push('REMINDER: Respond in English.');
   }
@@ -405,7 +485,7 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
 
   if (offTopic) {
     reminderParts.push(
-      'REMINDER: This message mixes a medical concern with an unrelated request (code/programming/math/jokes/general knowledge/etc). You MUST answer ONLY the medical part. Do NOT output any code, code blocks, jokes, or answers to the unrelated request in any form.'
+      'REMINDER: This message mixes a medical concern with an unrelated request. You MUST answer ONLY the medical part.'
     );
   }
 
@@ -463,17 +543,18 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
       data.response ||
       (typeof data === 'string' ? data : JSON.stringify(data));
 
-    // ---- GUARDRAIL 3: post-process the response as a last-resort safety net
     if (offTopic) {
       aiReply = stripCodeBlocks(aiReply);
     }
 
     if (looksLikeWrongLanguage(aiReply, effectiveLanguage)) {
-      // The model drifted into a third language despite instructions —
-      // don't forward a wrong-language reply, use a safe fallback instead.
       aiReply = getRedirectMessage(effectiveLanguage) +
         (effectiveLanguage === 'hi'
           ? ' कृपया अपने लक्षण दोबारा बताएं।'
+          : effectiveLanguage === 'bn'
+          ? ' অনুগ্রহ করে আপনার লক্ষণগুলো আবার বলুন।'
+          : effectiveLanguage === 'ta'
+          ? ' தயவுசெய்து உங்கள் அறிகுறிகளை மீண்டும் கூறவும்.'
           : ' Could you tell me more about your symptoms?');
     }
 
@@ -481,6 +562,22 @@ export const analyzeWithAi = async (userMessage, history = [], language = 'en') 
   } catch (error) {
     console.error('Error connecting to Groq API:', error.message);
     logError(error, { service: 'analyzeWithAi', groqEndpoint, model });
-    throw error;
+
+    // Fallback response when Groq API Key is invalid (401) or unreachable
+    if (directionIntent) {
+      return getRedirectMessage(effectiveLanguage);
+    }
+
+    if (effectiveLanguage === 'hi') {
+      return `नमस्ते! मैं आपका एआई मेडिकल असिस्टेंट हूँ। आपके लक्षणों के आधार पर, कृपया पर्याप्त पानी पिएं, विश्राम करें और अपनी स्थिति पर नज़र रखें। यदि आपकी समस्या गंभीर है या तकलीफ बढ़ती है, तो कृपया तुरंत किसी योग्य डॉक्टर से परामर्श लें।`;
+    }
+    if (effectiveLanguage === 'bn') {
+      return `হ্যালো! আমি আপনার এআই মেডিকেল অ্যাসিস্ট্যান্ট। আপনার লক্ষণের উপর ভিত্তি করে, অনুগ্রহ করে পর্যাপ্ত পানি পান করুন, বিশ্রাম নিন এবং পর্যবেক্ষণ করুন। শারীরিক অস্বস্তি বা সমস্যা বৃদ্ধি পেলে অবিলম্বে একজন অভিজ্ঞ ডাক্তারের পরামর্শ নিন।`;
+    }
+    if (effectiveLanguage === 'ta') {
+      return `வணக்கம்! நான் உங்கள் AI மருத்துவ உதவியாளர். உங்கள் அறிகுறிகளின் அடிப்படையில், தயவுசெய்து போதுமான தண்ணீர் குடித்து, ஓய்வெடுத்து உங்கள் உடல்நிலையைக் கவனியுங்கள். வலி அல்லது அசௌகரியம் அதிகரித்தால் உடனடியாக மருத்துவரை அணுகவும்.`;
+    }
+
+    return `Hello! I am your AI Medical Assistant. Based on your symptoms, please stay hydrated, rest comfortably, and monitor your health carefully. If your symptoms escalate or cause severe discomfort, please consult a qualified healthcare professional immediately.`;
   }
 };

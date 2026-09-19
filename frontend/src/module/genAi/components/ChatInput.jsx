@@ -10,13 +10,20 @@ export const ChatInput = ({
   onOpenVoiceToVoice,
   language = 'en',
 }) => {
+  const getPlaceholder = () => {
+    if (language === 'hi') return 'अपनी चिकित्सा समस्या लिखें या वॉयस बातचीत शुरू करें...';
+    if (language === 'bn') return 'আপনার চিকিৎসা বিষয়ক প্রশ্ন লিখুন বা ভয়েস চ্যাট শুরু করুন...';
+    if (language === 'ta') return 'உங்கள் மருத்துவக் கேள்வியை எழுதவும் அல்லது குரல் உரையாடலைத் தொடங்கவும்...';
+    return 'Type your medical query or start voice conversation...';
+  };
+
   return (
     <form className="chat-input-form" onSubmit={handleSendMessage}>
       <div className="input-box-wrapper">
         <input
           type="text"
           className="chat-text-input"
-          placeholder="Type your medical query or start voice conversation..."
+          placeholder={getPlaceholder()}
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
         />
