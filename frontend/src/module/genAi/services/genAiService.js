@@ -90,6 +90,8 @@ export const getDirectionResponse = (message, language = 'en') => {
   if (!message) return null;
   const lower = message.toLowerCase();
   const isHindi = language === 'hi';
+  const isBengali = language === 'bn';
+  const isTamil = language === 'ta';
 
   const matched = ROUTE_DIRECTORY.filter((item) =>
     item.keywords.some((kw) => lower.includes(kw))
@@ -102,6 +104,20 @@ export const getDirectionResponse = (message, language = 'en') => {
         resp += `• [${item.routeName}](${item.routePath})\n  ${item.descHi}\n\n`;
       });
       resp += `पेज पर तुरंत पहुँचने के लिए ऊपर दिए गए नीले लिंक पर क्लिक करें!`;
+      return resp;
+    } else if (isBengali) {
+      let resp = `আপনার অনুরোধ করা ফিচারের প্ল্যাটফর্ম নেভিগেশন লিংক নিচে দেওয়া হলো:\n\n`;
+      matched.forEach((item) => {
+        resp += `• [${item.routeName}](${item.routePath})\n  ${item.descEn}\n\n`;
+      });
+      resp += `সরাসরি পেজে যেতে উপরের নীল লিংকে ক্লিক করুন!`;
+      return resp;
+    } else if (isTamil) {
+      let resp = `நீங்கள் கேட்ட அம்சத்திற்கான பிளாட்ஃபார்ம் வழிசெலுத்தல் லிங்க் கீழே கொடுக்கப்பட்டுள்ளது:\n\n`;
+      matched.forEach((item) => {
+        resp += `• [${item.routeName}](${item.routePath})\n  ${item.descEn}\n\n`;
+      });
+      resp += `நேரடியாகப் பக்கத்திற்குச் செல்ல மேலே உள்ள நீல நிற இணைப்பைக் கிளிக் செய்யவும்!`;
       return resp;
     } else {
       let resp = `Here is how you can access the requested feature on the platform:\n\n`;
@@ -123,6 +139,18 @@ export const getDirectionResponse = (message, language = 'en') => {
       let resp = `प्लेटफ़ॉर्म के मुख्य पेजों के लिए दिशा निर्देश (Platform Routes Directory):\n\n`;
       ROUTE_DIRECTORY.forEach((item) => {
         resp += `• [${item.routeName}](${item.routePath}): ${item.descHi}\n`;
+      });
+      return resp;
+    } else if (isBengali) {
+      let resp = `প্ল্যাটফর্মের প্রধান পেজগুলির ডিরেক্টরি (Platform Routes Directory):\n\n`;
+      ROUTE_DIRECTORY.forEach((item) => {
+        resp += `• [${item.routeName}](${item.routePath}): ${item.descEn}\n`;
+      });
+      return resp;
+    } else if (isTamil) {
+      let resp = `பிளாட்ஃபார்மின் முக்கிய பக்கங்களின் அடைவு (Platform Routes Directory):\n\n`;
+      ROUTE_DIRECTORY.forEach((item) => {
+        resp += `• [${item.routeName}](${item.routePath}): ${item.descEn}\n`;
       });
       return resp;
     } else {

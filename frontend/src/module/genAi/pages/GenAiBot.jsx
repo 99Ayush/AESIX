@@ -28,15 +28,29 @@ export const GenAiBot = () => {
     setConvoLanguage((prev) => (prev === mapped ? prev : mapped));
   }, [globalLanguage]);
 
-  const getWelcomeMessage = (lang) => ({
-    id: 'welcome_1',
-    sender: 'assistant',
-    text:
-      lang === 'hi'
-        ? 'नमस्ते! मैं आपका आत्मीय एआई मेडिकल असिस्टेंट हूँ। आपकी सेहत और चिंताओं को समझने के लिए मैं यहाँ हूँ।\n\n• यदि आपकी समस्या गंभीर है, तो मैं तुरंत डॉक्टर परामर्श (Doctor Consultation) की सलाह दूंगा।\n• यदि समस्या सामान्य है, तो आपको उपयुक्त भोजन, पेय, आराम और हल्के व्यायाम का मार्गदर्शन दूंगा।\n\nकृपया बेझिझक अपनी समस्या बताएं।'
-        : 'Hello! I am your compassionate AI Medical Assistant. I am here to listen to your health concerns with soothing care.\n\n• If your symptoms indicate a major issue, I will gently direct you to consult a qualified doctor.\n• If minor, I will prescribe comforting self-care recommendations including food, rest, and gentle exercise.\n\nPlease feel free to describe your symptoms.',
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  });
+  const getSpeechLangCode = (lang) => {
+    if (lang === 'hi') return 'hi-IN';
+    if (lang === 'bn') return 'bn-IN';
+    if (lang === 'ta') return 'ta-IN';
+    return 'en-US';
+  };
+
+  const getWelcomeMessage = (lang) => {
+    let text = 'Hello! I am your compassionate AI Medical Assistant. I am here to listen to your health concerns with soothing care.\n\n• If your symptoms indicate a major issue, I will gently direct you to consult a qualified doctor.\n• If minor, I will prescribe comforting self-care recommendations including food, rest, and gentle exercise.\n\nPlease feel free to describe your symptoms.';
+    if (lang === 'hi') {
+      text = 'नमस्ते! मैं आपका आत्मीय एआई मेडिकल असिस्टेंट हूँ। आपकी सेहत और चिंताओं को समझने के लिए मैं यहाँ हूँ।\n\n• यदि आपकी समस्या गंभीर है, तो मैं तुरंत डॉक्टर परामर्श (Doctor Consultation) की सलाह दूंगा।\n• यदि समस्या सामान्य है, तो आपको उपयुक्त भोजन, पेय, आराम और हल्के व्यायाम का मार्गदर्शन दूंगा।\n\nकृपया बेझिझक अपनी समस्या बताएं।';
+    } else if (lang === 'bn') {
+      text = 'হ্যালো! আমি আপনার সহানুভূতিশীল এআই মেডিকেল অ্যাসিস্ট্যান্ট। আপনার স্বাস্থ্য সংক্রান্ত যেকোনো প্রশ্ন বা লক্ষণের জন্য আমি সাহায্য করতে প্রস্তুত।\n\n• সমস্যা গুরুতর হলে, আমি অবিলম্বে ডাক্তার দেখানোর (Doctor Consultation) পরামর্শ দেব।\n• প্রাথমিক বা সাধারণ সমস্যা হলে, প্রয়োজনীয় খাদ্য, বিশ্রাম ও পরিচর্যার নির্দেশিকা দেব।\n\nঅনুগ্রহ করে আপনার লক্ষণের বর্ণনা দিন।';
+    } else if (lang === 'ta') {
+      text = 'வணக்கம்! நான் உங்கள் பரிவுமிக்க AI மருத்துவ உதவியாளர். உங்கள் சுகாதார கவலைகளைப் புரிந்துகொள்ள நான் இங்கே இருக்கிறேன்.\n\n• அறிகுறிகள் தீவிரமானவை என்றால், மருத்துவரை அணுகுமாறு (Doctor Consultation) பரிந்துரைப்பேன்.\n• சாதாரண பிரச்சனை என்றால், தேவையான உணவு, ஓய்வு மற்றும் பராமரிப்பு வழிகாட்டுதலை வழங்குவேன்.\n\nதயவுசெய்து உங்கள் அறிகுறிகளை விவரிக்கவும்.';
+    }
+    return {
+      id: 'welcome_1',
+      sender: 'assistant',
+      text,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+  };
 
   const [messages, setMessages] = useState([getWelcomeMessage('en')]);
   const [inputMessage, setInputMessage] = useState('');
@@ -101,7 +115,7 @@ export const GenAiBot = () => {
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
-      recognition.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
+      recognition.lang = getSpeechLangCode(convoLanguage);
 
       recognition.onresult = (event) => {
         let transcript = '';
@@ -151,38 +165,40 @@ export const GenAiBot = () => {
     };
   }, [convoLanguage]);
 
-  // Toggle Language Handler (English <-> Hindi for conversation)
+  // Toggle Language Handler (EN / HI / BN / TA)
   const handleToggleLanguage = (targetLang) => {
-    const newLang = targetLang ? targetLang : convoLanguage === 'en' ? 'hi' : 'en';
-    if (newLang === convoLanguage) return;
+    const nextLang = targetLang || (convoLanguage === 'en' ? 'hi' : convoLanguage === 'hi' ? 'bn' : convoLanguage === 'bn' ? 'ta' : 'en');
+    if (nextLang === convoLanguage) return;
 
-    setConvoLanguage(newLang);
+    setConvoLanguage(nextLang);
 
-    // Add a system notice message so the user visually sees the change in chat stream
+    const notices = {
+      en: '🌐 Conversation language set to "English". AI will now respond in English.',
+      hi: '🌐 बातचीत की भाषा "हिंदी" (Hindi) पर सेट की गई है। एआई अब हिंदी में जवाब देगा।',
+      bn: '🌐 কথপোকথনের ভাষা "বাংলা" (Bengali) তে সেট করা হয়েছে। এআই এখন বাংলায় উত্তর দেবে।',
+      ta: '🌐 உரையாடல் மொழி "தமிழ்" (Tamil) என அமைக்கப்பட்டுள்ளது. AI இப்போது தமிழில் பதிலளிக்கும்.',
+    };
+
     const sysMsg = {
-      id: `sys_${Date.now()}`,
+      id: 'sys_lang_notice',
       sender: 'system',
-      text:
-        newLang === 'hi'
-          ? '🌐 बातचीत की भाषा "हिंदी" (Hindi) पर सेट की गई है। एआई अब हिंदी में जवाब देगा।'
-          : '🌐 Conversation language set to "English". AI will now respond in English.',
+      isLangNotice: true,
+      text: notices[nextLang] || notices.en,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
     setMessages((prev) => {
-      const updated = prev.map((m) => (m.id === 'welcome_1' ? getWelcomeMessage(newLang) : m));
-      return [...updated, sysMsg];
+      const updated = prev.map((m) => (m.id === 'welcome_1' ? getWelcomeMessage(nextLang) : m));
+      // Remove any existing language change notice pills so only ONE notice displays in chat
+      const cleaned = updated.filter((m) => !m.isLangNotice && m.id !== 'sys_lang_notice' && !m.id.startsWith('sys_'));
+      return [...cleaned, sysMsg];
     });
   };
 
   // Standard Voice Mode Toggle (Single-turn Mic Recognition & TTS)
   const toggleVoiceMode = () => {
     if (!speechSupported && !('speechSynthesis' in window)) {
-      alert(
-        convoLanguage === 'hi'
-          ? 'आपके ब्राउज़र में वॉयस रिकग्निशन / स्पीच सपोर्ट उपलब्ध नहीं है।'
-          : 'Speech Recognition / Voice Output is not supported in your browser.'
-      );
+      alert('Speech Recognition / Voice Output is not supported in your browser.');
       return;
     }
 
@@ -203,7 +219,7 @@ export const GenAiBot = () => {
       isListeningRef.current = true;
       if (recognitionRef.current) {
         try {
-          recognitionRef.current.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
+          recognitionRef.current.lang = getSpeechLangCode(convoLanguage);
           recognitionRef.current.start();
         } catch (err) {
           console.warn('Error starting mic:', err);
@@ -220,7 +236,7 @@ export const GenAiBot = () => {
 
     const cleanText = text.replace(/[*#\-_]/g, '').trim();
     const utterance = new SpeechSynthesisUtterance(cleanText);
-    utterance.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
+    utterance.lang = getSpeechLangCode(convoLanguage);
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
     window.speechSynthesis.speak(utterance);
@@ -263,10 +279,7 @@ export const GenAiBot = () => {
       const errorMsg = {
         id: `err_${Date.now()}`,
         sender: 'assistant',
-        text:
-          convoLanguage === 'hi'
-            ? `⚠️ उत्तर प्राप्त नहीं हो सका: ${err.message}`
-            : `⚠️ Could not get AI response: ${err.message}`,
+        text: `⚠️ Could not get AI response: ${err.message}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       };
       setMessages((prev) => [...prev, errorMsg]);
@@ -330,7 +343,7 @@ export const GenAiBot = () => {
 
         const cleanText = replyText.replace(/[*#\-_]/g, '').trim();
         const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
+        utterance.lang = getSpeechLangCode(convoLanguage);
         utterance.rate = 0.95;
         utterance.pitch = 1.0;
 
@@ -377,7 +390,7 @@ export const GenAiBot = () => {
   const restartV2vListening = () => {
     if (v2vRecognitionRef.current && !isMicMuted) {
       try {
-        v2vRecognitionRef.current.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
+        v2vRecognitionRef.current.lang = getSpeechLangCode(convoLanguage);
         v2vRecognitionRef.current.start();
       } catch (e) {}
     }
@@ -402,7 +415,7 @@ export const GenAiBot = () => {
       const rec = new SpeechRecognition();
       rec.continuous = false;
       rec.interimResults = true;
-      rec.lang = convoLanguage === 'hi' ? 'hi-IN' : 'en-US';
+      rec.lang = getSpeechLangCode(convoLanguage);
 
       rec.onresult = (event) => {
         let transcript = '';
@@ -448,11 +461,7 @@ export const GenAiBot = () => {
       } catch (e) {}
       v2vRecognitionRef.current = rec;
     } else {
-      alert(
-        convoLanguage === 'hi'
-          ? 'आपका ब्राउज़र वॉयस बातचीत के लिए वेब स्पीच सपोर्ट नहीं करता है।'
-          : 'Browser does not support Web Speech API for voice conversation.'
-      );
+      alert('Browser does not support Web Speech API for voice conversation.');
     }
   };
 
@@ -510,10 +519,12 @@ export const GenAiBot = () => {
               data-no-translate
               translate="no"
               aria-label="AI conversation language"
-              title="AI conversation language (English/Hindi)"
+              title="AI conversation language (English/Hindi/Bengali/Tamil)"
             >
               <option value="en">AI: English</option>
               <option value="hi">AI: हिंदी</option>
+              <option value="bn">AI: বাংলা</option>
+              <option value="ta">AI: தமிழ்</option>
             </select>
 
             <DoctorActivityBell />
@@ -552,7 +563,7 @@ export const GenAiBot = () => {
             <ChatHeader
               onOpenVoiceToVoice={handleOpenVoiceToVoice}
               language={convoLanguage}
-              onToggleLanguage={setConvoLanguage}
+              onToggleLanguage={handleToggleLanguage}
               showBrand={false}
             />
             {isVoiceToVoiceOpen ? (
@@ -564,6 +575,7 @@ export const GenAiBot = () => {
                 toggleMic={handleToggleV2vMic}
                 isMicMuted={isMicMuted}
                 language={convoLanguage}
+                onToggleLanguage={handleToggleLanguage}
               />
             ) : (
               <>
