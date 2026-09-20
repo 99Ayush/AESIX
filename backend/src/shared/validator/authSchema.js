@@ -21,7 +21,7 @@ export const loginVerifySchema = z.object({
 
 export const loginVerifyUserSchema = z.object({
   txnId: z.string().min(1),
-  abhaNumber: abhaNumberSchema,
+  abhaNumber: z.string().min(1, 'ABHA number is required'),
 });
 
 export const registerRequestOtpSchema = z.object({

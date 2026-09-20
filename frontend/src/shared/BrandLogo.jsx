@@ -15,7 +15,7 @@ const BrandLogo = ({ onClick, subtitle, showMenuBtn = true }) => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
-      {/* Navigation drawer hamburger — opens on hover (desktop) or tap */}
+      {/* Mobile-only hamburger — hidden on desktop via CSS, normal sidebar rail is used there */}
       {showMenuBtn && <NavDrawer />}
 
       <div

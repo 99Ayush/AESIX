@@ -420,12 +420,15 @@ img {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* ---------- Navigation drawer (the one menu, all screens) ---------- */
-/* The in-page sidebar rail is retired — the hamburger owns nav everywhere. */
-.patient-sidebar { display: none !important; }
-.patient-main-container { display: block !important; }
+/* ---------- Navigation drawer (mobile only) ---------- */
+/* Desktop: normal sidebar rail. Mobile (<=768px): hamburger owns nav. */
+.native-navdrawer { position: relative; display: none !important; }
 
-.native-navdrawer { position: relative; display: inline-flex; }
+@media (max-width: 768px) {
+  /* Hide the in-page rail on mobile; drawer panel re-shows it (see below). */
+  .patient-sidebar { display: none !important; }
+  .native-navdrawer { display: inline-flex !important; }
+}
 
 .sih-mobile-menu-btn {
   display: inline-flex;
@@ -451,7 +454,7 @@ img {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease;
-  z-index: 998;
+  z-index: 9998;
 }
 .native-drawer-backdrop.open { opacity: 1; pointer-events: auto; }
 
@@ -461,7 +464,7 @@ img {
   left: 0;
   bottom: 0;
   width: min(320px, 86vw);
-  z-index: 999;
+  z-index: 9999;
   background: var(--mint-bg, #F5FAF8);
   box-shadow: 8px 0 32px rgba(18, 48, 74, 0.18);
   padding: calc(1rem + var(--sat)) 1rem calc(1.25rem + var(--sab));

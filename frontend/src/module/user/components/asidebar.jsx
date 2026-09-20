@@ -11,6 +11,7 @@ import {
   User,
   Bot,
   Sparkles,
+  Building2,
 } from "lucide-react";
 
 const PatientSidebar = ({
@@ -60,6 +61,7 @@ const PatientSidebar = ({
     { label: "CONSENT", path: "/consent", icon: FileCheck, key: "consent" },
     { label: "SOCRATES FORM", path: "/socrates", icon: ClipboardList, key: "socrates" },
     { label: "MEDICAL DIRECTORY", path: "/kindle", icon: BookOpen, key: "kindle" },
+    { label: "NEARBY HOSPITALS", path: "/nearby-hospitals", icon: Building2, key: "nearbyHospitals" },
     { label: "PROFILE", path: "/profile", icon: User, key: "profile" },
     { label: "GENAI BOT", path: "/genai", icon: Bot, key: "genai" },
   ];
@@ -70,6 +72,7 @@ const PatientSidebar = ({
     if (item.key === "abha" && currentPath === "/abhaId") return true;
     if (item.key === "uploadDoc" && currentPath === "/docs") return true;
     if (item.key === "kindle" && (currentPath === "/health-code" || currentPath === "/namaste-code" || currentPath === "/icd-code")) return true;
+    if (item.key === "nearbyHospitals" && (currentPath === "/nearby-hospitals" || currentPath === "/emergency")) return true;
     return false;
   };
 

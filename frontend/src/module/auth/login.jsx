@@ -254,22 +254,81 @@ export default function Login() {
 
           {accounts.length > 0 ? (
             <div>
-              <h3 style={{ marginBottom: '1rem', fontSize: '1rem' }}>Select your ABHA Account</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 600, color: 'var(--mv-navy)' }}>
+                  Select your ABHA Account
+                </h3>
+                <span style={{ fontSize: '0.8rem', color: 'var(--mv-text-muted)', background: 'var(--mv-badge-bg)', padding: '2px 8px', borderRadius: '12px' }}>
+                  {accounts.length} linked {accounts.length === 1 ? 'account' : 'accounts'}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--mv-text-muted)', marginBottom: '1rem', marginTop: 0 }}>
+                Multiple accounts found for this mobile number in database. Choose the account you wish to sign in with:
+              </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {accounts.map((acc) => (
+                {accounts.map((acc, index) => (
                   <button
-                    key={acc.abhaNumber}
+                    key={acc.abhaNumber || acc.userId || index}
                     onClick={() => handleSelectAbha(acc.abhaNumber)}
+                    disabled={loading}
                     className="mv-btn-outline"
-                    style={{ textAlign: 'left', padding: '0.85rem 1rem' }}
+                    style={{
+                      textAlign: 'left',
+                      padding: '0.9rem 1.1rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.35rem',
+                      cursor: loading ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s ease',
+                      border: '1.5px solid var(--mv-border)',
+                      borderRadius: '10px',
+                      background: '#fff',
+                    }}
                   >
-                    <strong>{acc.name || 'Account'}</strong>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--mv-text-muted)' }}>
-                      ABHA: {acc.abhaNumber}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <strong style={{ fontSize: '0.95rem', color: 'var(--mv-navy)' }}>
+                        {acc.name || 'Account'}
+                      </strong>
+                      {acc.gender && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--mv-teal)', fontWeight: 500, background: 'var(--mv-teal-light)', padding: '2px 6px', borderRadius: '4px' }}>
+                          {acc.gender}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--mv-text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <span>ABHA: <strong style={{ color: 'var(--mv-text-body)' }}>{acc.abhaNumber}</strong></span>
+                      {acc.abhaAddress && (
+                        <span>• {acc.abhaAddress}</span>
+                      )}
                     </div>
                   </button>
                 ))}
               </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAccounts([]);
+                  setOtpSent(false);
+                  setTxnId(null);
+                  setOtpDigits(['', '', '', '', '', '']);
+                  setError('');
+                }}
+                style={{
+                  marginTop: '1.25rem',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--mv-teal)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  padding: '4px 0',
+                }}
+              >
+                <ArrowLeft size={16} /> Back to Login
+              </button>
             </div>
           ) : (
             <>

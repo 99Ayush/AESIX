@@ -177,6 +177,25 @@ router.post('/login/request-otp',
         });
       }
 
+      // For mobile login, verify that at least one account exists in the database
+      if (method === 'mobile') {
+        const mobileClean = identifier.replace(/\D/g, '').slice(-10);
+        const existingUsers = await User.find({
+          $or: [
+            { mobile: mobileClean },
+            { mobile: new RegExp(mobileClean + '$') },
+            { phone: mobileClean },
+            { phone: new RegExp(mobileClean + '$') },
+          ],
+        }).lean();
+
+        if (!existingUsers || existingUsers.length === 0) {
+          return res.status(404).json({
+            error: 'No account found linked with this mobile number. Please check the number or create an account.',
+          });
+        }
+      }
+
       const result = await loginService.requestOTP(method, identifier);
 
       // Track the txn so /verify can validate it
@@ -213,12 +232,76 @@ router.post('/login/verify',
 
       const result = await loginService.verify(method, txnId, otp);
 
-      // Mobile multi-ABHA: don't persist yet, wait for /verify-user
-      if (result.needsSelection) {
-        return res.json(result);
+      // Mobile: query real database records linked with this mobile number
+      if (method === 'mobile') {
+        const mobileClean = txn.identifier.replace(/\D/g, '').slice(-10);
+        const matchedUsers = await User.find({
+          $or: [
+            { mobile: mobileClean },
+            { mobile: new RegExp(mobileClean + '$') },
+            { phone: mobileClean },
+            { phone: new RegExp(mobileClean + '$') },
+          ],
+        }).lean();
+
+        if (!matchedUsers || matchedUsers.length === 0) {
+          return res.status(404).json({
+            error: 'No account found linked with this mobile number in database.',
+          });
+        }
+
+        // If multiple accounts are linked with this mobile, provide account selector
+        if (matchedUsers.length > 1) {
+          return res.json({
+            needsSelection: true,
+            txnId,
+            abhaProfiles: matchedUsers.map((u) => {
+              const name = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.fullName || 'User';
+              return {
+                userId: u.userId,
+                abhaNumber: u.abhaNumber || '',
+                name,
+                firstName: u.firstName || '',
+                lastName: u.lastName || '',
+                abhaAddress: u.abhaAddress || (u.phrAddress?.[0]) || '',
+                gender: u.gender || '',
+                dob: u.dob || '',
+              };
+            }),
+          });
+        }
+
+        // Exactly 1 account linked with this mobile number: log in directly
+        const user = matchedUsers[0];
+        const tokens = {
+          token: result.tokens?.token || randomUUID(),
+          refreshToken: result.tokens?.refreshToken || randomUUID(),
+          expiresIn: result.tokens?.expiresIn || 1800,
+        };
+
+        await UserSession.create({
+          userId: user.userId,
+          xToken: tokens.token,
+          refreshToken: tokens.refreshToken,
+          expiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
+          refreshExpiresAt: new Date(Date.now() + (tokens.refreshExpiresIn || 1296000) * 1000),
+          loginMethod: 'mobile',
+        });
+
+        txn.verifiedAt = new Date();
+        await txn.save();
+
+        const responseProfile = buildResponseProfile(user);
+
+        return res.json({
+          needsSelection: false,
+          profile: responseProfile,
+          tokens,
+          userId: user.userId,
+        });
       }
 
-      // Single profile — persist
+      // Single profile for other methods (aadhaar/abha) — persist
       const profile = result.profile;
       const tokens = result.tokens;
 
@@ -269,30 +352,48 @@ router.post('/login/verify-user',
         return res.status(400).json({ error: 'Invalid or expired txnId' });
       }
 
-      const result = await loginService.selectAbha(txnId, abhaNumber);
+      // Look up real user from database by abhaNumber
+      let user = await User.findOne({ abhaNumber });
+      if (!user && txn.identifier) {
+        const mobileClean = txn.identifier.replace(/\D/g, '').slice(-10);
+        user = await User.findOne({
+          $and: [
+            { abhaNumber },
+            {
+              $or: [
+                { mobile: mobileClean },
+                { mobile: new RegExp(mobileClean + '$') },
+                { phone: mobileClean },
+                { phone: new RegExp(mobileClean + '$') },
+              ],
+            },
+          ],
+        });
+      }
 
-      // Persist the selected profile
-      const profile = result.ABHAProfile;
-      const tokens = result.tokens;
+      if (!user) {
+        return res.status(404).json({ error: `Account with ABHA ${abhaNumber} not found in database.` });
+      }
 
-      const user = await upsertUserFromProfile(profile, {
-        loginMethod: txn.method,
-        abhaIdentifier: txn.identifier || abhaNumber,
-      });
+      const tokens = {
+        token: randomUUID(),
+        refreshToken: randomUUID(),
+        expiresIn: 1800,
+      };
 
       await UserSession.create({
         userId: user.userId,
         xToken: tokens.token,
         refreshToken: tokens.refreshToken,
         expiresAt: new Date(Date.now() + tokens.expiresIn * 1000),
-        refreshExpiresAt: new Date(Date.now() + (tokens.refreshExpiresIn || 1296000) * 1000),
-        loginMethod: txn.method,
+        refreshExpiresAt: new Date(Date.now() + 1296000 * 1000),
+        loginMethod: txn.method || 'mobile',
       });
 
       txn.verifiedAt = new Date();
       await txn.save();
 
-      const responseProfile = buildResponseProfile(user, profile);
+      const responseProfile = buildResponseProfile(user);
 
       res.json({
         profile: responseProfile,

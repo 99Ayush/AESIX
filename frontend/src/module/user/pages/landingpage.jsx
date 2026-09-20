@@ -32,6 +32,7 @@ import {
   Stethoscope,
   Sparkles,
   Lock,
+  Building2,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -202,6 +203,16 @@ export default function LandingPage() {
       icon: Shield,
       accent: "#16A34A",
       tags: ["NHA Standard", "Scannable QR", "Download Card"],
+    },
+    {
+      title: "Nearby Hospitals",
+      badge: "Emergency",
+      badgeColor: "#DC2626",
+      desc: "Find nearest hospitals, clinics, and emergency services with live driving times",
+      path: "/nearby-hospitals",
+      icon: Building2,
+      accent: "#DC2626",
+      tags: ["Live GPS", "Driving Times", "Emergency Hotlines"],
     },
   ];
 
