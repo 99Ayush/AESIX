@@ -124,7 +124,7 @@ export default function AbhaID() {
                   {abhaDetails.photoUrl ? (
                     <img src={abhaDetails.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    (abhaDetails.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                    (abhaDetails.name || 'Patient').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'PT'
                   )}
                 </div>
                 <span className="sih-profile-name">{abhaDetails.name || 'Profile'}</span>
@@ -188,9 +188,9 @@ export default function AbhaID() {
                   <div className="abha-user-profile">
                     <div className="abha-avatar-box" style={{ overflow: 'hidden', padding: 0 }}>
                       {abhaDetails.photoUrl ? (
-                        <img src={abhaDetails.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={abhaDetails.photoUrl} alt={abhaDetails.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        (abhaDetails.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                        (abhaDetails.name || 'Patient').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'PT'
                       )}
                     </div>
 

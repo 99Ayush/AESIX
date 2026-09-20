@@ -2,16 +2,22 @@ const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 
 async function request(path, options = {}) {
   const token = localStorage.getItem('token');
+  const storedUser = readLocalJSON('user_profile', {});
+  const userId = storedUser?.userId || storedUser?.id || storedUser?._id;
+  const abhaNumber = storedUser?.abhaNumber || storedUser?.abhaId || storedUser?.ABHANumber;
+
   const headers = {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(userId ? { 'x-user-id': userId } : {}),
+    ...(abhaNumber ? { 'x-abha-number': abhaNumber } : {}),
     ...(options.headers || {}),
   };
   const response = await fetch(`${baseUrl}${path}`, { ...options, headers });
   if (response.status === 204) return null;
   const body = await response.json();
   if (!response.ok) throw new Error(body.error || 'Request failed');
-  return body.data;
+  return body.data || body; // Ensure 'body.data' or fallback to 'body'
 }
 
 export const userApi = {
@@ -20,11 +26,16 @@ export const userApi = {
   getUserById: (id) => request(`/users/${id}`),
   saveProfile: async (data) => {
     const token = localStorage.getItem('token');
+    const storedUser = readLocalJSON('user_profile', {});
+    const userId = storedUser?.userId || storedUser?.id || storedUser?._id;
+    const abhaNumber = storedUser?.abhaNumber || storedUser?.abhaId || storedUser?.ABHANumber;
     const isFormData = data instanceof FormData;
     const response = await fetch(`${baseUrl}/users/profile`, {
       method: 'PATCH',
       headers: {
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(userId ? { 'x-user-id': userId } : {}),
+        ...(abhaNumber ? { 'x-abha-number': abhaNumber } : {}),
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       },
       body: isFormData ? data : JSON.stringify(data),
