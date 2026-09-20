@@ -130,7 +130,8 @@ export default function NearbyHospitals() {
 
     async function initMap() {
       try {
-        L = (await import('leaflet')).default;
+        const leafletMod = await import('leaflet');
+        L = leafletMod.default || leafletMod;
       } catch {
         // Fallback to window.L if imported globally
         L = window.L;
