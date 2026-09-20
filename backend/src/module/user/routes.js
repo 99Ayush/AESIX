@@ -9,6 +9,7 @@ import { MongoClient } from 'mongodb';
 import { notifyDatabaseChange } from '../../shared/realtime.js';
 import { searchNamasteCodes, getOrFetchDiseaseRecord, getIcdToNamasteMapping, getNamasteToIcdMapping } from './services/namasteService.js';
 import { searchICDAPI, lookupICDCode, fetchICDEntityDetails, buildWhoLinks, cleanWhoText, cleanWhoList } from './services/icdService.js';
+import { getNearbyHospitals } from './services/hospitalService.js';
 import { User, UserSession } from '../auth/model/model.js';
 import multer from 'multer';
 import { uploadBufferToCloudinary } from '../../shared/cloudinary.js';
@@ -226,6 +227,22 @@ router.get('/dashboard', async (req, res, next) => {
       pendingConsents: data.consents.filter((item) => item.status === 'pending'),
       documentCount: data.documents.length,
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+router.get('/nearby-hospitals', async (req, res, next) => {
+  try {
+    const lat = req.query.lat ? parseFloat(req.query.lat) : 28.6139;
+    const lng = req.query.lng ? parseFloat(req.query.lng) : 77.2090;
+    const radius = req.query.radius ? parseInt(req.query.radius, 10) : 5000;
+    const type = req.query.type || 'hospital';
+    const keyword = req.query.keyword || '';
+    const limit = req.query.limit ? parseInt(req.query.limit, 10) : 10;
+
+    const hospitals = await getNearbyHospitals({ lat, lng, radius, type, keyword, limit });
+    respond(res, hospitals);
   } catch (e) {
     next(e);
   }

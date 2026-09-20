@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import PatientSidebar from '../module/user/components/asidebar';
 
 /**
- * NavDrawer — the single navigation home for patient pages.
- * - Desktop (hover-capable): opens when hovering the hamburger.
- * - Touch: opens on tap. Backdrop tap, ✕, or Escape closes it.
- * Content (profile card + menu) is the shared PatientSidebar,
- * so the in-page sidebar rail is no longer rendered anywhere.
+ * NavDrawer — mobile-only navigation (hidden on desktop via CSS).
+ * - Desktop: normal `.patient-sidebar` rail is shown, drawer button is hidden.
+ * - Mobile/touch: hamburger opens on tap. Backdrop tap, ✕, or Escape closes it.
+ * Content (profile card + menu) is the shared PatientSidebar.
+ *
+ * The backdrop + panel are rendered via a React Portal so they
+ * escape the header's stacking context (caused by backdrop-filter).
  */
 export default function NavDrawer() {
   const [pinned, setPinned] = useState(false);
@@ -75,22 +78,35 @@ export default function NavDrawer() {
         {visible ? <X size={20} strokeWidth={2.4} /> : <Menu size={20} strokeWidth={2.4} />}
       </button>
 
-      <div
-        className={`native-drawer-backdrop${visible ? ' open' : ''}`}
-        onClick={() => {
-          setPinned(false);
-          setHovered(false);
-        }}
-        aria-hidden="true"
-      />
-
-      <aside
-        className={`native-drawer-panel${visible ? ' open' : ''}`}
-        aria-hidden={!visible}
-        aria-label="Site navigation"
-      >
-        <PatientSidebar />
-      </aside>
+      {/* Portal: render backdrop + panel at document.body so they
+          escape any parent stacking context (header backdrop-filter). */}
+      {createPortal(
+        <>
+          <div
+            className={`native-drawer-backdrop${visible ? ' open' : ''}`}
+            onClick={() => {
+              setPinned(false);
+              setHovered(false);
+            }}
+            aria-hidden="true"
+          />
+          <aside
+            className={`native-drawer-panel${visible ? ' open' : ''}`}
+            aria-hidden={!visible}
+            aria-label="Site navigation"
+            onMouseEnter={() => {
+              if (canHover()) setHovered(true);
+            }}
+            onMouseLeave={() => {
+              if (canHover()) setHovered(false);
+            }}
+          >
+            <PatientSidebar />
+          </aside>
+        </>,
+        document.body
+      )}
     </div>
   );
 }
+

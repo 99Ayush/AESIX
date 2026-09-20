@@ -17,6 +17,7 @@ import ICDCode from '../module/user/pages/ICD-Code';
 import SocratesForm from '../module/user/pages/SocratesForm';
 import BottomTabBar from '../shared/BottomTabBar';
 import PwaStatusBanner from '../shared/PwaStatusBanner';
+import NearbyHospitals from '../module/user/pages/NearbyHospitals';
 
 /* Native-style route transition: every navigation slides the new screen in. */
 const RouteScreen = ({ children }) => {
@@ -57,6 +58,8 @@ export const AppRoutes = () => {
         <Route path="/namaste-code" element={<NamasteCode />} />
         <Route path="/icd-code" element={<ICDCode />} />
         <Route path="/socrates" element={<SocratesForm />} />
+        <Route path="/nearby-hospitals" element={<NearbyHospitals />} />
+        <Route path="/emergency" element={<NearbyHospitals />} />
 
         <Route path="/genai" element={<GenAiBot />} />
 

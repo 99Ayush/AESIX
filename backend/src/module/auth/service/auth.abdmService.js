@@ -30,17 +30,17 @@ const MOCK = {
       };
     }
 
-    // Login: single-profile fields for aadhaar/abha; abhaProfiles for mobile selector
+    // Login fallback: return minimal mock payload (real accounts resolved from DB)
     return {
       ABHAProfile: {
         ABHANumber: '91-0000-1111-2222',
-        firstName: 'Rahul',
-        lastName: 'Sharma',
-        dob: '15-01-1990',
+        firstName: 'User',
+        lastName: '',
+        dob: '01-01-1990',
         gender: 'M',
         mobile: '9999999999',
         abhaStatus: 'ACTIVE',
-        phrAddress: ['rahul@sbx'],
+        phrAddress: ['user@sbx'],
         kycVerified: true,
       },
       tokens: {
@@ -48,19 +48,16 @@ const MOCK = {
         refreshToken: 'mock-refresh',
         expiresIn: 1800,
       },
-      abhaProfiles: [
-        { abhaNumber: '91-0000-1111-2222', firstName: 'Rahul' },
-        { abhaNumber: '91-0000-3333-4444', firstName: 'Priya' },
-      ],
+      abhaProfiles: [],
     };
   },
 
-  verifyUser: () => ({
+  verifyUser: (txnId, abhaNumber) => ({
     ABHAProfile: {
-      ABHANumber: '91-0000-1111-2222',
-      firstName: 'Rahul',
-      lastName: 'Sharma',
-      dob: '15-01-1990',
+      ABHANumber: abhaNumber || '91-0000-1111-2222',
+      firstName: 'User',
+      lastName: '',
+      dob: '01-01-1990',
       gender: 'M',
     },
     tokens: {
@@ -181,7 +178,7 @@ export default {
   },
 
   async verifyUser(txnId, abhaNumber) {
-    if (config.abdm.mockMode) return MOCK.verifyUser();
+    if (config.abdm.mockMode) return MOCK.verifyUser(txnId, abhaNumber);
 
     return post('/profile/login/verify/user', { txnId, abhaNumber });
   },
