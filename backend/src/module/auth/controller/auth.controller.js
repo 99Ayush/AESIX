@@ -57,39 +57,43 @@ function buildResponseProfile(user, profile = {}) {
 }
 
 async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod, city, abhaIdentifier }) {
+  const isMockAbha = profile.ABHANumber === '91-0000-1111-2222';
+  
+  let targetAbha = profile.ABHANumber;
+  let targetAbhaAddress = profile.phrAddress?.[0] || profile.abhaAddress;
 
-  // Find existing user by aadhaar or abhaNumber
-  // If user registered with this aadhaar, update that record (including keeping/updating abhaNumber)
+  if (isMockAbha && abhaIdentifier) {
+    if (abhaIdentifier.includes('@')) {
+      targetAbhaAddress = abhaIdentifier;
+      targetAbha = undefined; 
+    } else {
+      targetAbha = abhaIdentifier;
+    }
+  }
+
   let user = null;
   if (aadhaar) {
     user = await User.findOne({ aadhaar });
   }
-  if (!user && profile.ABHANumber) {
-    user = await User.findOne({ abhaNumber: profile.ABHANumber });
-  }
-  // In mock mode the ABHANumber is always the same dummy value.
-  // Try matching by the real identifier the user typed (abhaAddress or mobile).
-  // Also try matching by profile.mobile since ABDM mock always returns a consistent mobile.
+  
   if (!user && abhaIdentifier) {
     user = await User.findOne({
       $or: [
         { abhaAddress: abhaIdentifier },
         { mobile: abhaIdentifier },
         { abhaNumber: abhaIdentifier },
-        { mobile: profile.mobile },
       ],
     });
   }
 
-  // Last resort: try matching by profile.mobile even without an explicit abhaIdentifier
-  // This handles the case where a user registered with Aadhaar and logs in via ABHA
-  // (ABHA numbers differ between mock registration and login, but mobile stays consistent)
+  if (!user && targetAbha) {
+    user = await User.findOne({ abhaNumber: targetAbha });
+  }
+
   if (!user && profile.mobile) {
     user = await User.findOne({ mobile: profile.mobile });
   }
 
-  // Check if assigning profile.ABHANumber would collide with another user
-  const targetAbha = profile.ABHANumber;
   let canSetAbha = Boolean(targetAbha);
   if (canSetAbha && user) {
     const existingWithAbha = await User.findOne({ abhaNumber: targetAbha, _id: { $ne: user._id } });
@@ -98,8 +102,6 @@ async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod, ci
     }
   }
 
-  // If user already exists in our DB (e.g. from registration), preserve their
-  // actual registered details rather than overwriting them with ABDM mock data!
   const updateFields = {
     ...(canSetAbha ? { abhaNumber: targetAbha } : {}),
     ...(aadhaar ? { aadhaar } : {}),
@@ -108,7 +110,7 @@ async function upsertUserFromProfile(profile, { aadhaar, mobile, loginMethod, ci
     mobile: user?.mobile || mobile || profile.mobile,
     gender: user?.gender || profile.gender,
     dob: user?.dob || profile.dob,
-    abhaAddress: user?.abhaAddress || profile.phrAddress?.[0] || profile.abhaAddress,
+    abhaAddress: user?.abhaAddress || targetAbhaAddress,
     abhaStatus: user?.abhaStatus || profile.abhaStatus,
     kycVerified: user?.kycVerified ?? profile.kycVerified,
     loginMethod,

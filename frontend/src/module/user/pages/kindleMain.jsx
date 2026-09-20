@@ -405,18 +405,21 @@ export default function KindleMain({ embedded = false }) {
   const [initials, setInitials] = useState('PT');
 
   useEffect(() => {
-    userApi.dashboard().then((dash) => {
-      const p = dash?.profile;
-      const storedUser = (() => {
-        try { return JSON.parse(localStorage.getItem('user_profile') || '{}'); } catch { return {}; }
-      })();
-      const name = p?.name?.trim()
-        || (storedUser?.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '')
-        || dash?.abha?.name?.trim()
-        || 'Patient';
-      setPatientName(name);
-      setInitials((name.replace(/[^a-zA-Z\s]/g, '').trim() || 'PT').split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase());
-    }).catch(() => { });
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+      const fullName = storedUser.fullName || (storedUser.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '');
+      const firstName = fullName ? fullName.split(' ')[0] : 'Profile';
+      
+      setPatientName(firstName);
+      
+      const initialsStr = fullName && fullName !== 'Patient' 
+        ? fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) 
+        : "PT";
+      setInitials(initialsStr);
+    } catch (err) {
+      setPatientName('Profile');
+      setInitials('PT');
+    }
   }, []);
 
   useEffect(() => {

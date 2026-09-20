@@ -316,8 +316,20 @@ export default function SocratesForm() {
             <DoctorActivityBell />
             <div className="sih-profile-wrapper" ref={profileRef}>
               <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
-                <div className="sih-profile-avatar">PT</div>
-                <span className="sih-profile-name">Profile</span>
+                <div className="sih-profile-avatar">
+                  {(() => {
+                    const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+                    const pName = storedUser.fullName || (storedUser.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '');
+                    return (pName && pName !== "Patient" ? pName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "PT");
+                  })()}
+                </div>
+                <span className="sih-profile-name">
+                  {(() => {
+                    const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+                    const fullName = storedUser.fullName || (storedUser.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '');
+                    return fullName ? fullName.split(' ')[0] : 'Profile';
+                  })()}
+                </span>
                 <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
               </button>
               {profileOpen && (
@@ -325,7 +337,11 @@ export default function SocratesForm() {
                   <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
                     <span className="dd-icon"><CircleUser /></span> Profile
                   </button>
-                  <button className="sih-profile-dropdown-item danger" onClick={() => setProfileOpen(false)}>
+                  <button className="sih-profile-dropdown-item danger" onClick={() => {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user_profile');
+                    navigate('/login');
+                  }}>
                     <span className="dd-icon"><LogOut /></span> Sign Out
                   </button>
                 </div>

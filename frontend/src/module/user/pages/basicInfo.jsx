@@ -382,7 +382,7 @@ export default function BasicInfo() {
                   {(photoPreview || patient.photoUrl) ? (
                     <img src={photoPreview || patient.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    (patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                    (patient.name || 'PT').split(' ').filter(Boolean).map(n => n[0]).join('')
                   )}
                 </div>
                 <span className="sih-profile-name">{patient.name || 'Profile'}</span>
@@ -503,7 +503,7 @@ export default function BasicInfo() {
                       {(photoPreview || patient.photoUrl) ? (
                         <img src={photoPreview || patient.photoUrl} alt="Profile DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
-                        (patient.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                        (patient.name || 'Patient').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'PT'
                       )}
                       {isEditing && (
                         <label htmlFor="avatar-file-input" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '0.7rem', fontWeight: 800, cursor: 'pointer' }}>

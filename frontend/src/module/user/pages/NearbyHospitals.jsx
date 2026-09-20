@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BrandLogo from '../../../shared/BrandLogo';
+import DoctorActivityBell from '../components/DoctorActivityBell';
+import { useDashboardLanguage } from '../LanguageContext';
 import {
   Phone,
   PhoneCall,
@@ -14,7 +17,10 @@ import {
   Search,
   ExternalLink,
   ShieldAlert,
+  CircleUser,
+  LogOut,
 } from 'lucide-react';
+import PatientSidebar from '../components/asidebar';
 import './NearbyHospitals.css';
 import '../userPages.css';
 
@@ -25,6 +31,11 @@ const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
 const DEFAULT_COORDS = { lat: 28.6139, lng: 77.2090 };
 
 export default function NearbyHospitals() {
+  const navigate = useNavigate();
+  const { language, setLanguage } = useDashboardLanguage();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+
   const [coords, setCoords] = useState(DEFAULT_COORDS);
   const [locationName, setLocationName] = useState('Detecting location...');
   const [gpsActive, setGpsActive] = useState(false);
@@ -250,12 +261,65 @@ export default function NearbyHospitals() {
   };
 
   return (
-    <div className="nearby-hospitals-page">
-      <main className="nearby-hospitals-main">
+    <div className="sih-page-wrapper" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#F8FAFC' }}>
+      {/* Global Topbar */}
+      <header className="sih-header" style={{ flexShrink: 0 }}>
+            <div className="sih-header-inner">
+              <BrandLogo subtitle="Nearby Hospitals" />
+
+              <div className="sih-header-controls">
+                <select value={language} onChange={(e) => setLanguage(e.target.value)} className="sih-lang-select" data-no-translate translate="no">
+                  <option value="English">🌐 English</option>
+                  <option value="Hindi">🌐 हिंदी</option>
+                  <option value="Bengali">🌐 বাংলা</option>
+                  <option value="Tamil">🌐 தமிழ்</option>
+                </select>
+                <DoctorActivityBell />
+                <div className="sih-profile-wrapper" ref={profileRef}>
+                  <button className="sih-profile-trigger" onClick={() => setProfileOpen(!profileOpen)}>
+                    <div className="sih-profile-avatar">
+                      {(() => {
+                        const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+                        const pName = storedUser.fullName || (storedUser.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '');
+                        return (pName && pName !== "Patient" ? pName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "PT");
+                      })()}
+                    </div>
+                    <span className="sih-profile-name">
+                      {(() => {
+                        const storedUser = JSON.parse(localStorage.getItem('user_profile') || '{}');
+                        const fullName = storedUser.fullName || (storedUser.firstName ? `${storedUser.firstName} ${storedUser.lastName || ''}`.trim() : '');
+                        return fullName ? fullName.split(' ')[0] : 'Profile';
+                      })()}
+                    </span>
+                    <span className={`sih-profile-chevron ${profileOpen ? 'open' : ''}`}>▾</span>
+                  </button>
+                  {profileOpen && (
+                    <div className="sih-profile-dropdown">
+                      <button className="sih-profile-dropdown-item" onClick={() => { navigate('/profile'); setProfileOpen(false); }}>
+                        <span className="dd-icon"><CircleUser /></span> Profile
+                      </button>
+                      <button className="sih-profile-dropdown-item danger" onClick={() => {
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user_profile');
+                        navigate('/login');
+                      }}>
+                        <span className="dd-icon"><LogOut /></span> Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="patient-main-container" style={{ height: 'calc(100vh - 80px)', padding: 0, display: 'flex' }}>
+            <PatientSidebar activePage="nearbyHospitals" />
+            <div className="patient-content-area" style={{ padding: 0, height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <div className="nearby-hospitals-page" style={{ height: '100%', minHeight: 'auto', overflow: 'hidden', flex: 1 }}>
+            <main className="nearby-hospitals-main" style={{ height: '100%' }}>
         {/* Header Bar */}
         <header className="nh-header">
           <div className="nh-header-top">
-            <BrandLogo subtitle="Nearby Hospitals" />
             <div className="nh-title-wrap">
               <div className="nh-icon-badge">
                 <Building2 size={22} />
@@ -443,8 +507,8 @@ export default function NearbyHospitals() {
           </aside>
 
           {/* Right Column: Live Map */}
-          <section className="nh-map-panel">
-            <div ref={mapContainerRef} className="nh-map-container" />
+          <section className="nh-map-panel" style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div ref={mapContainerRef} className="nh-map-container" style={{ flex: 1, minHeight: '500px', width: '100%' }} />
 
             {selectedHospital && (
               <div className="nh-map-overlay">
@@ -466,5 +530,8 @@ export default function NearbyHospitals() {
         </div>
       </main>
     </div>
+  </div>
+</div>
+</div>
   );
 }

@@ -120,7 +120,7 @@ export default function ProfilePage() {
                   {patientProfile.photoUrl ? (
                     <img src={patientProfile.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    (patientProfile.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                    (patientProfile.name || 'Patient').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'PT'
                   )}
                 </div>
                 <span className="sih-profile-name">{patientProfile.name || 'Profile'}</span>
@@ -154,7 +154,7 @@ export default function ProfilePage() {
               {patientProfile.photoUrl ? (
                 <img src={patientProfile.photoUrl} alt="DP" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                (patientProfile.name || 'RK').split(' ').filter(Boolean).map(n => n[0]).join('')
+                (patientProfile.name || 'Patient').split(' ').filter(Boolean).map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'PT'
               )}
             </div>
             <div>
